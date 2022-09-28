@@ -1,0 +1,230 @@
+{% extends 'layouts/default.html' %}
+{% set title = '客户详情' %}
+{% set menuActive = 'customers' %}
+{% block container %}
+<div class="container">
+    <div class="m-4 row">
+        <div class="col-md-4">
+            <div class="card mb-3" aria-hidden="true">
+                <div class="card-body">
+                    <div class="card-title">
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div class="fs-5">{{ data.customer.name }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <div class="">
+                            电话: {{ data.customer.phone }}
+                        </div>
+                        <div class="mt-1">
+                            类型: {{ data.customer.type}}
+                        </div>
+                        <div class="mt-1">地区: {{ data.customer.province }} / {{ data.customer.city }} / {{
+                            data.customer.area }}</div>
+                        <div class="mt-1">地址: {{ data.customer.address }}</div>
+                        <div class="mt-1">坐标: {{ data.customer.location }}</div>
+                    </div>
+                    <div class="dropdown mt-3">
+                        <button id="stage" class="dropdown-toggle btn btn-dark w-100" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            {{ data.customer.stage.name }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for s in data.stages %}
+                            <li><span class="dropdown-item" style="cursor: pointer;"
+                                    onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex g-2 flex-wrap">
+                {% for photo in data.customer.photos %}
+                <div class="m-1 border border-1 p-1" style="max-width: 150px;"
+                    onclick="helper.preview('{{photo.url}}')">
+                    <img src="{{photo.url}}" width="100%" />
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="fs-3 d-flex">联络历史</div>
+                <div class="d-flex align-content-center">
+                    <button class="btn btn-dark" onclick="app.renderNewLinking()">新增</button>
+                    <!-- <button class="btn btn-warning mw-2">转交</button>
+                    <button class="btn btn-danger mw-2">关闭</button> -->
+                </div>
+            </div>
+            <div id="spinner" class="text-center" style="display: none;">
+                <div class="spinner-border" role="status"></div>
+            </div>
+            <div id="linkingList" class="activity-container"></div>
+        </div>
+    </div>
+    <div id="toast"></div>
+    <div id="preview"></div>
+    <div id="confirm"></div>
+    <div id="newLinking"></div>
+</div>
+{% endblock container %}
+{% block script %}
+<script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script>
+    const app = {
+        data: {
+            linkingList: [],
+            typeMap: {
+                '微信': `
+                <div style="width: 48px; height: 48px; padding: 4px;" class="text-bg-success rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-wechat" viewBox="0 0 16 16">
+                        <path d="M11.176 14.429c-2.665 0-4.826-1.8-4.826-4.018 0-2.22 2.159-4.02 4.824-4.02S16 8.191 16 10.411c0 1.21-.65 2.301-1.666 3.036a.324.324 0 0 0-.12.366l.218.81a.616.616 0 0 1 .029.117.166.166 0 0 1-.162.162.177.177 0 0 1-.092-.03l-1.057-.61a.519.519 0 0 0-.256-.074.509.509 0 0 0-.142.021 5.668 5.668 0 0 1-1.576.22ZM9.064 9.542a.647.647 0 1 0 .557-1 .645.645 0 0 0-.646.647.615.615 0 0 0 .09.353Zm3.232.001a.646.646 0 1 0 .546-1 .645.645 0 0 0-.644.644.627.627 0 0 0 .098.356Z" />
+                        <path d="M0 6.826c0 1.455.781 2.765 2.001 3.656a.385.385 0 0 1 .143.439l-.161.6-.1.373a.499.499 0 0 0-.032.14.192.192 0 0 0 .193.193c.039 0 .077-.01.111-.029l1.268-.733a.622.622 0 0 1 .308-.088c.058 0 .116.009.171.025a6.83 6.83 0 0 0 1.625.26 4.45 4.45 0 0 1-.177-1.251c0-2.936 2.785-5.02 5.824-5.02.05 0 .1 0 .15.002C10.587 3.429 8.392 2 5.796 2 2.596 2 0 4.16 0 6.826Zm4.632-1.555a.77.77 0 1 1-1.54 0 .77.77 0 0 1 1.54 0Zm3.875 0a.77.77 0 1 1-1.54 0 .77.77 0 0 1 1.54 0Z" />
+                    </svg>                
+                </div>
+                `,
+                '邮件': `
+                <div style="width: 48px; height: 48px; padding: 4px;" class="text-bg-primary rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 0 16 16">
+                        <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z" />
+                    </svg>                
+                </div>
+                `,
+                '电话': `
+                <div style="width: 48px; height: 48px; padding: 4px;" class="text-bg-warning rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
+                    </svg>                
+                </div>
+                `,
+            }
+        },
+        renderList() {
+            // XXX show loading?
+            // clear dom
+            const list = document.getElementById('linkingList');
+            while (list.firstChild) list.removeChild(list.firstChild);
+            // render
+            let html = '';
+            for (const item of this.data.linkingList) {
+                html += `
+                <div class="p-3 border border-1 border-dark border-opacity-25 rounded mb-3">
+                    <div class="d-flex flex-column">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="d-flex flex-column">
+                                <div class="fs-5">${item.subject}</div>
+                                <div class="d-flex align-items-baseline">
+                                    <div class="fs-5 me-2 text-muted">${item.user.name}</div>
+                                    <div class="text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                </div>
+                            </div>
+                            ${this.data.typeMap[item.type.name]}
+                        </div>
+                        <div class="paragraph mb-1">
+                            ${item.content}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+            list.innerHTML = html;
+        },
+        changeStage(stageId, stageName) {
+            $.ajax({
+                type: 'post',
+                url: `/customers/{{data.customer.id}}/stage`,
+                data: { stageId },
+            }).done(function (result) {
+                document.getElementById('stage').textContent = stageName;
+                helper.toast('success', '操作成功');
+            });
+        },
+        loadLinkingList() {
+            $('#spinner').show();
+            $.ajax({
+                type: 'get',
+                url: `/customers/{{data.customer.id}}/linking`,
+            }).done(function (result) {
+                const { data } = result;
+                app.data.linkingList = data;
+                app.renderList();
+            }).always(function () {
+                $('#spinner').hide();
+            });
+        },
+        renderNewLinking() {
+            // load types
+            $.getJSON('/linking/types').done(function (result) {
+                const { data } = result;
+                let optionsHTML = '';
+                for (let i = 0; i < data.length; i++) {
+                    const option = data[i];
+                    optionsHTML += `<option ${i == 0 ? 'selected' : ''} value="${option.id}">${option.name}</option>`;
+                }
+                // show modal
+                const modal = document.getElementById('newLinking');
+                modal.innerHTML = `
+                <div class="modal fade" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">新建联系</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="linkingForm" name="linkingForm">
+                                    <div class="mb-3">
+                                        <label for="linkingType" class="form-label">方式</label>
+                                        <select class="form-select" id="linkingType">
+                                            ${optionsHTML}
+                                        </select>
+                                    </div>                       
+                                    <div class="mb-3">
+                                        <label for="linkingSubject" class="form-label">主题</label>
+                                        <input type="text" class="form-control" id="linkingSubject" aria-describedby="emailHelp">
+                                    </div>
+                                    <div>
+                                        <label for="linkingContent" class="form-label">内容</label>
+                                        <textarea class="form-control" id="linkingContent" rows="3"></textarea>
+                                    </div>                                                                                     
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="app.newLiking()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                $('#newLinking .modal').modal('show');
+            });
+        },
+        newLiking() {
+            const data = {
+                subject: $('#linkingForm #linkingSubject').val() || '',
+                content: $('#linkingForm #linkingContent').val() || '',
+                typeId: $('#linkingForm #linkingType').val() || '',
+            };
+            $.ajax({
+                type: 'post',
+                url: `/customers/{{data.customer.id}}/linking`,
+                data,
+            }).done(function () {
+                helper.toast('success', '添加成功');
+            }).always(function () {
+                app.loadLinkingList();
+                $('#newLinking .modal').modal('hide');
+            });
+        },
+        onReady() {
+            this.loadLinkingList();
+        }
+    };
+
+    $(document).ready(async function () {
+        app.onReady();
+    })
+</script>
+{% endblock script %}

@@ -1,0 +1,15 @@
+{% extends 'layouts/blank.html' %}
+{% set title = '403 - 没有权限' %}
+{% block body %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="p-5" style="max-width: 800px;">
+        <div class="display-4 mb-4">403 - 没有权限</div>
+        <div class="fs-6 fw-normal mb-4">
+            看起来你的操作没有得到授权，试试问问你的上司，或者大声喊出来：”我TM需要这个操作的权限，谁来给我授权一下？“。
+            希望你喊了之后还能继续在这个地方工作。<br />
+            最后这里该有一张很拽的插图，但是我太懒了，所以就这样了。
+        </div>
+        <a class="btn btn-dark" href="javascript:history.go(-1)" }>返回前页</a>
+    </div>
+</div>
+{% endblock body %}

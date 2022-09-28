@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  password  String
+  phone     String   @unique
+  email     String   @unique
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ref
+  loginHistory UserLoginHistory[]
+}
+
+// 登陆历史（最长90天？）
+model UserLoginHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ref
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  phone     String?
+  type      String?
+  province  String?
+  city      String?
+  area      String?
+  address   String?
+  location  String?
+  source    String   @default("unknown") // 来源：unknown,gaode,baidu,web,email,phone,introduce
+  isCompany Boolean  @default(false) @map("is_company")
+  stageId   Int?     @map("stage_id")
+  userId    Int?     @map("user_id") // 负责人
+  creatorId Int?     @map("creator_id") // 创建人
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ref
+  photos Photo[]
+  tags   CustomerTagRef[]
+  stage  Stage?           @relation(fields: [stageId], references: [id])
+}
+
+// 客户情况：未联系（默认）, 加微信未通过, 添加微信成功, 下单, 暂时未接通
+model Stage {
+  id        Int        @id @default(autoincrement())
+  name      String
+  sequence  Int
+  isFinal   Boolean    @default(false) @map("is_final")
+  customers Customer[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+}
+
+// 客户图片
+model Photo {
+  id         Int     @id @default(autoincrement())
+  url        String?
+  customerId Int     @map("customer_id")
+
+  // ref
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+// 客户标签
+model Tag {
+  id        Int              @id @default(autoincrement())
+  name      String           @unique
+  // ref
+  customers CustomerTagRef[]
+}
+
+// 标签与客户的多对多关系
+model CustomerTagRef {
+  customerId Int      @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id])
+  tagId      Int      @map("tag_id")
+  tag        Tag      @relation(fields: [tagId], references: [id])
+
+  @@id([customerId, tagId])
+}
+
+// 一次接触
+model Link {
+  id         Int      @id @default(autoincrement())
+  subject    String
+  content    String
+  userId     Int      @map("user_id") // 接触执行人
+  customerId Int      @map("customer_id") // 接触客户
+  typeId     Int      @map("type_id") // 接触类别
+  type       LinkType @relation(fields: [typeId], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+}
+
+// 接触类型 email（邮件）, phone（电话）, wechat（微信），video（视频） ...
+model LinkType {
+  id    Int    @id @default(autoincrement())
+  name  String
+  links Link[]
+}
+
+// 所有活动，谁做了什么事情
+model Activity {
+  id       Int    @id @default(autoincrement())
+  template String // 什么事儿，简单模板，例如：给{{customer.name}}打了一个电话
+  data     String // 模板数据，JSON格式（如果数据库支持的话）e.g { "customer": { "name": "张三"} }
+  action   String // 动作
+  userId   Int    @map("user_id") // 谁
+
+  createdAt DateTime @default(now()) @map("created_at")
+}

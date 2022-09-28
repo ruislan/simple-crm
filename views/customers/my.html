@@ -1,0 +1,204 @@
+{% extends 'layouts/default.html' %}
+{% set title = '客户 - 我负责的' %}
+{% set menuActive = 'customers' %}
+{% block container %}
+<div class="container">
+    <div id="toast"></div>
+    <div class="m-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex align-items-center flex-wrap">
+                <div class="py-1 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
+                <div class="p-1"><select id="city" class="form-select" aria-label="市"></select></div>
+                <div class="p-1">
+                    <select id="stage" class="form-select" aria-label="状态">
+                        <option value="">状态</option>
+                        {% for s in data.stages %}
+                        <option value="{{s.id}}">{{s.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="p-1">
+                    <input type="text" name="keyword" class="form-control" id="keyword" placeholder="名称">
+                </div>
+                <div class="p-1">
+                    <button type="button" id="searchBtn" class="btn btn-dark" onclick="app.search()">搜索</button>
+                </div>
+            </div>
+            <div class="d-flex align-items-center flex-wrap p-1">
+                <button id="refreshBtn" onclick="app.search()"
+                    class="btn btn-dark btn-action d-flex justify-content-center align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise" width="24"
+                        height="24" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                        <path
+                            d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                    </svg>
+                </button>
+                <button id="prevBtn" onclick="app.pageTo('prev')"
+                    class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short"
+                        width="24" height="24" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
+                    </svg>
+                </button>
+                <button id="nextBtn" onclick="app.pageTo('next')"
+                    class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short"
+                        width="24" height="24" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-12 mt-3">
+            <div id="spinner" class="text-center" style="display: none;">
+                <div class="spinner-border" role="status"></div>
+            </div>
+            <div id="table" class="table-responsive"></div>
+            <div id="preview"></div>
+            <div id="confirm"></div>
+        </div>
+    </div>
+</div>
+{% endblock container %}
+{% block script %}
+<script>
+    const app = {
+        data: {
+            tableData: [],
+            limit: 15,
+            skip: 0,
+            count: 0,
+        },
+        async initRegions() {
+            const res = await fetch('/public/regions.json');
+            const regions = await res.json();
+
+            $('#province').empty().append('<option value="">省/直辖市</option>');
+            for (f in regions['0']) {
+                const option = document.createElement('option');
+                option.value = f;
+                option.innerHTML = regions['0'][f];
+                $('#province').append(option);
+            }
+
+            $('#province').change(function () {
+                const city = $('#city');
+                city.empty().append('<option value="">市</option>');
+                const province = $(this).val();
+                if (province) {
+                    const key = 0 + ',' + province;
+                    const cities = regions[key];
+                    for (c in cities) {
+                        city.append(`<option value="${c}">${regions[key][c]}</option>`);
+                    }
+                }
+            }).change();
+        },
+        renderTable() {
+            // clear dom
+            const table = document.getElementById('table');
+            while (table.firstChild) table.removeChild(table.firstChild);
+
+            // render
+            let rows = '';
+            for (const item of this.data.tableData) {
+                let photoHTML = '';
+                for (const photo of item.photos) {
+                    photoHTML += `
+                        <div class="img-preview" onclick="helper.preview('${photo.url}');">
+                            <img class="w-100 h-100" src="${photo.url}" />
+                        </div>
+                    `;
+                }
+                rows += `
+                    <tr id="row-${item.id}">
+                        <td>
+                            <div>${item.name}</div>
+                            <div>${item.phone}</div>
+                        </td>
+                        <td>${item.type}</td>
+                        <td><span class="badge bg-secondary">${item.stage?.name || '未知'}</span></td>
+                        <td>
+                            <div>${item.province}/${item.city}/${item.area}</div>
+                            <div>${item.address}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex">${photoHTML}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-sm btn-dark" href="/customers/${item.id}">详情</a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            const tableHTML = `
+            <table class="table table-bordered table-group-divider table-light">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 150px; min-width: 150px;">客户</th>
+                        <th scope="col" style="width: 100px; min-width: 100px;">类型</th>
+                        <th scope="col" style="width: 150px; min-width: 100px;">状态</th>
+                        <th scope="col" style="width: 200px; min-width: 200px;">地址</th>
+                        <th scope="col" style="width: 150px; min-width: 150px;">图片</th>
+                        <th scope="col" style="width: 150px; min-width: 150px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 14px;">
+                    ${rows}
+                </tbody>
+            </table>
+            `;
+            table.innerHTML = tableHTML;
+        },
+        pageTo(d) {
+            if (d === 'prev') app.data.skip = Math.max(0, app.data.skip - app.data.limit);
+            else app.data.skip = Math.min(app.data.count, app.data.skip + app.data.limit);
+            this.search();
+        },
+        search() {
+            $('#searchBtn').attr('disabled', true);
+            $('#spinner').show();
+
+            const province = $('#province').val();
+            const city = $('#city').val();
+            const keyword = $('#keyword').val();
+            const stageId = $('#stage').val();
+            $.ajax({
+                type: 'get',
+                url: '/customers/search',
+                data: { province, city, keyword, stageId, my: true, skip: app.data.skip, limit: app.data.limit },
+                contentType: 'application/json'
+            }).done(function (result) {
+                const { data, count, skip, limit } = result;
+                app.data.tableData = data;
+                app.data.count = Number(count) || 0;
+                app.data.skip = Number(skip) || 0;
+                app.data.limit = Number(limit) || app.data.limit;
+
+                // setting pagination
+                $('#prevBtn').attr('disabled', app.data.skip === 0)
+                $('#nextBtn').attr('disabled', (app.data.skip + app.data.limit) >= app.data.count);
+
+                app.renderTable();
+            }).always(function () {
+                $('#searchBtn').attr('disabled', false);
+                $('#spinner').hide();
+            });
+        },
+        async onReady() {
+            await this.initRegions();
+            app.search();
+        }
+    };
+
+    $(document).ready(async function () {
+        await app.onReady();
+    })
+</script>
+{% endblock script %}

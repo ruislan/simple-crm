@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SC - {{ title }}</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/public/css/main.css " rel="stylesheet">
+    {% block style %}{% endblock %}
+</head>
+
+<body>
+    <div class="d-flex flex-column vh-100 vw-100">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-lg-2 px-0">
+            <div class="container-xl">
+                <span class="navbar-brand">Simple CRM</span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if menuActive == 'home' else '' }}" href="/">概览</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ 'active' if menuActive == 'customers' else '' }}"
+                                href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">客户</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/customers">未分配的</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="/customers/my">我负责的</a></li>
+                            </ul>
+                        </li>
+                        {% if sessionUser.isAdmin %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ 'active' if menuActive == 'system' else '' }}"
+                                href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                系统
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/system/users">用户</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="/system/dataset">数据收集</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="avatar">
+
+                    </div>
+                    <div class="dropdown" style="cursor: pointer;">
+                        <div class="d-flex align-content-center border-1 border-secondary p-1" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <div class="text-light fw-bold me-2 align-self-center fs-6">{{ sessionUser.name }}</div>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/settings/general">基本信息</a></li>
+                            <li><a class="dropdown-item" href="/settings/password">修改密码</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/logout">登出</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="flex-grow-1">
+            {% block container %}{% endblock %}
+        </div>
+        <div class="footer mt-5 bg-dark py-3 px-lg-2 px-0 d-flex align-content-center">
+            <div class="container-xl text-light">
+                <strong>Rui @2022</strong>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.1/js/bootstrap.bundle.min.js"></script>
+    <script src="/public/js/main.js"></script>
+    {% block script %}{% endblock %}
+</body>
+
+</html>

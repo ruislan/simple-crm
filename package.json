@@ -1,0 +1,43 @@
+{
+  "name": "super-crm",
+  "version": "1.0.0",
+  "author": {
+    "name": "rui",
+    "email": "z17520@126.com"
+  },
+  "main": "server.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start:dev": "NODE_ENV=dev node server.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^8.1.0",
+    "@fastify/formbody": "^7.2.0",
+    "@fastify/session": "^10.0.0",
+    "@fastify/static": "^6.5.0",
+    "@fastify/view": "^7.1.0",
+    "@fastify/websocket": "^7.0.1",
+    "@prisma/client": "^4.3.1",
+    "bcrypt": "^5.0.1",
+    "chalk": "^5.0.1",
+    "dayjs": "^1.11.5",
+    "dotenv": "^16.0.2",
+    "fastify": "^4.6.0",
+    "html-minifier": "^4.0.0",
+    "node-fetch": "^3.2.3",
+    "nunjucks": "^3.2.3",
+    "pino-pretty": "^9.1.0"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.3",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-uglify": "^3.0.2",
+    "gulp-vinyl-zip": "^2.5.0",
+    "prisma": "^4.3.1"
+  }
+}

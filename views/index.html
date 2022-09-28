@@ -1,0 +1,36 @@
+{% extends 'layouts/default.html' %}
+{% set title = '获取商机' %}
+{% block container %}
+<div class="container-xl">
+    <div class="d-flex m-2 p-2 flex-wrap">
+        <div class="statistic">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <div class="h5">员工</div>
+                <div class="h6"></div>
+            </div>
+            <div class="fw-bold fs-2">{{data.count.user}}</div>
+        </div>
+        <div class="statistic">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <div class="h5">客户</div>
+                <div class="h6">未接触</div>
+            </div>
+            <div class="fw-bold fs-2">{{data.count.unLink}}</div>
+        </div>
+        <div class="statistic">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <div class="h5">客户</div>
+                <div class="h6">接触中</div>
+            </div>
+            <div class="fw-bold fs-2">{{data.count.linking}}</div>
+        </div>
+        <div class="statistic">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <div class="h5">客户</div>
+                <div class="h6">已下单</div>
+            </div>
+            <div class="fw-bold fs-2">{{data.count.sold}}</div>
+        </div>
+    </div>
+</div>
+{% endblock container %}

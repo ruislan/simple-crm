@@ -102,7 +102,7 @@ const users = async function (fastify, opts) {
         });
         return reply.view('system/users.html', {
             users,
-            query: req.query,
+            query: { ...req.query, skip, limit },
             pagination: pagination(skip, limit, count)
         });
     });

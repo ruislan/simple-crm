@@ -18,16 +18,44 @@
 <div class="d-flex flex-column">
     <div class="d-flex flex-column">
         <div class="d-flex align-items-center justify-content-between">
-            <form method="get" class="d-flex align-items-center">
+            <form id="searchForm" method="get" class="d-flex align-items-center">
                 <div><input id="queryName" class="form-control" type="search" name="name" value="{{ query.name }}"
                         placeholder="名称" /></div>
                 <div class="ms-1"><button id="queryBtn" class="btn btn-dark" type="submit">搜索</button></div>
             </form>
             <div class="d-flex align-items-center">
-                <div class="btn-toolbar" role="toolbar">
-                    <div class="btn-group ms-2" role="group">
-                        <button type="button" class="btn btn-dark" onclick="app.onNew()">新增</button>
-                    </div>
+                <div class="ms-3 d-flex align-items-center flex-wrap">
+                    <button type="button" class="btn btn-dark" onclick="app.new()">新增</button>
+                </div>
+                <div class="ms-3 d-flex align-items-center flex-wrap">
+                    <button id="toolbarRefresh" onclick="app.search()" data-toggle="tooltip" title="刷新"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                            <path
+                                d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                        </svg>
+                    </button>
+                    <button id="toolbarPrevPage" onclick="app.pageTo('prev')" data-toggle="tooltip" title="上一页" {{ "" if
+                        pagination.hasPrevious else "disabled" }}
+                        class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
+                        </svg>
+                    </button>
+                    <button id="toolbarNextPage" onclick="app.pageTo('next')" data-toggle="tooltip" title="下一页" {{ "" if
+                        pagination.hasNext else "disabled" }}
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -39,7 +67,7 @@
                         <th scope="col">名称</th>
                         <th scope="col">邮箱</th>
                         <th scope="col">电话</th>
-                        <!-- <th scope="col">状态</th> -->
+                        <th scope="col">锁定</th>
                         <th scope="col">操作</th>
                     </tr>
                 </thead>
@@ -50,23 +78,23 @@
                         <td>{{user.name}}</td>
                         <td>{{user.email}}</td>
                         <td>{{user.phone}}</td>
-                        <!-- <td>{{'锁定' if user.locked else '未锁定'}}</td> -->
+                        <td>{{'锁定' if user.isLocked else '未锁定'}}</td>
                         <td>
-                            <div class="">
-                                <!-- {% if not user.locked %}
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="">锁定</button>
-                                    {% else %}
-                                    <button type="button" class="btn btn-sm btn-dark">解锁</button>
-                                    {% endif %} -->
+                            <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark"
-                                    onclick="app.onEdit('{{user.id}}')">编辑</button>
+                                    onclick="app.edit('{{user.id}}')">编辑</button>
+                                {% if not user.locked %}
+                                <button type="button" class="btn btn-sm btn-danger ms-1" onclick="">锁定</button>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-dark ms-1" onclick="">解锁</button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <nav aria-label="Page navigation">
+            <!-- <nav aria-label="Page navigation">
                 <ul class="pagination">
                     {% for thePage in range(1, pagination.totalPage + 1) %}
                     <li class="page-item {{ 'active' if pagination.currentPage == thePage else ''}}">
@@ -80,10 +108,9 @@
                         {% endif%}
                     </li>
                     {% else %}
-                    <!-- nothing -->
                     {% endfor %}
                 </ul>
-            </nav>
+            </nav> -->
         </div>
     </div>
 </div>
@@ -179,12 +206,30 @@
     };
 
     const app = {
-        onNew() {
+        data: {
+            skip: '{{query.skip}}',
+            limit: '{{query.limit}}',
+            count: '{{pagination.count}}'
+        },
+        search() {
+            const form = document.getElementById('searchForm');
+            const formData = new FormData(form);
+            formData.append('skip', app.data.skip);
+            formData.append('limit', app.data.limit);
+            const queryStr = new URLSearchParams(formData).toString();
+            window.location.href = `./users?${queryStr}`;
+        },
+        pageTo(d) {
+            if (d === 'prev') app.data.skip = Math.max(0, app.data.skip - app.data.limit);
+            else app.data.skip = Math.min(app.data.count, app.data.skip + app.data.limit);
+            this.search();
+        },
+        new() {
             editor.title = '新建用户';
             editor.user = {};
             editor.render();
         },
-        onEdit(userId) {
+        edit(userId) {
             $.getJSON(`/system/users/${userId}`)
                 .then((data) => {
                     editor.title = '编辑用户';

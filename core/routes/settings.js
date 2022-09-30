@@ -25,6 +25,10 @@ const settings = async function (fastify, opts) {
     fastify.post('/general', async function (req, reply) {
         const { name, phone, email } = req.body;
         let user = req.session.user;
+        // test whether the name/phone/email is unique
+        if (await this.db.user.count({ where: { name, NOT: { id: user.id } } }) > 0) return reply.view('settings/general.html', { hasError: true, message: '名称已经存在，请更换' });
+        if (await this.db.user.count({ where: { phone, NOT: { id: user.id } } }) > 0) return reply.view('settings/general.html', { hasError: true, message: '电话已经存在，请更换' });
+        if (await this.db.user.count({ where: { email, NOT: { id: user.id } } }) > 0) return reply.view('settings/general.html', { hasError: true, message: '邮箱已经存在，请更换' });
         await this.db.user.update({
             where: { id: user.id },
             data: {

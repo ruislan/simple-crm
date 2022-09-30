@@ -2,9 +2,9 @@
 {% set title = '更换密码' %}
 {% set menuActive = 'settings' %}
 {% block container %}
-<div class="h4 mb-4">设置 - 修改密码</div>
+<div class="h4 mb-4">设置 - 基本信息</div>
 <div class="w-lg-50">
-    <form action="" method="post">
+    <form method="post">
         {% if hasError %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ message }}
@@ -17,14 +17,19 @@
         </div>
         {% endif %}
         <div class="mb-3">
-            <label for="passwordInput" class="form-label">旧密码</label>
-            <input type="password" name="password" class="form-control" id="passwordInput" placeholder=""
-                autocomplete="current-password" required autofocus minlength="3">
+            <label for="nameInput" class="form-label">名称</label>
+            <input type="text" name="name" class="form-control" id="nameInput" value="{{sessionUser.name}}" required
+                autofocus minlength="1">
         </div>
         <div class="mb-3">
-            <label for="newPasswordInput" class="form-label">新密码</label>
-            <input type="password" name="newPassword" class="form-control" id="newPasswordInput" placeholder=""
-                autocomplete="current-password" required minlength="6">
+            <label for="phoneInput" class="form-label">电话</label>
+            <input type="text" name="phone" class="form-control" id="phoneInput" value="{{sessionUser.phone}}" required
+                minlength="3">
+        </div>
+        <div class="mb-3">
+            <label for="emailInput" class="form-label">邮件</label>
+            <input type="email" name="email" class="form-control" id="emailInput" value="{{sessionUser.email}}" required
+                minlength="3">
         </div>
         <button class="btn btn-lg btn-dark" type="submit">保存</button>
     </form>

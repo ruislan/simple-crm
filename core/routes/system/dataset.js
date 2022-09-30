@@ -163,6 +163,10 @@ const fetcherFactory = {
 
                 const polygons = await this.fetchDistrict(city);
                 const polygonList = polygons.split(';').map(gen => gen.split(','));
+                if (!polygonList || polygonList.length === 0) {
+                    if (this.monitor) this.monitor.warn(`高德：城市【${city}】边界获取失败。`);
+                    return;
+                }
                 const list = await new Rectangle(polygonList, this, 50).toRectangleList(keywords);
 
                 if (this.monitor) this.monitor.info(`高德：城市【${city}】边界，共细分成了【${list.length}】个子区域。`);

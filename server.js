@@ -4,7 +4,7 @@ import path from 'path';
 import fastifyStatic from '@fastify/static';
 import prismaPlugin from './plugins/prisma.js';
 import bcryptPlugin from './plugins/bcrypt.js';
-import scService from './core/index.js';
+import coreService from './core/index.js';
 
 const main = async function () {
     dotenv.config();
@@ -22,7 +22,7 @@ const main = async function () {
     await server.register(bcryptPlugin); // global plugin
     await server.register(prismaPlugin); // global plugin
     await server.register(fastifyStatic, { root: path.join(process.cwd(), './public'), prefix: '/public', }); // static service
-    await server.register(scService); // our service
+    await server.register(coreService); // our service
 
     server.ready(() => {
         console.log(server.printPlugins());

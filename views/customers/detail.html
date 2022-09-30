@@ -2,79 +2,77 @@
 {% set title = '客户详情' %}
 {% set menuActive = 'customers' %}
 {% block container %}
-<div class="container">
-    <div class="m-4 row">
-        <div class="col-md-4">
-            <div class="card mb-3" aria-hidden="true">
-                <div class="card-body">
-                    <div class="card-title">
-                        <div class="d-flex align-items-baseline justify-content-between">
-                            <div class="fs-5">{{ data.customer.name }}</div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                        <div class="">
-                            电话: {{ data.customer.phone }}
-                        </div>
-                        <div class="mt-1">
-                            类型: {{ data.customer.type}}
-                        </div>
-                        <div class="mt-1">地区: {{ data.customer.province }} / {{ data.customer.city }} / {{
-                            data.customer.area }}</div>
-                        <div class="mt-1">地址: {{ data.customer.address }}</div>
-                        <div class="mt-1">坐标: {{ data.customer.location }}</div>
-                    </div>
-                    <div class="dropdown mt-3">
-                        <button id="stage" class="dropdown-toggle btn btn-dark w-100" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            {{ data.customer.stage.name }}
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% for s in data.stages %}
-                            <li><span class="dropdown-item" style="cursor: pointer;"
-                                    onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
+<div class="h4 mb-4">客户 - 明细</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-3" aria-hidden="true">
+            <div class="card-body">
+                <div class="card-title">
+                    <div class="d-flex align-items-baseline justify-content-between">
+                        <div class="fs-5">{{ data.customer.name }}</div>
                     </div>
                 </div>
-            </div>
-            <div class="d-flex g-2 flex-wrap">
-                {% for photo in data.customer.photos %}
-                <div class="m-1 border border-1 p-1" style="max-width: 150px;"
-                    onclick="helper.preview('{{photo.url}}')">
-                    <img src="{{photo.url}}" width="100%" />
+                <div class="d-flex flex-column">
+                    <div class="">
+                        电话: {{ data.customer.phone }}
+                    </div>
+                    <div class="mt-1">
+                        类型: {{ data.customer.type}}
+                    </div>
+                    <div class="mt-1">地区: {{ data.customer.province }} / {{ data.customer.city }} / {{
+                        data.customer.area }}</div>
+                    <div class="mt-1">地址: {{ data.customer.address }}</div>
+                    <div class="mt-1">坐标: {{ data.customer.location }}</div>
                 </div>
-                {% endfor %}
+                <div class="dropdown mt-3">
+                    <button id="stage" class="dropdown-toggle btn btn-dark w-100" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        {{ data.customer.stage.name }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% for s in data.stages %}
+                        <li><span class="dropdown-item" style="cursor: pointer;"
+                                onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
-        <div class="col-md-8">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="fs-3 d-flex">联络历史</div>
-                <div class="d-flex align-content-center">
-                    <button class="btn btn-dark" onclick="app.renderNewLinking()">新增</button>
-                    <!-- <button class="btn btn-warning mw-2">转交</button>
-                    <button class="btn btn-danger mw-2">关闭</button> -->
-                </div>
+        <div class="d-flex g-2 flex-wrap">
+            {% for photo in data.customer.photos %}
+            <div class="m-1 border border-1 p-1" style="max-width: 150px;" onclick="helper.preview('{{photo.url}}')">
+                <img src="{{photo.url}}" width="100%" />
             </div>
-            <div id="spinner" class="text-center" style="display: none;">
-                <div class="spinner-border" role="status"></div>
-            </div>
-            <div id="linkingList" class="activity-container"></div>
+            {% endfor %}
         </div>
     </div>
-    <div id="toast"></div>
-    <div id="preview"></div>
-    <div id="confirm"></div>
-    <div id="newLinking"></div>
+    <div class="col-md-8">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="fs-3 d-flex">联络历史</div>
+            <div class="d-flex align-content-center">
+                <button class="btn btn-dark" onclick="app.renderLinkForm()">新增</button>
+                <!-- <button class="btn btn-warning mw-2">转交</button>
+                    <button class="btn btn-danger mw-2">关闭</button> -->
+            </div>
+        </div>
+        <div id="spinner" class="text-center" style="display: none;">
+            <div class="spinner-border" role="status"></div>
+        </div>
+        <div id="linkList" class="activity-container"></div>
+    </div>
 </div>
+<div id="toast"></div>
+<div id="preview"></div>
+<div id="confirm"></div>
+<div id="linkForm"></div>
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
 <script>
     const app = {
         data: {
-            linkingList: [],
+            linkList: [],
             typeMap: {
                 '微信': `
                 <div style="width: 48px; height: 48px; padding: 4px;" class="text-bg-success rounded">
@@ -100,14 +98,12 @@
                 `,
             }
         },
-        renderList() {
+        renderLinkList() {
             // XXX show loading?
-            // clear dom
-            const list = document.getElementById('linkingList');
+            const list = document.getElementById('linkList');
             while (list.firstChild) list.removeChild(list.firstChild);
-            // render
             let html = '';
-            for (const item of this.data.linkingList) {
+            for (const item of this.data.linkList) {
                 html += `
                 <div class="p-3 border border-1 border-dark border-opacity-25 rounded mb-3">
                     <div class="d-flex flex-column">
@@ -119,7 +115,7 @@
                                     <div class="text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                                 </div>
                             </div>
-                            ${this.data.typeMap[item.type.name]}
+                            ${this.data.typeMap[item.type.name] || item.type.name}
                         </div>
                         <div class="paragraph mb-1">
                             ${item.content}
@@ -132,7 +128,7 @@
         },
         changeStage(stageId, stageName) {
             $.ajax({
-                type: 'post',
+                type: 'put',
                 url: `/customers/{{data.customer.id}}/stage`,
                 data: { stageId },
             }).done(function (result) {
@@ -140,22 +136,26 @@
                 helper.toast('success', '操作成功');
             });
         },
-        loadLinkingList() {
+        loadLinkList() {
             $('#spinner').show();
             $.ajax({
                 type: 'get',
-                url: `/customers/{{data.customer.id}}/linking`,
+                url: `/customers/{{data.customer.id}}/links`,
+                statusCode: { 401: () => window.location.href = '/login', }
             }).done(function (result) {
                 const { data } = result;
-                app.data.linkingList = data;
-                app.renderList();
+                app.data.linkList = data;
+                app.renderLinkList();
             }).always(function () {
                 $('#spinner').hide();
             });
         },
-        renderNewLinking() {
-            // load types
-            $.getJSON('/linking/types').done(function (result) {
+        renderLinkForm() {
+            $.ajax({
+                type: 'get',
+                url: '/links/types',
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
                 const { data } = result;
                 let optionsHTML = '';
                 for (let i = 0; i < data.length; i++) {
@@ -163,7 +163,7 @@
                     optionsHTML += `<option ${i == 0 ? 'selected' : ''} value="${option.id}">${option.name}</option>`;
                 }
                 // show modal
-                const modal = document.getElementById('newLinking');
+                const modal = document.getElementById('linkForm');
                 modal.innerHTML = `
                 <div class="modal fade" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
@@ -173,53 +173,54 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="linkingForm" name="linkingForm">
+                                <form id="linkForm" name="linkForm">
                                     <div class="mb-3">
-                                        <label for="linkingType" class="form-label">方式</label>
-                                        <select class="form-select" id="linkingType">
+                                        <label for="linkType" class="form-label">方式</label>
+                                        <select class="form-select" id="linkType">
                                             ${optionsHTML}
                                         </select>
                                     </div>                       
                                     <div class="mb-3">
-                                        <label for="linkingSubject" class="form-label">主题</label>
-                                        <input type="text" class="form-control" id="linkingSubject" aria-describedby="emailHelp">
+                                        <label for="linkSubject" class="form-label">主题</label>
+                                        <input type="text" class="form-control" id="linkSubject" aria-describedby="emailHelp">
                                     </div>
                                     <div>
-                                        <label for="linkingContent" class="form-label">内容</label>
-                                        <textarea class="form-control" id="linkingContent" rows="3"></textarea>
+                                        <label for="linkContent" class="form-label">内容</label>
+                                        <textarea class="form-control" id="linkContent" rows="3"></textarea>
                                     </div>                                                                                     
                                 </form>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                <button type="button" class="btn btn-primary" onclick="app.newLiking()">保存</button>
+                                <button type="button" class="btn btn-dark" onclick="app.newLink()">保存</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 `;
-                $('#newLinking .modal').modal('show');
+                $('#linkForm .modal').modal('show');
             });
         },
-        newLiking() {
+        newLink() {
             const data = {
-                subject: $('#linkingForm #linkingSubject').val() || '',
-                content: $('#linkingForm #linkingContent').val() || '',
-                typeId: $('#linkingForm #linkingType').val() || '',
+                subject: $('#linkForm #linkSubject').val() || '',
+                content: $('#linkForm #linkContent').val() || '',
+                typeId: $('#linkForm #linkType').val() || '',
             };
             $.ajax({
                 type: 'post',
-                url: `/customers/{{data.customer.id}}/linking`,
+                url: `/customers/{{data.customer.id}}/links`,
                 data,
+                statusCode: { 401: () => window.location.href = '/login', }
             }).done(function () {
                 helper.toast('success', '添加成功');
             }).always(function () {
-                app.loadLinkingList();
-                $('#newLinking .modal').modal('hide');
+                app.loadLinkList();
+                $('#linkForm .modal').modal('hide');
             });
         },
         onReady() {
-            this.loadLinkingList();
+            this.loadLinkList();
         }
     };
 

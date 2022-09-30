@@ -1,15 +1,29 @@
 import fs from 'fs';
+import constants from '../lib/constants.js';
 
 const regions = JSON.parse(fs.readFileSync('./public/regions.json'));
 
 const customers = async function (fastify, opts) {
-    fastify.post('/:id/delete', async (req, reply) => {
+    // 修改
+    fastify.put('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        // only admin can delete
+        const { name, phone } = req.body;
+        // only admin can edit
         if (!req.session.user.isAdmin) return reply.code(403).send();
-        const deleteRefPhotos = fastify.db.photo.deleteMany({ where: { customerId: id } });
-        const deleteCustomer = fastify.db.customer.delete({ where: { id } });
-        await fastify.db.$transaction([deleteRefPhotos, deleteCustomer]);
+        await fastify.db.customer.update({ where: { id }, data: { name, phone } });
+        return reply.code(200).send();
+    });
+    // 删除
+    fastify.delete('/', async (req, reply) => {
+        let { ids } = req.body || { ids: [] };
+        if (ids && ids.length > 0) {
+            ids = ids.map(id => Number(id)).filter(id => id);
+            // only admin can delete
+            if (!req.session.user.isAdmin) return reply.code(403).send();
+            const deleteRefPhotos = fastify.db.photo.deleteMany({ where: { customerId: { in: ids } } });
+            const deleteCustomer = fastify.db.customer.deleteMany({ where: { id: { in: ids } } });
+            await fastify.db.$transaction([deleteRefPhotos, deleteCustomer]);
+        }
         return reply.code(200).send();
     });
 
@@ -28,7 +42,7 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
-    fastify.post('/:id/link', async (req, reply) => {
+    fastify.post('/:id/links', async (req, reply) => {
         const id = Number(req.params.id || 0);
         let { subject, content, typeId } = req.body;
         const customer = await fastify.db.customer.findUnique({ where: { id } });
@@ -36,7 +50,7 @@ const customers = async function (fastify, opts) {
         // admin can add any
         // others can only do it which were assigned to them
         if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.linking.create({
+        await fastify.db.link.create({
             data: {
                 subject,
                 content,
@@ -48,14 +62,14 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
-    fastify.get('/:id/link', async (req, reply) => {
+    fastify.get('/:id/links', async (req, reply) => {
         const id = Number(req.params.id || 0);
         let data = [];
         const customer = await fastify.db.customer.findUnique({ where: { id } });
         // admin can view all
         // others can only view the customers which were assigned to them
         if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
-            data = await fastify.db.linking.findMany({
+            data = await fastify.db.link.findMany({
                 where: { customerId: customer.id, },
                 include: {
                     type: true,
@@ -86,12 +100,16 @@ const customers = async function (fastify, opts) {
         return reply.view('customers/detail.html', { data: { customer, stages } });
     });
 
-    fastify.post('/:id/acquire', async (req, reply) => {
-        const id = Number(req.params.id || 0);
-        await fastify.db.customer.update({
-            where: { id },
-            data: { userId: req.session.user.id, stageId: 1 }
-        });
+    // 认领
+    fastify.post('/acquire', async (req, reply) => {
+        let { ids } = req.body || { ids: [] };
+        if (ids && ids.length > 0) {
+            ids = ids.map(id => Number(id)).filter(id => id);
+            await fastify.db.customer.updateMany({
+                where: { id: { in: ids } },
+                data: { userId: req.session.user.id, stageId: 1 } // XXX: magic number
+            });
+        }
         return reply.code(200).send();
     });
 
@@ -107,8 +125,8 @@ const customers = async function (fastify, opts) {
         let { keyword, province, city, skip, stageId, limit, my } = req.query;
         const provinceText = province ? regions['0'][province] : null;
         const cityText = city ? regions[`0,${province}`][city] : null;
-        skip = Number(skip) || 0;
-        limit = Number(limit) || 15;
+        skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
+        limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
         my = Boolean(my) || false;
         stageId = Number(stageId) || null;
         // process

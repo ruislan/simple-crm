@@ -13,12 +13,13 @@ model User {
   password  String
   phone     String   @unique
   email     String   @unique
-  isAdmin   Boolean  @default(false)
+  isAdmin   Boolean  @default(false) @map("is_admin")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // ref
   loginHistory UserLoginHistory[]
+  Link         Link[]
 }
 
 // 登陆历史（最长90天？）
@@ -100,6 +101,7 @@ model Link {
   subject    String
   content    String
   userId     Int      @map("user_id") // 接触执行人
+  user       User     @relation(fields: [userId], references: [id])
   customerId Int      @map("customer_id") // 接触客户
   typeId     Int      @map("type_id") // 接触类别
   type       LinkType @relation(fields: [typeId], references: [id])

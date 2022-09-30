@@ -55,16 +55,20 @@ const fetcherFactory = {
                 const url = `https://api.map.baidu.com/place/v2/search?query=${keywords}&region=${region}&output=json&ak=${this.key}&page_size=${this.pageSize}`;
                 let count = 0;
                 for (let pageNum = 0; pageNum < 100; pageNum++) {
-                    let res = await fetch(`${url}&page_num=${pageNum}`, {});
-                    if (res.ok) {
-                        const json = await res.json();
-                        if (json.total == 0) break; // 没有数据就不处理了。
-                        const pois = this.transform(json.results || []);
-                        if (this.monitor) this.monitor.info(`百度：关键词【${keywords}】，第 ${pageNum + 1} 页，共计 ${pois.length} 条`);
-                        dataSet.collect(pois);
-                        count += pois.length;
-                    } else {
-                        if (this.monitor) this.monitor.error(`百度：请求失败，状态码：${res.status}`);
+                    try {
+                        let res = await fetch(`${url}&page_num=${pageNum}`, {});
+                        if (res.ok) {
+                            const json = await res.json();
+                            if (json.total == 0) break; // 没有数据就不处理了。
+                            const pois = this.transform(json.results || []);
+                            if (this.monitor) this.monitor.info(`百度：关键词【${keywords}】，第 ${pageNum + 1} 页，共计 ${pois.length} 条`);
+                            dataSet.collect(pois);
+                            count += pois.length;
+                        } else {
+                            if (this.monitor) this.monitor.error(`百度：请求失败，状态码：${res.status}`);
+                        }
+                    } catch (e) {
+                        if (this.monitor) this.monitor.warn(e);
                     }
                 }
                 if (this.monitor) this.monitor.info(`百度：地区【${region}】，关键字【${keywords}】处理完成，处理了 ${count} 条数据`);
@@ -83,7 +87,7 @@ const fetcherFactory = {
                         area: poi.area,
                         address: poi.address,
                         location: `${poi.location?.lat || '-'} , ${poi.location?.lng || '-'}`,
-                        channel: 'baidu',
+                        source: 'baidu',
                         photos: [],
                     });
                 }
@@ -107,15 +111,19 @@ const fetcherFactory = {
                 let count = 0;
                 for (let pageNum = 1; pageNum <= 100; pageNum++) {
                     let res = await fetch(`${url}&page=${pageNum}`, {});
-                    if (res.ok) {
-                        const json = await res.json();
-                        if (json.count == 0) break; // 没有数据就不处理了。
-                        const pois = this.transform(json.pois, city);
-                        if (this.monitor) this.monitor.info(`高德：关键词【${keywords}】，第 ${pageNum} 页，共计 ${pois.length} 条`);
-                        dataSet.collect(pois);
-                        count += pois.length;
-                    } else {
-                        if (this.monitor) this.monitor.error(`高德：请求失败，状态码：${res.status}`);
+                    try {
+                        if (res.ok) {
+                            const json = await res.json();
+                            if (json.count == 0) break; // 没有数据就不处理了。
+                            const pois = this.transform(json.pois, city);
+                            if (this.monitor) this.monitor.info(`高德：关键词【${keywords}】，第 ${pageNum} 页，共计 ${pois.length} 条`);
+                            dataSet.collect(pois);
+                            count += pois.length;
+                        } else {
+                            if (this.monitor) this.monitor.error(`高德：请求失败，状态码：${res.status}`);
+                        }
+                    } catch (e) {
+                        if (this.monitor) this.monitor.warn(e);
                     }
                 }
                 if (this.monitor) this.monitor.info(`高德：关键字【keywords】处理完成，处理了 ${count} 条数据`);
@@ -140,10 +148,9 @@ const fetcherFactory = {
                         province: poi.pname?.toString(),
                         city: poi.cityname?.toString(),
                         area: poi.adname?.toString(),
-                        // region: `${poi.pname}/${poi.cityname}/${poi.adname}`,
                         address: poi.address?.toString(),
                         location: poi.location?.toString(),
-                        channel: 'gaode',
+                        source: 'gaode',
                         photos,
                     });
                 }
@@ -164,16 +171,20 @@ const fetcherFactory = {
                 for (const rect of list) {
                     const pathString = rect.getPathString();
                     for (let pageNum = 1; pageNum <= 100; pageNum++) {
-                        const res = await fetch(`${url}&polygon=${pathString}&page=${pageNum}`, {});
-                        if (res.ok) {
-                            const json = await res.json();
-                            if (json.count == 0) break; // 没有数据就不处理了。
-                            if (this.monitor) this.monitor.info(`高德：关键词【${keywords}】，第 ${pageNum} 页，共计 ${json.count} 条`);
-                            const pois = this.transform(json.pois, city);
-                            dataSet.collect(pois);
-                            count += Number(json.count);
-                        } else {
-                            if (this.monitor) this.monitor.error(`高德：请求失败，状态码：${res.status}`);
+                        try {
+                            const res = await fetch(`${url}&polygon=${pathString}&page=${pageNum}`, {});
+                            if (res.ok) {
+                                const json = await res.json();
+                                if (json.count == 0) break; // 没有数据就不处理了。
+                                if (this.monitor) this.monitor.info(`高德：关键词【${keywords}】，第 ${pageNum} 页，共计 ${json.count} 条`);
+                                const pois = this.transform(json.pois, city);
+                                dataSet.collect(pois);
+                                count += Number(json.count);
+                            } else {
+                                if (this.monitor) this.monitor.error(`高德：请求失败，状态码：${res.status}`);
+                            }
+                        } catch (e) {
+                            if (this.monitor) this.monitor.warn(e);
                         }
                     }
                 }
@@ -290,11 +301,11 @@ class Rectangle {
 }
 
 const fetchData = async function (monitor, data) {
-    let { keyword, province, city, channels } = data;
+    let { keyword, province, city, sources } = data;
     const cityText = regions[`0,${province}`][city] || '全国';
     const keywords = (keyword?.split('/') || []).join('|');
-    const hasBaidu = channels?.includes('baidu') || false;
-    const hasGaode = channels?.includes('gaode') || false;
+    const hasBaidu = sources?.includes('baidu') || false;
+    const hasGaode = sources?.includes('gaode') || false;
 
     // process collect
     const params = { keywords, city: cityText, district: '' };
@@ -343,7 +354,6 @@ const saveData = async function (db, monitor, data) {
         beforeCount = await db.customer.count();
         for (const item of data) {
             // 将id设置成频道对象id，这里的id是我们的id
-            item.channelObjectId = item.id;
             item.id = undefined;
             item.photos = { create: item.photos };
 

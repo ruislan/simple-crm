@@ -2,56 +2,94 @@
 {% set title = '客户 - 未分配的' %}
 {% set menuActive = 'customers' %}
 {% block container %}
-<div class="container">
-    <div id="toast"></div>
-    <div class="m-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div class="d-flex align-items-center flex-wrap">
-                <div class="py-1 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
-                <div class="p-1"><select id="city" class="form-select" aria-label="市"></select></div>
-                <div class="p-1"><input type="text" name="keyword" class="form-control" id="keyword" placeholder="名称">
-                </div>
-                <div class="p-1"><button type="button" id="searchBtn" class="btn btn-dark"
-                        onclick="app.search()">搜索</button></div>
-            </div>
-            <div class="d-flex align-items-center flex-wrap">
-                <button id="refreshBtn" onclick="app.search()"
-                    class="btn btn-dark btn-action d-flex justify-content-center align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise" width="24"
-                        height="24" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
-                        <path
-                            d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-                    </svg>
-                </button>
-                <button id="prevBtn" onclick="app.pageTo('prev')"
-                    class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short"
-                        width="24" height="24" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                            d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
-                    </svg>
-                </button>
-                <button id="nextBtn" onclick="app.pageTo('next')"
-                    class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short"
-                        width="24" height="24" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                            d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
-                    </svg>
-                </button>
-            </div>
+<div class="h4 mb-4">客户 - 未分配的</div>
+<div class="d-flex justify-content-between align-items-center flex-wrap">
+    <div class="d-flex align-items-center flex-wrap">
+        <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
+        <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
+        <div class="pb-2 pb-lg-0 pe-1"><input type="text" name="keyword" class="form-control" id="keyword"
+                placeholder="名称">
         </div>
-        <div class="mt-3">
-            <div id="spinner" class="text-center" style="display: none;">
-                <div class="spinner-border" role="status"></div>
-            </div>
-            <div id="table" class="table-responsive"></div>
-            <div id="preview"></div>
-            <div id="confirm"></div>
+        <div class="pb-2 pb-lg-0 pe-1"><button type="button" id="searchBtn" class="btn btn-dark"
+                onclick="app.search()">搜索</button></div>
+    </div>
+    <div class="d-flex align-items-center flex-wrap">
+        <div class="d-flex align-items-center flex-wrap">
+            {% if sessionUser.isAdmin %}
+            <button id="toolbarNew"
+                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
+                onclick="app.new()" data-toggle="tooltip" title="新增客户">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                    class="bi bi-person-plus" viewBox="0 0 16 16">
+                    <path
+                        d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                    <path fill-rule="evenodd"
+                        d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                </svg>
+            </button>
+            {% endif %}
+        </div>
+        <div class="d-flex align-items-center flex-wrap ms-3">
+            <button id="toolbarAquire" class="btn btn-dark btn-action d-flex justify-content-center align-items-center"
+                onclick="app.acquire()" data-toggle="tooltip" title="批量认领">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-save"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
+                </svg>
+            </button>
+            {% if sessionUser.isAdmin %}
+            <button id="toolbarDelete"
+                class="btn btn-danger btn-action ms-1 d-flex justify-content-center align-items-center"
+                onclick="app.delete()" data-toggle="tooltip" title="批量删除">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                    <path fill-rule="evenodd"
+                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                </svg>
+            </button>
+            {% endif %}
+        </div>
+        <div class="ms-3 d-flex align-items-center flex-wrap">
+            <button id="toolbarRefresh" onclick="app.search()" data-toggle="tooltip" title="刷新"
+                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise" width="24"
+                    height="24" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                    <path
+                        d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                </svg>
+            </button>
+            <button id="toolbarPrevPage" onclick="app.pageTo('prev')" data-toggle="tooltip" title="上一页"
+                class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short" width="24"
+                    height="24" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
+                </svg>
+            </button>
+            <button id="toolbarNextPage" onclick="app.pageTo('next')" data-toggle="tooltip" title="下一页"
+                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short" width="24"
+                    height="24" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                </svg>
+            </button>
         </div>
     </div>
 </div>
+<div class="mt-3">
+    <div id="spinner" class="text-center" style="display: none;">
+        <div class="spinner-border" role="status"></div>
+    </div>
+    <div id="table" class="table-responsive"></div>
+    <div id="preview"></div>
+    <div id="confirm"></div>
+</div>
+<div id="toast"></div>
 {% endblock container %}
 {% block script %}
 <script>
@@ -85,15 +123,88 @@
                 }
             }).change();
         },
+        new() {
+            const formModal = document.createElement('div');
+            formModal.id = 'newCustomerForm';
+            formModal.className = 'modal fade';
+            formModal.setAttribute('aria-hidden', 'true');
+            formModal.setAttribute('tabindex', '-1');
+            formModal.setAttribute('data-bs-backdrop', 'static');
+            formModal.innerHTML = `
+
+            `;
+        },
+        edit(idx) {
+            const item = this.data.tableData[idx];
+            if (item) {
+                const editor = document.createElement('div');
+                editor.id = 'editor';
+                editor.className = 'modal fade';
+                editor.setAttribute('aria-hidden', 'true');
+                editor.setAttribute('tabindex', '-1');
+                editor.setAttribute('data-bs-backdrop', 'static');
+                editor.addEventListener('hidden.bs.modal', () => document.body.removeChild(editor));
+                document.body.appendChild(editor);                
+                editor.innerHTML = `
+                    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">编辑</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex flex-column">
+                                    <div class="mb-3 row">
+                                        <label for="inputName" class="col-sm-2 col-form-label">名称</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="inputName" value="${item.name || ''}">
+                                        </div>
+                                    </div>        
+                                    <div class="mb-3 row">
+                                        <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="inputPhone" value="${item.phone || ''}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                <button type="button" class="btn btn-dark">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#editor .btn-dark').click(() => {
+                    const name = $('#editor #inputName').val();
+                    const phone = $('#editor #inputPhone').val();
+                    $.ajax({
+                        type: 'put',
+                        data: { name, phone },
+                        url: `/customers/${item.id}`
+                    }).done(function () {
+                        item.name = name;
+                        item.phone = phone;
+                        helper.toast('success', '操作成功');
+                    }).always(function () {
+                        $('#editor').modal('hide');
+                        app.renderTable();
+                    });
+                });
+                $('#editor').modal('show');
+            }
+        },
         delete(id, name) {
-            helper.confirm(`确定删除这个客户(${name})吗？这是一个不可逆操作！`, function () {
+            let tips = (id ? `确定删除这个客户(${name})吗？` : '确定批量删除吗？') + '这是一个不可逆操作！';
+            helper.confirm(tips, function () {
+                const ids = id ? [id] : app.data.tableData.filter(item => item._checked).map(item => item.id);
                 $.ajax({
-                    url: `/customers/${id}/delete`,
-                    type: 'post',
+                    url: `/customers`,
+                    type: 'delete',
+                    data: JSON.stringify({ ids }),
+                    contentType: 'application/json'
                 }).done(function () {
-                    const tr = document.getElementById(`row-${id}`);
-                    const parent = tr.parentElement;
-                    parent.removeChild(tr);
+                    app.search(); // search new list
                     helper.toast('success', '操作成功');
                 }).always(function () {
                     const confirm = document.getElementById('confirm');
@@ -103,14 +214,16 @@
             });
         },
         acquire(id, name) {
-            helper.confirm(`确定认领这个客户(${name})吗？`, function () {
+            let tips = id ? `确定认领这个客户(${name})吗？` : '确定批量认领吗？';
+            helper.confirm(tips, function () {
+                const ids = id ? [id] : app.data.tableData.filter(item => item._checked).map(item => item.id);
                 $.ajax({
-                    url: `/customers/${id}/acquire`,
+                    url: `/customers/acquire`,
                     type: 'post',
+                    data: JSON.stringify({ ids }),
+                    contentType: 'application/json'
                 }).done(function () {
-                    const tr = document.getElementById(`row-${id}`);
-                    const parent = tr.parentElement;
-                    parent.removeChild(tr);
+                    app.search(); // search new list
                     helper.toast('success', '认领成功');
                 }).always(function () {
                     const confirm = document.getElementById('confirm');
@@ -126,7 +239,8 @@
 
             // render
             let rows = '';
-            for (const item of this.data.tableData) {
+            for (let i = 0; i < this.data.tableData.length; i++) {
+                const item = this.data.tableData[i];
                 let photoHTML = '';
                 for (const photo of item.photos) {
                     photoHTML += `
@@ -137,23 +251,25 @@
                 }
                 rows += `
                     <tr id="row-${item.id}">
+                        <td><input class="form-check-input m-0 align-middle" type="checkbox"></td>
                         <td>
                             <div>${item.name}</div>
                             <div>${item.phone}</div>
                         </td>
+                        <td>
+                            <div class="d-flex">${photoHTML}</div>
+                        </td>                        
                         <td>${item.type}</td>
                         <td>
                             <div>${item.province}/${item.city}/${item.area}</div>
                             <div>${item.address}</div>
                         </td>
                         <td>
-                            <div class="d-flex">${photoHTML}</div>
-                        </td>
-                        <td>
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark" onclick="app.acquire('${item.id}', '${item.name}')">认领</button>
-                                {% if sessionUser.role === 'admin' %}
-                                <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.delete('${item.id}', '${item.name}')">丢弃</button>
+                                {% if sessionUser.isAdmin %}
+                                <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit(${i})">修改</button>
+                                <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.delete('${item.id}', '${item.name}')">删除</button>
                                 {% endif %}
                             </div>
                         </td>
@@ -164,12 +280,13 @@
             const tableHTML = `
             <table class="table table-bordered table-group-divider table-light">
                 <thead>
-                    <tr>                        
-                        <th scope="col" style="width: 150px; min-width: 150px;">客户</th>
-                        <th scope="col" style="width: 100px; min-width: 100px;">类型</th>
-                        <th scope="col" style="width: 200px; min-width: 200px;">地址</th>
-                        <th scope="col" style="width: 150px; min-width: 150px;">图片</th>
-                        <th scope="col" style="width: 150px; min-width: 150px;">操作</th>
+                    <tr>
+                        <th scope="col"><input class="form-check-input m-0 align-middle" type="checkbox"></th>
+                        <th scope="col">客户</th>
+                        <th scope="col">图片</th>
+                        <th scope="col">类型</th>
+                        <th scope="col">地址</th>
+                        <th scope="col" style="width: 180px; min-width: 180px;">操作</th>
                     </tr>
                 </thead>
                 <tbody style="font-size: 14px;">
@@ -178,6 +295,21 @@
             </table>
             `;
             table.innerHTML = tableHTML;
+            $('#table td .form-check-input').each((i, el) => {
+                el.addEventListener('change', () => {
+                    app.data.tableData[i]._checked = el.checked;
+                    const isSemi = app.data.tableData.findIndex(item => !!item._checked != el.checked) > -1;
+                    $('#table th .form-check-input').attr('semi', isSemi ? '1' : '0')[0].indeterminate = isSemi;
+                });
+            });
+            $('#table th .form-check-input').click(function () {
+                let checked = this.checked;
+                if (this.getAttribute('semi') !== '0') checked = true;
+                this.checked = checked;
+                this.setAttribute('semi', '0');
+                app.data.tableData.forEach(item => item._checked = checked);
+                $('#table td .form-check-input').prop('checked', checked).change();
+            });
         },
         pageTo(d) {
             if (d === 'prev') app.data.skip = Math.max(0, app.data.skip - app.data.limit);
@@ -204,17 +336,14 @@
                 app.data.limit = Number(limit) || app.data.limit;
 
                 // setting pagination
-                $('#prevBtn').attr('disabled', app.data.skip === 0)
-                $('#nextBtn').attr('disabled', (app.data.skip + app.data.limit) >= app.data.count);
+                $('#toolbarPrevPage').attr('disabled', app.data.skip === 0)
+                $('#toolbarNextPage').attr('disabled', (app.data.skip + app.data.limit) >= app.data.count);
 
                 app.renderTable();
             }).always(function () {
                 $('#searchBtn').attr('disabled', false);
                 $('#spinner').hide();
             });
-        },
-        exportExcel() {
-
         },
         async onReady() {
             await this.initRegions();

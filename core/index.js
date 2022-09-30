@@ -11,7 +11,7 @@ import customers from './routes/customers.js';
 import home from './routes/home.js';
 import settings from './routes/settings.js';
 import system from './routes/system/index.js';
-import linking from './routes/link.js';
+import links from './routes/links.js';
 
 const scService = async function (fastify, opts) {
     await fastify.register(fastifyView, {
@@ -52,8 +52,8 @@ const scService = async function (fastify, opts) {
     await fastify.register(home, { prefix: '/' });
     await fastify.register(customers, { prefix: '/customers' });
     await fastify.register(settings, { prefix: '/settings' });
+    await fastify.register(links, { prefix: '/links' });
     await fastify.register(system, { prefix: '/system' });
-    await fastify.register(linking, { prefix: '/linking' });
 };
 
 export default scService;

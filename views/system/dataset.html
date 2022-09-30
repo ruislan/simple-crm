@@ -3,76 +3,68 @@
 {% set title = '数据收集' %}
 {% set menuActive = 'system' %}
 {% block container %}
-<div class="container">
-    <div class="m-4">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="row g-3">
-                    <div class="col-auto">
-                        <select id="province" class="form-select" aria-label="省/直辖市"></select>
+<div class="h4 mb-4">系统 - 数据收集</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="row g-3">
+            <div class="col-auto">
+                <select id="province" class="form-select" aria-label="省/直辖市"></select>
+            </div>
+            <div class="col-auto">
+                <select id="city" class="form-select" aria-label="市"></select>
+            </div>
+            <div class="col-auto" style="min-width: 300px;">
+                <label for="keyword" class="visually-hidden">关键词</label>
+                <input type="text" name="keyword" class="form-control" id="keyword" placeholder="例如：冻品">
+            </div>
+            <div class="col-auto">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="sourceGaode" value="gaode" checked>
+                    <label class="form-check-label" for="sourceGaode">数据来源1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="sourceBaidu" value="baidu" checked>
+                    <label class="form-check-label" for="sourceBaidu">数据来源2</label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-dark mb-3" onclick="app.onClickCollect()">收集</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="alert-info" class="alert alert-info" role="alert" style="display: none;">
+    <span id="alert-info-message"></span>
+</div>
+<div class="col-md-12 mt-2 invisible" id="process">
+    <div class="d-flex">
+        <div class="d-flex flex-column border border-dark rounded p-3 w-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="d-flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-alarm" viewBox="0 0 16 16">
+                            <path
+                                d="M8.5 5.5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5z" />
+                            <path
+                                d="M6.5 0a.5.5 0 0 0 0 1H7v1.07a7.001 7.001 0 0 0-3.273 12.474l-.602.602a.5.5 0 0 0 .707.708l.746-.746A6.97 6.97 0 0 0 8 16a6.97 6.97 0 0 0 3.422-.892l.746.746a.5.5 0 0 0 .707-.708l-.601-.602A7.001 7.001 0 0 0 9 2.07V1h.5a.5.5 0 0 0 0-1h-3zm1.038 3.018a6.093 6.093 0 0 1 .924 0 6 6 0 1 1-.924 0zM0 3.5c0 .753.333 1.429.86 1.887A8.035 8.035 0 0 1 4.387 1.86 2.5 2.5 0 0 0 0 3.5zM13.5 1c-.753 0-1.429.333-1.887.86a8.035 8.035 0 0 1 3.527 3.527A2.5 2.5 0 0 0 13.5 1z" />
+                        </svg>
                     </div>
-                    <div class="col-auto">
-                        <select id="city" class="form-select" aria-label="市"></select>
-                    </div>
-                    <!-- <div class="col-auto">
-                        <select id="district" class="form-select" aria-label="区/县"></select>
-                    </div> -->
-                    <div class="col-auto" style="min-width: 300px;">
-                        <label for="keyword" class="visually-hidden">关键词</label>
-                        <input type="text" name="keyword" class="form-control" id="keyword"
-                            placeholder="关键词1/关键词2/关键词3">
-                    </div>
-                    <div class="col-auto">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="channelGaode" value="gaode" checked>
-                            <label class="form-check-label" for="channelGaode">数据来源1</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="channelBaidu" value="baidu" checked>
-                            <label class="form-check-label" for="channelBaidu">数据来源2</label>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" id="collectBtn" class="btn btn-dark mb-3">收集</button>
+                    <div id="timer" class="d-flex ms-1"></div>
+                </div>
+                <div>
+                    <div id="spinner" class="text-center">
+                        <div class="spinner-border" style="width: 24px; height: 24px;" role="status"></div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="alert-info" class="alert alert-info" role="alert" style="display: none;">
-            <span id="alert-info-message"></span>
-        </div>
-        <div class="col-md-12 mt-2 invisible" id="process">
-            <div class="d-flex">
-                <div class="d-flex flex-column border border-dark rounded p-3 w-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="d-flex">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-alarm" viewBox="0 0 16 16">
-                                    <path
-                                        d="M8.5 5.5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5z" />
-                                    <path
-                                        d="M6.5 0a.5.5 0 0 0 0 1H7v1.07a7.001 7.001 0 0 0-3.273 12.474l-.602.602a.5.5 0 0 0 .707.708l.746-.746A6.97 6.97 0 0 0 8 16a6.97 6.97 0 0 0 3.422-.892l.746.746a.5.5 0 0 0 .707-.708l-.601-.602A7.001 7.001 0 0 0 9 2.07V1h.5a.5.5 0 0 0 0-1h-3zm1.038 3.018a6.093 6.093 0 0 1 .924 0 6 6 0 1 1-.924 0zM0 3.5c0 .753.333 1.429.86 1.887A8.035 8.035 0 0 1 4.387 1.86 2.5 2.5 0 0 0 0 3.5zM13.5 1c-.753 0-1.429.333-1.887.86a8.035 8.035 0 0 1 3.527 3.527A2.5 2.5 0 0 0 13.5 1z" />
-                                </svg>
-                            </div>
-                            <div id="timer" class="d-flex ms-1"></div>
-                        </div>
-                        <div>
-                            <div id="spinner" class="text-center">
-                                <div class="spinner-border" style="width: 24px; height: 24px;" role="status"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="terminal" class="d-flex flex-column w-100 mt-3 border p-2"
-                        style="height: 400px; max-height: 400px; overflow-y: auto;">
-                    </div>
-                    <div class="d-flex w-100 mt-3">
-                        <div class="progress w-100">
-                            <div id="progressBar" class="progress-bar" role="progressbar"
-                                aria-label="Example with label" aria-valuenow="25" aria-valuemin="0"
-                                aria-valuemax="100"></div>
-                        </div>
-                    </div>
+            <div id="terminal" class="d-flex flex-column w-100 mt-3 border p-2"
+                style="height: 400px; max-height: 400px; overflow-y: auto;">
+            </div>
+            <div class="d-flex w-100 mt-3">
+                <div class="progress w-100">
+                    <div id="progressBar" class="progress-bar" role="progressbar" aria-label="Example with label"
+                        aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -81,138 +73,135 @@
 {% endblock container %}
 {% block script %}
 <script>
-    const mvc = {
-        model: {
+    const app = {
+        data: {
             interval: undefined,
             regions: {},
         },
-        controller: {
-            setInfo: async function (message) {
-                if (!message || message === '') {
-                    $('#alert-info').hide();
-                    $('#alert-info-message').text('');
-                } else {
-                    $('#alert-info').show();
-                    $('#alert-info-message').text(message);
-                }
-            },
-            setLoading: function (isLoading) {
-                if (isLoading) {
-                    let seconds = 0;
-                    $('#spinner').show()
-                    mvc.model.interval = setInterval(() => {
-                        seconds += 1;
-                        document.getElementById('timer').textContent = `${seconds}秒`;
-                    }, 1000);
-                } else {
-                    $('#spinner').hide();
-                    clearInterval(mvc.model.interval);
-                    mvc.model.interval = undefined;
-                }
-                $('#collectBtn').attr('disabled', isLoading);
-            },
-            initRegions: async function () {
-                const res = await fetch('/public/regions.json');
-                const regions = await res.json();
-
-                for (f in regions['0']) {
-                    const option = document.createElement('option');
-                    option.value = f;
-                    option.innerHTML = regions['0'][f];
-                    $('#province').append(option);
-                }
-
-                $('#province').change(function () {
-                    const city = $('#city');
-                    city.empty().append('<option value="">请选择</option>');
-                    $('#district').empty().append(`<option value="">请选择</option>`);
-
-                    const province = $(this).val();
-                    if (province) {
-                        const key = 0 + ',' + province;
-                        const cities = regions[key];
-                        for (c in cities) {
-                            city.append(`<option value="${c}">${regions[key][c]}</option>`);
-                        }
-                    }
-                }).change();
-            },
-            onClickCollect: function (event) {
-                mvc.controller.setInfo('');
-                const channels = [];
-                if ($('#channelGaode').prop('checked')) channels.push('gaode');
-                if ($('#channelBaidu').prop('checked')) channels.push('baidu');
-                if (channels.length === 0) {
-                    mvc.controller.setInfo('不能查询，至少选择一个查询源，例如：高德');
-                    return;
-                }
-                const keyword = $('#keyword').val() || '';
-                if (keyword === '') {
-                    mvc.controller.setInfo('不能查询，至少输入一个关键词，例如：冻品');
-                    return;
-                }
-                mvc.controller.setLoading(true);
-                $('#process').removeClass('invisible').addClass('visible');
-                const wsUrl = `ws://${window.location.hostname}${window.location.port ? ":" + window.location.port : ""}/system/dataset/ws`;
-                var ws = new WebSocket(wsUrl);
-
-                // clear terminal
-                const terminal = document.getElementById('terminal');
-                while (terminal.firstChild) terminal.removeChild(terminal.firstChild);
-
-                // ws method
-                ws.onopen = function (e) {
-                    ws.send(JSON.stringify({
-                        code: 'collect',
-                        data: {
-                            keyword,
-                            province: $('#province').val(),
-                            city: $('#city').val(),
-                            channels: channels.join(',')
-                        }
-                    }));
-                };
-                ws.onmessage = (event) => {
-                    try {
-                        const json = JSON.parse(event.data);
-                        if (json.tips) {
-                            if (json.tips === 'progress') {
-                                const bar = document.getElementById('progressBar');
-                                const w = json.message || '0%';
-                                bar.style = `width: ${w}`;
-                                bar.textContent = w;
-                            }
-                            else if (json.tips === 'log') {
-                                const span = document.createElement('span');
-                                span.textContent = json.message;
-                                terminal.appendChild(span);
-                                terminal.scrollTop = terminal.scrollHeight; // scroll to bottom
-                            }
-                        }
-                    } catch (e) {
-                    }
-                };
-                ws.onclose = function (event) {
-                    console.log('connection closed');
-                    mvc.controller.setLoading(false);
-                    // do nothing
-                };
-                ws.onerror = function (error) {
-                    if (ws.readyState === 1) {
-                        ws.close(error);
-                    }
-                    const span = document.createElement('span');
-                    span.textContent = '与服务器断开了，无法得知信息';
-                    terminal.appendChild(span);
-                    mvc.controller.setLoading(false);
-                };
+        async setInfo(message) {
+            if (!message || message === '') {
+                $('#alert-info').hide();
+                $('#alert-info-message').text('');
+            } else {
+                $('#alert-info').show();
+                $('#alert-info-message').text(message);
             }
+        },
+        setLoading(isLoading) {
+            if (isLoading) {
+                let seconds = 0;
+                $('#spinner').show()
+                app.data.interval = setInterval(() => {
+                    seconds += 1;
+                    document.getElementById('timer').textContent = `${seconds}秒`;
+                }, 1000);
+            } else {
+                $('#spinner').hide();
+                clearInterval(app.data.interval);
+                app.data.interval = undefined;
+            }
+            $('#collectBtn').attr('disabled', isLoading);
+        },
+        async initRegions() {
+            const res = await fetch('/public/regions.json');
+            const regions = await res.json();
+
+            for (f in regions['0']) {
+                const option = document.createElement('option');
+                option.value = f;
+                option.innerHTML = regions['0'][f];
+                $('#province').append(option);
+            }
+
+            $('#province').change(function () {
+                const city = $('#city');
+                city.empty().append('<option value="">请选择</option>');
+                $('#district').empty().append(`<option value="">请选择</option>`);
+
+                const province = $(this).val();
+                if (province) {
+                    const key = 0 + ',' + province;
+                    const cities = regions[key];
+                    for (c in cities) {
+                        city.append(`<option value="${c}">${regions[key][c]}</option>`);
+                    }
+                }
+            }).change();
+        },
+        onClickCollect(event) {
+            app.setInfo('');
+            const sources = [];
+            if ($('#sourceGaode').prop('checked')) sources.push('gaode');
+            if ($('#sourceBaidu').prop('checked')) sources.push('baidu');
+            if (sources.length === 0) {
+                app.setInfo('不能查询，至少选择一个查询源，例如：高德');
+                return;
+            }
+            const keyword = $('#keyword').val() || '';
+            if (keyword === '') {
+                app.setInfo('不能查询，至少输入一个关键词，例如：冻品');
+                return;
+            }
+            app.setLoading(true);
+            $('#process').removeClass('invisible').addClass('visible');
+            const wsUrl = `ws://${window.location.hostname}${window.location.port ? ":" + window.location.port : ""}/system/dataset/ws`;
+            var ws = new WebSocket(wsUrl);
+
+            // clear terminal
+            const terminal = document.getElementById('terminal');
+            while (terminal.firstChild) terminal.removeChild(terminal.firstChild);
+
+            // ws method
+            ws.onopen = function (e) {
+                ws.send(JSON.stringify({
+                    code: 'collect',
+                    data: {
+                        keyword,
+                        province: $('#province').val(),
+                        city: $('#city').val(),
+                        sources: sources.join(',')
+                    }
+                }));
+            };
+            ws.onmessage = (event) => {
+                try {
+                    const json = JSON.parse(event.data);
+                    if (json.tips) {
+                        if (json.tips === 'progress') {
+                            const bar = document.getElementById('progressBar');
+                            const w = json.message || '0%';
+                            bar.style = `width: ${w}`;
+                            bar.textContent = w;
+                        }
+                        else if (json.tips === 'log') {
+                            const span = document.createElement('span');
+                            span.textContent = json.message;
+                            terminal.appendChild(span);
+                            terminal.scrollTop = terminal.scrollHeight; // scroll to bottom
+                        }
+                    }
+                } catch (e) {
+                }
+            };
+            ws.onclose = function (event) {
+                console.log('connection closed');
+                app.setLoading(false);
+                // do nothing
+            };
+            ws.onerror = function (error) {
+                if (ws.readyState === 1) {
+                    ws.close(error);
+                }
+                const span = document.createElement('span');
+                span.textContent = '与服务器断开了，无法得知信息';
+                terminal.appendChild(span);
+                app.setLoading(false);
+            };
         }
     };
 
     $(async function () {
-        await mvc.controller.initRegions();
-        $('#collectBtn').click(mvc.controller.onClickCollect);
+        await app.initRegions();
     });
 </script>
 {% endblock script %}

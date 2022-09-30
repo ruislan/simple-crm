@@ -38,7 +38,8 @@ const linkTypes = [
     { id: 1, name: '邮件' },
     { id: 2, name: '电话' },
     { id: 3, name: '微信' },
-    { id: 4, name: 'QQ' }
+    { id: 4, name: 'QQ' },
+    { id: 5, name: '短信' },
 ]
 
 async function main() {

@@ -17,7 +17,13 @@ const auth = {
     isAuthenticated: (session) => session.authenticated && session.user,
     requireAuth: async (req, reply) => {
         if (auth.isAuthUrl(req.url)) {
-            if (!auth.isAuthenticated(req.session)) return reply.redirect(auth.loginUrl); // need auth
+            if (!auth.isAuthenticated(req.session)) {
+                if ((req.headers['content-type'] || '').startsWith('application/json')) {
+                    return reply.code(401).send(); // need auth
+                } else {
+                    return reply.redirect(auth.loginUrl); // need auth
+                }
+            }
             auth.setSessionUser(reply, req.session.user);
         }
     },

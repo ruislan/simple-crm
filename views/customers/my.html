@@ -135,7 +135,9 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <a class="btn btn-sm btn-dark" href="/customers/${item.id}">详情</a>
+                                <button class="btn btn-sm btn-dark" onclick="window.location.href='/customers/${item.id}';">详情</button>
+                                <button class="btn btn-sm btn-dark ms-1" onclick="/customers/${item.id}/transfer">转交</button>
+                                <button class="btn btn-sm btn-danger ms-1" onclick="/customers/${item.id}/retreat">退回</button>
                             </div>
                         </td>
                     </tr>
@@ -168,7 +170,7 @@
                 data: { stageId },
             }).done(function (result) {
                 app.search();
-                helper.toast('success', '操作成功');
+                helper.toast('操作成功', 'success');
             });
         },
         pageTo(d) {

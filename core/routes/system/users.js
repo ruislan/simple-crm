@@ -1,6 +1,17 @@
 import pagination from '../../lib/pagination.js';
 
 const users = async function (fastify, opts) {
+    fastify.put('/:id/lock', async (req, reply) => {
+        const id = Number(req.params.id || 0);
+        await fastify.db.user.update({ where: { id }, data: { isLocked: true } });
+        return reply.code(200).send();
+    });
+    fastify.put('/:id/unlock', async (req, reply) => {
+        const id = Number(req.params.id || 0);
+        await fastify.db.user.update({ where: { id }, data: { isLocked: false } });
+        return reply.code(200).send();
+    });
+
     fastify.get('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
         const user = await fastify.db.user.findUnique({ where: { id } });

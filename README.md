@@ -21,6 +21,7 @@ docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
 3. 用户的登录 O
 4. 用户的基本信息修改 O
 5. 用户的密码修改 O
+6. 用户的锁定和解锁 O
 
 
 ### 客户
@@ -32,7 +33,7 @@ docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
 5. 对客户添加联系
 6. 修改联系
 7. 删除联系
-8. 数据爬取 G和B 
+8. 数据获取 G和B （O）
 9. 客户标签
 
 ### 收益

@@ -12,7 +12,7 @@
             <div class="h3 mb-5 fw-normal">欢迎使用 Simple CRM</div>
             {% if hasError %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                用户名或密码错误
+                {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             {% endif %}

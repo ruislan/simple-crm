@@ -14,8 +14,8 @@ const helper = {
                     </div>
                 </div>
             `;
-        if (onOk) $('#confirm .modal .btn-dark').click(onOk);
-        if (onCancel) $('#confirm .modal .btn-secondary').click(onCancel);
+        if (onOk) $('#confirm .modal .btn-dark').click(() => { onOk(); document.innerHTML = ''; $('#confirm .modal').modal('hide'); });
+        if (onCancel) $('#confirm .modal .btn-secondary').click(() => { onCancel(); document.innerHTML = ''; $('#confirm .modal').modal('hide'); });
         $('#confirm .modal').modal('show');
     },
     preview(url) { // need jquery & bootstrap
@@ -30,7 +30,8 @@ const helper = {
             `;
         $('#preview .modal').modal('show');
     },
-    toast(type, message) { // type: success, danger
+    toast(message, type) { // type: success, danger
+        type = type || 'info';
         const toast = document.getElementById('toast');
         toast.innerHTML = `
             <div class="toast-container p-3 top-0 start-50 translate-middle-x">

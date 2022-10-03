@@ -14,22 +14,20 @@ const home = async function (fastify, opts) {
 
     fastify.post('/login', async function (req, reply) {
         const { name, password } = req.body;
-        let hasError = !name || !password;
         let user = null;
-        if (!hasError) {
-            user = await fastify.db.user.findUnique({ where: { name } });
-            hasError = !user;
-        }
-        if (!hasError) {
-            const isPasswordMatched = await this.bcrypt.compare(password, user.password);
-            hasError = !isPasswordMatched;
-        }
-        if (!hasError) {
-            req.session.authenticated = true;
-            req.session.user = user;
-            return reply.redirect('/');
-        }
-        return reply.view('login.html', { hasError, name });
+        let message = '用户名或者密码不正确';
+        if (!name || !password) return reply.view('login.html', { hasError: true, name, message });
+
+        user = await fastify.db.user.findUnique({ where: { name } });
+        if (!user) return reply.view('login.html', { hasError: true, name, message });
+        if (user.isLocked) return reply.view('login.html', { hasError: true, name, message: '您已经被锁定，更多信息请联系系统管理员或者您的上级' });
+
+        const isPasswordMatched = await this.bcrypt.compare(password, user.password);
+        if (!isPasswordMatched) return reply.view('login.html', { hasError: true, name, message });
+
+        req.session.authenticated = true;
+        req.session.user = user;
+        return reply.redirect('/');
     });
 
     fastify.get('/logout', logoutHandler);

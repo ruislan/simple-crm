@@ -144,7 +144,7 @@
                 editor.setAttribute('tabindex', '-1');
                 editor.setAttribute('data-bs-backdrop', 'static');
                 editor.addEventListener('hidden.bs.modal', () => document.body.removeChild(editor));
-                document.body.appendChild(editor);                
+                document.body.appendChild(editor);
                 editor.innerHTML = `
                     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
                         <div class="modal-content">
@@ -185,7 +185,7 @@
                     }).done(function () {
                         item.name = name;
                         item.phone = phone;
-                        helper.toast('success', '操作成功');
+                        helper.toast('操作成功', 'success');
                     }).always(function () {
                         $('#editor').modal('hide');
                         app.renderTable();
@@ -205,11 +205,7 @@
                     contentType: 'application/json'
                 }).done(function () {
                     app.search(); // search new list
-                    helper.toast('success', '操作成功');
-                }).always(function () {
-                    const confirm = document.getElementById('confirm');
-                    $('#confirm .modal').modal('hide');
-                    confirm.innerHTML = '';
+                    helper.toast('操作成功', 'success');
                 });
             });
         },
@@ -224,11 +220,7 @@
                     contentType: 'application/json'
                 }).done(function () {
                     app.search(); // search new list
-                    helper.toast('success', '认领成功');
-                }).always(function () {
-                    const confirm = document.getElementById('confirm');
-                    $('#confirm .modal').modal('hide');
-                    confirm.innerHTML = '';
+                    helper.toast('操作成功', 'success');
                 });
             });
         },

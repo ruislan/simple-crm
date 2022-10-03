@@ -133,7 +133,7 @@
                 data: { stageId },
             }).done(function (result) {
                 document.getElementById('stage').textContent = stageName;
-                helper.toast('success', '操作成功');
+                helper.toast('操作成功', 'success');
             });
         },
         loadLinkList() {
@@ -213,7 +213,7 @@
                 data,
                 statusCode: { 401: () => window.location.href = '/login', }
             }).done(function () {
-                helper.toast('success', '添加成功');
+                helper.toast('操作成功', 'success');
             }).always(function () {
                 app.loadLinkList();
                 $('#linkForm .modal').modal('hide');

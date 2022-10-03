@@ -30,7 +30,7 @@ const helper = {
             `;
         $('#preview .modal').modal('show');
     },
-    toast(message, type) { // type: success, danger
+    async toast(message, type) { // type: success, danger
         type = type || 'info';
         const toast = document.getElementById('toast');
         toast.innerHTML = `

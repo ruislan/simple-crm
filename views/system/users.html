@@ -25,7 +25,17 @@
             </form>
             <div class="d-flex align-items-center">
                 <div class="ms-3 d-flex align-items-center flex-wrap">
-                    <button type="button" class="btn btn-dark" onclick="app.new()">新增</button>
+                    <button id="toolbarNew"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
+                        onclick="app.new()" data-toggle="tooltip" title="新增客户">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            class="bi bi-person-plus" viewBox="0 0 16 16">
+                            <path
+                                d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                            <path fill-rule="evenodd"
+                                d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                        </svg>
+                    </button>
                 </div>
                 <div class="ms-3 d-flex align-items-center flex-wrap">
                     <button id="toolbarRefresh" onclick="app.search()" data-toggle="tooltip" title="刷新"
@@ -101,97 +111,108 @@
         </div>
     </div>
 </div>
-<div id="editor"></div>
+<!-- <div id="editor"></div> -->
 <div id="confirm"></div>
 <div id="toast"></div>
 {% endblock container %}
 
 {% block script %}
 <script>
-    // TODO editor 要改成 customer/index.html 的模式
     const editor = {
-        title: '用户编辑',
-        user: {},
-        close: function () {
-            $('#edit').modal('hide');
-            $('#edit').remove();
-            editor.user = {};
-            title = '用户编辑';
-        },
-        render: function () {
+        title: '编辑',
+        data: {},
+        render() {
             const model = this;
-            $('#editor').append(
-                `<div id="edit" class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+            const editorEl = document.createElement('div');
+            editorEl.id = 'editor';
+            editorEl.className = 'modal fade';
+            editorEl.setAttribute('aria-hidden', 'true');
+            editorEl.setAttribute('tabindex', '-1');
+            editorEl.setAttribute('data-bs-backdrop', 'static');
+            editorEl.addEventListener('hidden.bs.modal', () => {
+                model.data = {}; // clear data
+                document.body.removeChild(editorEl);
+            });
+            document.body.appendChild(editorEl);
+            editorEl.innerHTML = `
                 <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">${model.title}</h5>
-                            <button type="button" class="btn-close" onclick="editor.close()"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
+                            <form>
                             <div class="d-flex flex-column">
                                 <div class="mb-3 row">
                                     <label for="inputName" class="col-sm-2 col-form-label">名称</label>
                                     <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="inputName" value="${model.user.name || ''}">
+                                        <input type="text" class="form-control" id="inputName" autocomplete="username" value="${model.data.name || ''}"  minLength="1" required>
                                     </div>
-                                </div>        
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
                                     <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="inputPhone" value="${model.user.phone || ''}">
+                                        <input type="text" class="form-control" id="inputPhone" autocomplete="phone" value="${model.data.phone || ''}" minLength="1">
                                     </div>
-                                </div>                                                                        
+                                </div>
                                 <div class="mb-3 row">
                                     <label for="inputEmail" class="col-sm-2 col-form-label">邮件</label>
                                     <div class="col-sm-10">
-                                    <input type="text"class="form-control" id="inputEmail" value="${model.user.email || ''}">
+                                        <input type="text" class="form-control" id="inputEmail" autocomplete="email" value="${model.data.email || ''}" minLength="3">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
                                     <label for="inputPassword" class="col-sm-2 col-form-label">密码</label>
                                     <div class="col-sm-10">
-                                    <input type="password" class="form-control" id="inputPassword">
+                                        <input type="password" class="form-control" id="inputPassword" autocomplete="current-password">
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="editor.close()">关闭</button>
-                            <button type="button" class="btn btn-dark" onclick="editor.save()">保存</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-dark">保存</button>
                         </div>
+                        </form>
                     </div>
                 </div>
-            </div>`);
-            $('#edit').modal('show');
-        },
-        save: function () {
-            const user = this.user;
-            user.email = $('#inputEmail').val();
-            user.name = $('#inputName').val();
-            user.password = $('#inputPassword').val();
-            user.phone = $('#inputPhone').val();
-            const url = user.id ? `/system/users/${user.id}` : '/system/users';
-            $.ajax({
-                type: 'post',
-                url,
-                data: user
-            }).done(function (result) {
-                const { hasError, message, data } = result;
-                $('#toastContent').text(message);
-                if (!hasError) {
-                    $('.toast').removeClass('bg-success bg-danger').addClass('bg-success');
-                    $('.toast').toast('show');
-                    // reload page is disgusting
-                    let search = window.location.search;
-                    window.location.href = `./users${search}`;
-                } else {
-                    $('.toast').removeClass('bg-success bg-danger').addClass('bg-danger');
-                    $('.toast').toast('show');
-                }
-                editor.close();
+            `;
+            document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                const user = editor.data;
+                user.email = document.getElementById('inputEmail').value;
+                user.name = document.getElementById('inputName').value;
+                user.password = document.getElementById('inputPassword').value;
+                user.phone = document.getElementById('inputPhone').value;
+                const url = user.id ? `/system/users/${user.id}` : '/system/users';
+                $.ajax({
+                    type: 'post',
+                    url,
+                    data: user
+                }).done(function (result) {
+                    const { hasError, message, data } = result;
+                    if (!hasError) {
+                        helper.toast(message, 'success');
+                        // reload page is disgusting, wait 3 for refresh?
+                        setTimeout(() => {
+                            let search = window.location.search;
+                            window.location.href = `./users${search}`;
+                        }, 3000);
+                    } else {
+                        helper.toast(message, 'danger');
+                    }
+                }).always(function () {
+                    $('#editor').modal('hide');
+                });
             });
-        }
+
+            $('#editor').modal('show');
+        },
+        open(title, data) {
+            editor.title = title;
+            editor.data = data || {};
+            editor.render();
+        },
     };
 
     const app = {
@@ -248,17 +269,10 @@
             });
         },
         new() {
-            editor.title = '新建用户';
-            editor.user = {};
-            editor.render();
+            editor.open('新建', { user: {} });
         },
         edit(userId) {
-            $.getJSON(`/system/users/${userId}`)
-                .then((data) => {
-                    editor.title = '编辑用户';
-                    editor.user = data;
-                    editor.render();
-                });
+            $.getJSON(`/system/users/${userId}`).then((data) => editor.open('编辑', data));
         }
     };
 </script>

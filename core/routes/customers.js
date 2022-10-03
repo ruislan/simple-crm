@@ -4,6 +4,14 @@ import constants from '../lib/constants.js';
 const regions = JSON.parse(fs.readFileSync('./public/regions.json'));
 
 const customers = async function (fastify, opts) {
+    // 创建
+    fastify.post('/', async (req, reply) => {
+        const { name, phone } = req.body;
+        // only admin can create
+        if (!req.session.user.isAdmin) return reply.code(403).send();
+        const id = await fastify.db.customer.create({ data: { name, phone, creatorId: req.session.user.id } });
+        return reply.code(200).send({ id });
+    });
     // 修改
     fastify.put('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
@@ -114,7 +122,7 @@ const customers = async function (fastify, opts) {
     });
 
     fastify.get('/my', async (req, reply) => {
-        const stages = await fastify.db.stage.findMany();
+        const stages = await fastify.db.stage.findMany({ orderBy: [{ createdAt: 'desc' }] });
         return reply.view("customers/my.html", { data: { stages } });
     });
 
@@ -146,6 +154,7 @@ const customers = async function (fastify, opts) {
             },
             skip,
             take: limit,
+            orderBy: [{ createdAt: 'desc' }]
         });
 
         for (const item of data) {

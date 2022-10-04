@@ -1,7 +1,4 @@
-import fs from 'fs';
 import constants from '../lib/constants.js';
-
-const regions = JSON.parse(fs.readFileSync('./public/regions.json'));
 
 const customers = async function (fastify, opts) {
     // 创建
@@ -15,10 +12,10 @@ const customers = async function (fastify, opts) {
     // 修改
     fastify.put('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        const { name, phone } = req.body;
+        const { name, phone, type, province, city, area, address } = req.body;
         // only admin can edit
         if (!req.session.user.isAdmin) return reply.code(403).send();
-        await fastify.db.customer.update({ where: { id }, data: { name, phone } });
+        await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, address } });
         return reply.code(200).send();
     });
     // 删除
@@ -131,8 +128,8 @@ const customers = async function (fastify, opts) {
     fastify.get('/search', async function (req, reply) {
         // params
         let { keyword, province, city, skip, stageId, limit, my } = req.query;
-        const provinceText = province ? regions['0'][province] : null;
-        const cityText = city ? regions[`0,${province}`][city] : null;
+        const provinceText = province ? fastify.regions['0'][province] : null;
+        const cityText = city ? fastify.regions[`0,${province}`][city] : null;
         skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
         limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
         my = Boolean(my) || false;

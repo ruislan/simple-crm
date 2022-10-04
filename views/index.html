@@ -3,34 +3,52 @@
 {% block container %}
 <div class="container-xl">
     <div class="d-flex m-2 p-2 flex-wrap">
-        <div class="statistic">
+        <div class="statistic bg-dark text-bg-dark">
             <div class="d-flex justify-content-between align-items-baseline">
                 <div class="h5">员工</div>
                 <div class="h6"></div>
             </div>
             <div class="fw-bold fs-2">{{data.count.user}}</div>
         </div>
-        <div class="statistic">
+    </div>
+    <div class="d-flex m-2 p-2 flex-wrap">
+        <div class="statistic bg-warning text-bg-dark">
             <div class="d-flex justify-content-between align-items-baseline">
                 <div class="h5">客户</div>
                 <div class="h6">未接触</div>
             </div>
             <div class="fw-bold fs-2">{{data.count.unLink}}</div>
         </div>
-        <div class="statistic">
+        <div class="statistic bg-info text-bg-dark">
             <div class="d-flex justify-content-between align-items-baseline">
                 <div class="h5">客户</div>
                 <div class="h6">接触中</div>
             </div>
             <div class="fw-bold fs-2">{{data.count.linking}}</div>
         </div>
-        <div class="statistic">
+        <div class="statistic bg-success text-bg-success">
             <div class="d-flex justify-content-between align-items-baseline">
                 <div class="h5">客户</div>
                 <div class="h6">已下单</div>
             </div>
             <div class="fw-bold fs-2">{{data.count.sold}}</div>
         </div>
+        <div id="funnel"></div>
     </div>
 </div>
 {% endblock container %}
+{% block script %}
+<script src='https://cdn.plot.ly/plotly-2.14.0.min.js'></script>
+<script>
+    var gd = document.getElementById('funnel');
+    var data = [{
+        type: 'funnel',
+        y: ["未接触", "接触中", "已下单"],
+        x: ['{{data.count.unLink}}', '{{data.count.linking}}', '{{data.count.sold}}'],
+        hoverinfo: 'percent total+x',
+    }];
+    var layout = { title: '销售漏斗图', showlegend: false, height: 500, };
+    Plotly.newPlot('funnel', data, layout, { staticPlot: true });
+
+</script>
+{% endblock script %}

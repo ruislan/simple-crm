@@ -4,6 +4,7 @@ import path from 'path';
 import fastifyStatic from '@fastify/static';
 import prismaPlugin from './plugins/prisma.js';
 import bcryptPlugin from './plugins/bcrypt.js';
+import regionsPlugin from './plugins/regions.js';
 import coreService from './core/index.js';
 
 const main = async function () {
@@ -19,8 +20,9 @@ const main = async function () {
     });
 
     // plugins
-    await server.register(bcryptPlugin); // global plugin
-    await server.register(prismaPlugin); // global plugin
+    await server.register(bcryptPlugin); // global 
+    await server.register(prismaPlugin); // global 
+    await server.register(regionsPlugin, { web: true }); // global 
     await server.register(fastifyStatic, { root: path.join(process.cwd(), './public'), prefix: '/public', }); // static service
     await server.register(coreService); // our service
 

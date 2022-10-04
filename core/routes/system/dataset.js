@@ -1,8 +1,5 @@
 import fetch from 'node-fetch';
-import fs from 'fs';
 import dayjs from 'dayjs';
-
-const regions = JSON.parse(fs.readFileSync('./public/regions.json'));
 
 const fetcherFactory = {
     // ws connection
@@ -304,7 +301,7 @@ class Rectangle {
     }
 }
 
-const fetchData = async function (monitor, data) {
+const fetchData = async function (monitor, data, regions) {
     let { keyword, province, city, sources } = data;
     const cityText = regions[`0,${province}`][city] || '全国';
     const keywords = (keyword?.split('/') || []).join('|');
@@ -396,7 +393,7 @@ const dataset = async function (fastify, opts) {
                     case 'collect':
                         (async function () {
                             const monitor = fetcherFactory.newMonitor(connection);
-                            const result = await fetchData(monitor, data);
+                            const result = await fetchData(monitor, data, fastify.regions);
                             monitor.progress('75%');
                             await saveData(fastify.db, monitor, result);
                             monitor.progress('100%');

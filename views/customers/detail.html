@@ -65,7 +65,6 @@
 <div id="toast"></div>
 <div id="preview"></div>
 <div id="confirm"></div>
-<div id="linkForm"></div>
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
@@ -163,60 +162,62 @@
                     optionsHTML += `<option ${i == 0 ? 'selected' : ''} value="${option.id}">${option.name}</option>`;
                 }
                 // show modal
-                const modal = document.getElementById('linkForm');
-                modal.innerHTML = `
-                <div class="modal fade" tabindex="-1">
+                const editorEl = document.createElement('div');
+                editorEl.id = 'editor';
+                editorEl.className = 'modal fade';
+                editorEl.setAttribute('aria-hidden', 'true');
+                editorEl.setAttribute('tabindex', '-1');
+                editorEl.setAttribute('data-bs-backdrop', 'static');
+                editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+                document.body.appendChild(editorEl);
+                editorEl.innerHTML = `
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">新建联系</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
+                            <form id="editorForm">
                             <div class="modal-body">
-                                <form id="linkForm" name="linkForm">
-                                    <div class="mb-3">
-                                        <label for="linkType" class="form-label">方式</label>
-                                        <select class="form-select" id="linkType">
-                                            ${optionsHTML}
-                                        </select>
-                                    </div>                       
-                                    <div class="mb-3">
-                                        <label for="linkSubject" class="form-label">主题</label>
-                                        <input type="text" class="form-control" id="linkSubject" aria-describedby="emailHelp">
-                                    </div>
-                                    <div>
-                                        <label for="linkContent" class="form-label">内容</label>
-                                        <textarea class="form-control" id="linkContent" rows="3"></textarea>
-                                    </div>                                                                                     
-                                </form>
+                                <div class="mb-3">
+                                    <label for="linkType" class="form-label">方式</label>
+                                    <select class="form-select" name="typeId" id="linkType" name="typeId">
+                                        ${optionsHTML}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="linkSubject" class="form-label">主题</label>
+                                    <input type="text" class="form-control" name="subject" id="linkSubject" aria-describedby="emailHelp">
+                                </div>
+                                <div>
+                                    <label for="linkContent" class="form-label">内容</label>
+                                    <textarea class="form-control" name="content" id="linkContent" rows="3"></textarea>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                <button type="button" class="btn btn-dark" onclick="app.newLink()">保存</button>
+                                <button type="button" class="btn btn-dark">保存</button>
                             </div>
+                            </form>
                         </div>
                     </div>
-                </div>
                 `;
-                $('#linkForm .modal').modal('show');
-            });
-        },
-        newLink() {
-            const data = {
-                subject: $('#linkForm #linkSubject').val() || '',
-                content: $('#linkForm #linkContent').val() || '',
-                typeId: $('#linkForm #linkType').val() || '',
-            };
-            $.ajax({
-                type: 'post',
-                url: `/customers/{{data.customer.id}}/links`,
-                data,
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function () {
-                helper.toast('操作成功', 'success');
-            }).always(function () {
-                app.loadLinkList();
-                $('#linkForm .modal').modal('hide');
+                document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                    const data = {};
+                    new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
+                    $.ajax({
+                        url: `/customers/{{data.customer.id}}/links`,
+                        type: 'post',
+                        data,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        helper.toast('操作成功', 'success');
+                    }).always(function () {
+                        $('#editor').modal('hide');
+                        app.loadLinkList();
+                    });
+                });
+                $('#editor').modal('show');
             });
         },
         onReady() {

@@ -69,7 +69,7 @@
             count: 0,
         },
         async initRegions() {
-            const res = await fetch('/public/regions.json');
+            const res = await fetch('/public/regions');
             const regions = await res.json();
 
             $('#province').empty().append('<option value="">省/直辖市</option>');

@@ -88,7 +88,8 @@
                         <td>{{user.name}}</td>
                         <td>{{user.email}}</td>
                         <td>{{user.phone}}</td>
-                        <td>{{'已锁定' if user.isLocked else '未锁定'}}</td>
+                        <td><span class="badge {{'bg-danger' if user.isLocked else 'bg-success'}}">{{'已锁定' if
+                                user.isLocked else '未锁定'}}</span></td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark"
@@ -142,30 +143,30 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form>
+                            <form id="editorForm">
                             <div class="d-flex flex-column">
                                 <div class="mb-3 row">
                                     <label for="inputName" class="col-sm-2 col-form-label">名称</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" autocomplete="username" value="${model.data.name || ''}"  minLength="1" required>
+                                        <input type="text" class="form-control" name="name" id="inputName" autocomplete="username" value="${model.data.name || ''}"  minLength="1" required>
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
                                     <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputPhone" autocomplete="phone" value="${model.data.phone || ''}" minLength="1">
+                                        <input type="text" class="form-control" name="phone" id="inputPhone" autocomplete="phone" value="${model.data.phone || ''}" minLength="1">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
                                     <label for="inputEmail" class="col-sm-2 col-form-label">邮件</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputEmail" autocomplete="email" value="${model.data.email || ''}" minLength="3">
+                                        <input type="text" class="form-control" name="email" id="inputEmail" autocomplete="email" value="${model.data.email || ''}" minLength="3">
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
                                     <label for="inputPassword" class="col-sm-2 col-form-label">密码</label>
                                     <div class="col-sm-10">
-                                        <input type="password" class="form-control" id="inputPassword" autocomplete="current-password">
+                                        <input type="password" class="form-control" name="password" id="inputPassword" autocomplete="current-password">
                                     </div>
                                 </div>
                             </div>
@@ -180,10 +181,7 @@
             `;
             document.querySelector('#editor .btn-dark').addEventListener('click', () => {
                 const user = editor.data;
-                user.email = document.getElementById('inputEmail').value;
-                user.name = document.getElementById('inputName').value;
-                user.password = document.getElementById('inputPassword').value;
-                user.phone = document.getElementById('inputPhone').value;
+                new FormData(document.getElementById('editorForm')).forEach((v, k) => user[k] = v);
                 const url = user.id ? `/system/users/${user.id}` : '/system/users';
                 $.ajax({
                     type: 'post',
@@ -194,10 +192,10 @@
                     if (!hasError) {
                         helper.toast(message, 'success');
                         // reload page is disgusting, wait 3 for refresh?
-                        setTimeout(() => {
-                            let search = window.location.search;
-                            window.location.href = `./users${search}`;
-                        }, 3000);
+                        // setTimeout(() => {
+                        let search = window.location.search;
+                        window.location.href = `./users${search}`;
+                        // }, 3000);
                     } else {
                         helper.toast(message, 'danger');
                     }

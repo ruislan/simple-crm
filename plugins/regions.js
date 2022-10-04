@@ -1,4 +1,6 @@
-{
+import fp from 'fastify-plugin';
+
+const regions = {
     "0": {
         "110000": "北京",
         "120000": "天津",
@@ -4532,4 +4534,12 @@
         "990100": "海外"
     },
     "0,990000,990100": []
-}
+};
+
+const regionsPlugin = async (fastify, opts, next) => {
+    fastify.decorate('regions', regions);
+    if (opts.web) fastify.get('/public/regions', (_, reply) => reply.code(200).send(regions));
+    next();
+};
+
+export default fp(regionsPlugin);

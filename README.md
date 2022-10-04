@@ -49,3 +49,11 @@ docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
 1. 联系类型的创建、编辑和删除
 2. 客户阶段的创建、编辑和删除
 3. 客户标签的创建、编辑和删除
+
+
+## 开发约定
+
+### Ajax调用
+
+1. 实体的增删改查分别对应了POST/DELETE/PUT/GET请求。
+2. 业务操作对应了POST请求

@@ -3,19 +3,36 @@ import constants from '../lib/constants.js';
 const customers = async function (fastify, opts) {
     // 创建
     fastify.post('/', async (req, reply) => {
-        const { name, phone } = req.body;
+        const { name, phone, type, pcode, citycode, adcode, address } = req.body;
         // only admin can create
         if (!req.session.user.isAdmin) return reply.code(403).send();
-        const id = await fastify.db.customer.create({ data: { name, phone, creatorId: req.session.user.id } });
+        // 解析省市区
+        const province = fastify.regions.parseProvince(pcode) || '';
+        const city = fastify.regions.parseProvince(citycode) || '';
+        const area = fastify.regions.parseArea(adcode) || '';
+        let adcode2save = pcode;
+        if (citycode) adcode2save = citycode;
+        if (adcode) adcode2save = adcode;
+
+        const id = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
         return reply.code(200).send({ id });
     });
     // 修改
     fastify.put('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        const { name, phone, type, province, city, area, address } = req.body;
+        const { name, phone, type, pcode, citycode, adcode, address } = req.body;
         // only admin can edit
         if (!req.session.user.isAdmin) return reply.code(403).send();
-        await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, address } });
+
+        // 解析省市区
+        const province = fastify.regions.parseProvince(pcode) || '';
+        const city = fastify.regions.parseProvince(citycode) || '';
+        const area = fastify.regions.parseArea(adcode) || '';
+        let adcode2save = pcode;
+        if (citycode) adcode2save = citycode;
+        if (adcode) adcode2save = adcode;
+
+        await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
         return reply.code(200).send();
     });
     // 删除
@@ -105,6 +122,18 @@ const customers = async function (fastify, opts) {
         return reply.view('customers/detail.html', { data: { customer, stages } });
     });
 
+    // 退回
+    fastify.post('/:id/retreat', async (req, reply) => {
+        const id = Number(req.params.id || 0);
+        const customer = await fastify.db.customer.findUnique({ where: { id } });
+        if (!customer || req.session.user.id !== customer.userId) return reply.code(403).send();
+        await fastify.db.customer.update({
+            where: { id },
+            data: { userId: null },
+        });
+        return reply.code(200).send();
+    });
+
     // 认领
     fastify.post('/acquire', async (req, reply) => {
         let { ids } = req.body || { ids: [] };
@@ -128,8 +157,8 @@ const customers = async function (fastify, opts) {
     fastify.get('/search', async function (req, reply) {
         // params
         let { keyword, province, city, skip, stageId, limit, my } = req.query;
-        const provinceText = province ? fastify.regions['0'][province] : null;
-        const cityText = city ? fastify.regions[`0,${province}`][city] : null;
+        const provinceText = fastify.regions.parseProvince(province);
+        const cityText = fastify.regions.parseCity(city);
         skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
         limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
         my = Boolean(my) || false;

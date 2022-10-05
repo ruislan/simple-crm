@@ -41,9 +41,11 @@ model Customer {
   province  String?
   city      String?
   area      String?
+  adcode    String? // 国际行政区划数字
   address   String?
   location  String?
   source    String   @default("unknown") // 来源：unknown,gaode,baidu,web,email,phone,introduce
+  sourceId  String?  @map("source_id") // 来源的ID
   isCompany Boolean  @default(false) @map("is_company")
   stageId   Int?     @map("stage_id")
   userId    Int?     @map("user_id") // 负责人

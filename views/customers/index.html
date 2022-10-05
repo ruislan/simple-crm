@@ -111,18 +111,20 @@
             editorEl.addEventListener('show.bs.modal', () => {
                 // load regions
                 const regions = app.data.regions;
-                const provinceNode = $('#editor select[name="province"]');
-                const cityNode = $('#editor select[name="city"]');
-                const areaNode = $('#editor select[name="area"]');
+                const provinceNode = $('#editor select[name="pcode"]');
+                const cityNode = $('#editor select[name="citycode"]');
+                const areaNode = $('#editor select[name="adcode"]');
                 provinceNode.empty().append('<option value="">省/直辖市</option>');
-                for (f in regions['0']) provinceNode.append(`<option value="${f}">${regions['0'][f]}</option>`);
+                for (f in regions['0']) {
+                    provinceNode.append(`<option value="${f}" ${regions['0'][f] === model.data.province ? 'selected' : ''}>${regions['0'][f]}</option>`);
+                }
                 provinceNode.change(() => {
                     cityNode.empty().append('<option value="">市</option>');
                     const province = provinceNode.val();
                     if (province) {
                         const key = 0 + ',' + province;
                         for (c in regions[key]) {
-                            cityNode.append(`<option value="${c}">${regions[key][c]}</option>`);
+                            cityNode.append(`<option value="${c}" ${regions[key][c] === model.data.city ? 'selected' : ''}>${regions[key][c]}</option>`);
                         }
                     }
                 }).change();
@@ -133,7 +135,7 @@
                     const key = 0 + ',' + province + ',' + city;
                     if (city) {
                         for (d in regions[key]) {
-                            areaNode.append(`<option value="${d}">${regions[key][d]}</option>`);
+                            areaNode.append(`<option value="${d}" ${regions[key][d] === model.data.area ? 'selected' : ''}>${regions[key][d]}</option>`);
                         }
                     }
                 }).change();
@@ -170,9 +172,9 @@
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 col-form-label">省市区</label>
                                         <div class="d-flex col-sm-10">
-                                            <div class="pb-2 pb-lg-0" style="max-width: 140px;"><select name="province" class="form-select" aria-label="省/直辖市"></select></div>
-                                            <div class="pb-2 pb-lg-0 ps-1" style="max-width: 140px;"><select name="city" class="form-select" aria-label="市"></select></div>
-                                            <div class="pb-2 pb-lg-0 ps-1" style="max-width: 140px;"><select name="area" class="form-select" aria-label="区/县"></select></div>
+                                            <div class="pb-2 pb-lg-0" style="max-width: 140px;"><select name="pcode" class="form-select" aria-label="省/直辖市"></select></div>
+                                            <div class="pb-2 pb-lg-0 ps-1" style="max-width: 140px;"><select name="citycode" class="form-select" aria-label="市"></select></div>
+                                            <div class="pb-2 pb-lg-0 ps-1" style="max-width: 140px;"><select name="adcode" class="form-select" aria-label="区/县"></select></div>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -320,7 +322,7 @@
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark" onclick="app.acquire('${item.id}', '${item.name}')">认领</button>
                                 {% if sessionUser.isAdmin %}
-                                <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit(${i})">修改</button>
+                                <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit(${i})">编辑</button>
                                 <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.delete('${item.id}', '${item.name}')">删除</button>
                                 {% endif %}
                             </div>

@@ -49,7 +49,7 @@ const fetcherFactory = {
                 let region = city;
                 if (region !== '全国') region += district;
 
-                const url = `https://api.map.baidu.com/place/v2/search?query=${keywords}&region=${region}&output=json&ak=${this.key}&page_size=${this.pageSize}`;
+                const url = `https://api.map.baidu.com/place/v2/search?query=${keywords}&region=${region}&output=json&ak=${this.key}&page_size=${this.pageSize}&extensions_adcode=true`;
                 let count = 0;
                 for (let pageNum = 0; pageNum < 100; pageNum++) {
                     try {
@@ -76,13 +76,14 @@ const fetcherFactory = {
                     if (!poi.telephone) continue;
                     result.push({
                         id: poi.uid,
-                        name: poi.name,
-                        phone: poi.telephone,
+                        name: poi.name?.toString() || '',
+                        phone: poi.telephone?.toString() || '',
                         type: poi.type || '',
-                        province: poi.province,
-                        city: poi.city,
-                        area: poi.area,
-                        address: poi.address,
+                        province: poi.province?.toString() || '',
+                        city: poi.city?.toString() || '',
+                        area: poi.area?.toString() || '',
+                        adcode: poi.adcode?.toString() || '',
+                        address: poi.address?.toString() || '',
                         location: `${poi.location?.lat || '-'} , ${poi.location?.lng || '-'}`,
                         source: 'baidu',
                         photos: [],
@@ -104,7 +105,7 @@ const fetcherFactory = {
 
             fetchByKeywords: async function (params, dataSet) {
                 const { keywords, city } = params;
-                const url = `https://restapi.amap.com/v3/place/text?key=${this.key}&keywords=${keywords}&offset=${this.pageSize}&city=${city}&citylimit=true`;
+                const url = `https://restapi.amap.com/v3/place/text?key=${this.key}&keywords=${keywords}&offset=${this.pageSize}&city=${city}&citylimit=true&extensions=all`;
                 let count = 0;
                 for (let pageNum = 1; pageNum <= 100; pageNum++) {
                     let res = await fetch(`${url}&page=${pageNum}`, {});
@@ -142,9 +143,10 @@ const fetcherFactory = {
                         name: poi.name?.toString(),
                         phone: poi.tel?.toString(),
                         type: poi.type?.toString() || '',
-                        province: poi.pname?.toString(),
-                        city: poi.cityname?.toString(),
-                        area: poi.adname?.toString(),
+                        province: poi.pname?.toString() || '',
+                        city: poi.cityname?.toString() || '',
+                        area: poi.adname?.toString() || '',
+                        adcode: poi.adcode?.toString() || '',
                         address: poi.address?.toString(),
                         location: poi.location?.toString(),
                         source: 'gaode',
@@ -205,7 +207,7 @@ const fetcherFactory = {
                 return '';
             },
             fetchCount: async function (keywords, path) {
-                const url = `https://restapi.amap.com/v3/place/polygon?key=${this.key}&keywords=${keywords}&offset=${this.pageSize}&polygon=${path}`;
+                const url = `https://restapi.amap.com/v3/place/polygon?key=${this.key}&keywords=${keywords}&offset=${this.pageSize}&polygon=${path}&extensions=all`;
                 let res = await fetch(url);
                 let count = 0;
                 if (res.ok) {
@@ -303,7 +305,7 @@ class Rectangle {
 
 const fetchData = async function (monitor, data, regions) {
     let { keyword, province, city, sources } = data;
-    const cityText = regions[`0,${province}`][city] || '全国';
+    const cityText = regions.parseCity(city) || '全国';
     const keywords = (keyword?.split('/') || []).join('|');
     const hasBaidu = sources?.includes('baidu') || false;
     const hasGaode = sources?.includes('gaode') || false;
@@ -333,8 +335,7 @@ const fetchData = async function (monitor, data, regions) {
 
     monitor.progress('50%');
     if (hasBaidu) { // 百度通过组合不同的区县来查询
-        const districtKey = `0,${province},${city}`;
-        const districtObj = regions[districtKey];
+        const districtObj = regions.data[`0,${province},${city}`];
         if (districtObj) {
             const fetcher = fetcherFactory.newBaiduFetcher(process.env.BAIDU_KEY, monitor);
             for (const key of Object.keys(districtObj)) {
@@ -347,17 +348,17 @@ const fetchData = async function (monitor, data, regions) {
     return dataSet.toArray();
 }
 
-const saveData = async function (db, monitor, data) {
+const saveData = async function (db, regions, monitor, data) {
     // XXX createMany not support for sqlite, disgusting
     let beforeCount = 0;
     let afterCount = 0;
     try {
         beforeCount = await db.customer.count();
         for (const item of data) {
-            // 将id设置成频道对象id，这里的id是我们的id
+            // 将id设置成来源ID，这里的id是我们的id
+            item.sourceId = item.id;
             item.id = undefined;
             item.photos = { create: item.photos };
-
             // test phone and name exists
             let exists = false;
             if (item.phone !== '') exists = await db.customer.count({ where: { phone: item.phone } }) > 0;
@@ -395,7 +396,7 @@ const dataset = async function (fastify, opts) {
                             const monitor = fetcherFactory.newMonitor(connection);
                             const result = await fetchData(monitor, data, fastify.regions);
                             monitor.progress('75%');
-                            await saveData(fastify.db, monitor, result);
+                            await saveData(fastify.db, fastify.regions, monitor, result);
                             monitor.progress('100%');
                             connection.socket.send(JSON.stringify({ code: 200, tips: 'ok', message: '处理完成' }));
                             connection.socket.close(); // close it

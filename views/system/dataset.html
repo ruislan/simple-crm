@@ -103,7 +103,7 @@
             $('#collectBtn').attr('disabled', isLoading);
         },
         async initRegions() {
-            const res = await fetch('/public/regions.json');
+            const res = await fetch('/public/regions');
             const regions = await res.json();
 
             for (f in regions['0']) {

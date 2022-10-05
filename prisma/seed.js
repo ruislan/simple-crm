@@ -32,6 +32,7 @@ const stages = [
     { id: 1, name: '新建', sequence: 1 },
     { id: 2, name: '已下单', sequence: 2 },
     { id: 3, name: '已放弃', sequence: 3 },
+    { id: 4, name: '已联系', sequence: 4 }
 ];
 
 const linkTypes = [

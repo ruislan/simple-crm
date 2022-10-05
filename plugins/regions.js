@@ -2,15 +2,15 @@ import fp from 'fastify-plugin';
 
 const regions = {
     "0": {
-        "110000": "北京",
-        "120000": "天津",
+        "110000": "北京市",
+        "120000": "天津市",
         "130000": "河北省",
         "140000": "山西省",
         "150000": "内蒙古自治区",
         "210000": "辽宁省",
         "220000": "吉林省",
         "230000": "黑龙江省",
-        "310000": "上海",
+        "310000": "上海市",
         "320000": "江苏省",
         "330000": "浙江省",
         "340000": "安徽省",
@@ -23,7 +23,7 @@ const regions = {
         "440000": "广东省",
         "450000": "广西壮族自治区",
         "460000": "海南省",
-        "500000": "重庆",
+        "500000": "重庆市",
         "510000": "四川省",
         "520000": "贵州省",
         "530000": "云南省",
@@ -1833,7 +1833,7 @@ const regions = {
         "361026": "宜黄县",
         "361027": "金溪县",
         "361028": "资溪县",
-        "361029": "东乡县",
+        "361029": "东乡区",
         "361030": "广昌县",
         "361031": "其它区"
     },
@@ -4537,7 +4537,39 @@ const regions = {
 };
 
 const regionsPlugin = async (fastify, opts, next) => {
-    fastify.decorate('regions', regions);
+    fastify.decorate('regions', {
+        data: regions,
+        parseAdCode(adcode) {
+            adcode = String(adcode) || '';
+            if (adcode === '') return null;
+            const pcode = adcode.substring(0, 2) + '0000';
+            const citycode = adcode.substring(0, 4) + '00';
+            const province = regions[0][pcode];
+            const city = regions[`0,${pcode}`][citycode];
+            const area = regions[`0,${pcode},${citycode}`][adcode];
+            return { province, city, area };
+        },
+        parseProvince(adcode) {
+            adcode = String(adcode) || '';
+            if (adcode === '') return null;
+            const pcode = adcode.substring(0, 2) + '0000';
+            return regions[0][pcode];
+        },
+        parseCity(adcode) {
+            adcode = String(adcode) || '';
+            if (adcode === '') return null;
+            const pcode = adcode.substring(0, 2) + '0000';
+            const citycode = adcode.substring(0, 4) + '00';
+            return regions[`0,${pcode}`][citycode];
+        },
+        parseArea(adcode) {
+            adcode = String(adcode) || '';
+            if (adcode === '') return null;
+            const pcode = adcode.substring(0, 2) + '0000';
+            const citycode = adcode.substring(0, 4) + '00';
+            return regions[`0,${pcode},${citycode}`][adcode];
+        }
+    });
     if (opts.web) fastify.get('/public/regions', (_, reply) => reply.code(200).send(regions));
     next();
 };

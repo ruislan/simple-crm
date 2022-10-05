@@ -6,12 +6,6 @@
 没有什么难以理解的概念，不需要更多的文化和知识，适合中小微企业。
 从寻找客户，联系客户，管理客户，最后达到成交，以及维持关系。都是你熟悉的事情。
 
-## Docker
-
-docker build --pull --rm -f "Dockerfile" -t simple-crm:latest "server"
-
-docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
-
 ## 功能
 
 ### 用户
@@ -30,11 +24,12 @@ docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
 2. 客户明细 O
 3. 客户地图展示 
 4. 转交客户
-5. 对客户添加联系
-6. 修改联系
-7. 删除联系
-8. 数据获取 G和B （O）
-9. 客户标签
+5. 退回客户 O
+6. 对客户添加联系 O
+7. 修改联系
+8. 删除联系
+9. 数据获取 G和B （O）
+10. 客户标签
 
 ### 收益
 
@@ -57,3 +52,9 @@ docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
 
 1. 实体的增删改查分别对应了POST/DELETE/PUT/GET请求。
 2. 业务操作对应了POST请求
+
+## Docker
+
+docker build --pull --rm -f "Dockerfile" -t simple-crm:latest "server"
+
+docker run --rm -d  -p 5700:5700/tcp simple-crm:latest

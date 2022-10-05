@@ -136,8 +136,8 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <button class="btn btn-sm btn-dark" onclick="window.location.href='/customers/${item.id}';">详情</button>
-                                <button class="btn btn-sm btn-dark ms-1" onclick="/customers/${item.id}/transfer">转交</button>
-                                <button class="btn btn-sm btn-danger ms-1" onclick="/customers/${item.id}/retreat">退回</button>
+                                <button class="btn btn-sm btn-dark ms-1" onclick="app.transfer(${item.id})">转交</button>
+                                <button class="btn btn-sm btn-danger ms-1" onclick="app.retreat(${item.id})">退回</button>
                             </div>
                         </td>
                     </tr>
@@ -162,6 +162,21 @@
             </table>
             `;
             table.innerHTML = tableHTML;
+
+        },
+        transfer(itemId) {
+            // /customers/${ item.id } /transfer
+        },
+        retreat(itemId) {
+            helper.confirm('确定退回吗？', function () {
+                $.ajax({
+                    type: 'post',
+                    url: `/customers/${itemId}/retreat`,
+                }).done(function (result) {
+                    app.search();
+                    helper.toast('操作成功', 'success');
+                });
+            });
         },
         changeStage(itemId, stageId) {
             $.ajax({

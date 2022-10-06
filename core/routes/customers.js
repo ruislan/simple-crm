@@ -134,6 +134,19 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
+    // 转移
+    fastify.post('/:id/transfer', async (req, reply) => {
+        const id = Number(req.params.id) || 0;
+        const userId = Number(req.body.userId) || null;
+        const customer = await fastify.db.customer.findUnique({ where: { id } });
+        if (!userId || !customer || req.session.user.id !== customer.userId) return reply.code(403).send();
+        await fastify.db.customer.update({
+            where: { id },
+            data: { userId },
+        });
+        return reply.code(200).send();
+    });
+
     // 认领
     fastify.post('/acquire', async (req, reply) => {
         let { ids } = req.body || { ids: [] };

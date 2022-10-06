@@ -97,7 +97,7 @@
         title: '',
         data: {},
         render() {
-            const model = this;
+            const modal = this;
             const editorEl = document.createElement('div');
             editorEl.id = 'editor';
             editorEl.className = 'modal fade';
@@ -105,7 +105,7 @@
             editorEl.setAttribute('tabindex', '-1');
             editorEl.setAttribute('data-bs-backdrop', 'static');
             editorEl.addEventListener('hidden.bs.modal', () => {
-                model.data = {}; // clear data
+                modal.data = {}; // clear data
                 document.body.removeChild(editorEl);
             });
             editorEl.addEventListener('show.bs.modal', () => {
@@ -116,7 +116,7 @@
                 const areaNode = $('#editor select[name="adcode"]');
                 provinceNode.empty().append('<option value="">省/直辖市</option>');
                 for (f in regions['0']) {
-                    provinceNode.append(`<option value="${f}" ${regions['0'][f] === model.data.province ? 'selected' : ''}>${regions['0'][f]}</option>`);
+                    provinceNode.append(`<option value="${f}" ${regions['0'][f] === modal.data.province ? 'selected' : ''}>${regions['0'][f]}</option>`);
                 }
                 provinceNode.change(() => {
                     cityNode.empty().append('<option value="">市</option>');
@@ -124,7 +124,7 @@
                     if (province) {
                         const key = 0 + ',' + province;
                         for (c in regions[key]) {
-                            cityNode.append(`<option value="${c}" ${regions[key][c] === model.data.city ? 'selected' : ''}>${regions[key][c]}</option>`);
+                            cityNode.append(`<option value="${c}" ${regions[key][c] === modal.data.city ? 'selected' : ''}>${regions[key][c]}</option>`);
                         }
                     }
                 }).change();
@@ -135,7 +135,7 @@
                     const key = 0 + ',' + province + ',' + city;
                     if (city) {
                         for (d in regions[key]) {
-                            areaNode.append(`<option value="${d}" ${regions[key][d] === model.data.area ? 'selected' : ''}>${regions[key][d]}</option>`);
+                            areaNode.append(`<option value="${d}" ${regions[key][d] === modal.data.area ? 'selected' : ''}>${regions[key][d]}</option>`);
                         }
                     }
                 }).change();
@@ -145,7 +145,7 @@
                 <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">${model.title}</h5>
+                            <h5 class="modal-title">${modal.title}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
@@ -154,19 +154,19 @@
                                     <div class="mb-3 row">
                                         <label for="inputName" class="col-sm-2 col-form-label">名称</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="name" id="inputName" value="${model.data.name || ''}">
+                                            <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.name || ''}">
                                         </div>
                                     </div>        
                                     <div class="mb-3 row">
                                         <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="phone" id="inputPhone" value="${model.data.phone || ''}">
+                                            <input type="text" class="form-control" name="phone" id="inputPhone" value="${modal.data.phone || ''}">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="inputType" class="col-sm-2 col-form-label">类型</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="type" id="inputType" value="${model.data.type || ''}">
+                                            <input type="text" class="form-control" name="type" id="inputType" value="${modal.data.type || ''}">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -180,7 +180,7 @@
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 col-form-label">地址</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="address" value="${model.data.address || ''}">
+                                            <input type="text" class="form-control" name="address" value="${modal.data.address || ''}">
                                         </div>
                                     </div>                                    
                             </div>

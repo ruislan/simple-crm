@@ -163,7 +163,7 @@
                                     <div class="mb-3 row">
                                         <label for="inputName" class="col-sm-2 col-form-label">名称</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.customer.name || ''}">
+                                            <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.customer.name || ''}" required>
                                         </div>
                                     </div>        
                                     <div class="mb-3 row">
@@ -240,7 +240,7 @@
                                     break;
                                 }
                             }
-                        } else { // or just give the original photo a mark to delete.
+                        } else { // or just give the original photo a mark
                             modal.data.photos.filter(photo => photo.id == imgId).forEach(photo => photo.deleted = true);
                         }
                         URL.revokeObjectURL(this.getAttribute('src')); // release mem
@@ -278,21 +278,13 @@
             });
 
             document.querySelector('#editor .submit').addEventListener('click', async () => {
-                // const create = [];
-                // const newPhotos = document.querySelector('#editor input[type="file"]').files;
-                // const data = {
-                //     photo: {
-                //         delete: modal.data.photos.filter(photo => photo.deleted).map(photo => photo.id),
-                //     }
-                // };
+                // TODO check fields validate
                 const deletePhotoIds = modal.data.photos.filter(photo => photo.deleted).map(photo => photo.id);
                 const newPhotos = document.querySelector('#editor input[type="file"]').files;
                 const form = new FormData(document.getElementById('editorForm'));
                 if (modal.data.customer.id) form.append('id', modal.data.customer.id);
                 if (deletePhotoIds && deletePhotoIds.length > 0) form.append('deletePhotoIds', deletePhotoIds);
-                for (const photo of newPhotos) {
-                    form.append('file', photo);
-                }
+                for (const photo of newPhotos) form.append('file', photo);
                 $.ajax({
                     url: '/customers',
                     type: 'post',
@@ -302,6 +294,8 @@
                     cache: false,
                 }).done(function () {
                     helper.toast('操作成功', 'success');
+                }).fail(function () {
+                    helper.toast('操作失败，请联系系统管理员。', 'danger');
                 }).always(function () {
                     $('#editor').modal('hide');
                     app.search();

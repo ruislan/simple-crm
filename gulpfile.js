@@ -12,7 +12,8 @@ function clean(cb) {
 
 function prepare() {
     gulp.src(['package.json', '.env', 'server.js']).pipe(gulp.dest('build'));
-    gulp.src(['src/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/src'));
+    gulp.src(['core/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/core'));
+    gulp.src(['plugins/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/plugins'));
     gulp.src(['prisma/**/*', '!**/.DS_Store', '!**/*.db']).pipe(gulp.dest('build/prisma'));
     gulp.src(['views/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/views'));
     return gulp.src(['public/**/*', '!public/**/*.js', '!public/**/*.css', '!**/.DS_Store']).pipe(gulp.dest('build/public'));

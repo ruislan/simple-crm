@@ -7,3 +7,5 @@ log
 build
 *.db
 .env
+temp
+uploads

@@ -86,7 +86,6 @@
         <div class="spinner-border" role="status"></div>
     </div>
     <div id="table" class="table-responsive"></div>
-    <div id="preview"></div>
     <div id="confirm"></div>
 </div>
 <div id="toast"></div>
@@ -95,7 +94,16 @@
 <script>
     const editor = {
         title: '',
-        data: {},
+        data: {
+            fileLimit: 5,
+            fileSize: 1024 * 1024 * 2, // 2mb
+            photos: [],
+            customer: {},
+        },
+        resetData() {
+            this.data.photos = [];
+            this.data.customer = {};
+        },
         render() {
             const modal = this;
             const editorEl = document.createElement('div');
@@ -105,7 +113,8 @@
             editorEl.setAttribute('tabindex', '-1');
             editorEl.setAttribute('data-bs-backdrop', 'static');
             editorEl.addEventListener('hidden.bs.modal', () => {
-                modal.data = {}; // clear data
+                modal.data.photos.forEach(photo => URL.revokeObjectURL(photo.url)); // release mem
+                modal.resetData();
                 document.body.removeChild(editorEl);
             });
             editorEl.addEventListener('show.bs.modal', () => {
@@ -116,7 +125,7 @@
                 const areaNode = $('#editor select[name="adcode"]');
                 provinceNode.empty().append('<option value="">省/直辖市</option>');
                 for (f in regions['0']) {
-                    provinceNode.append(`<option value="${f}" ${regions['0'][f] === modal.data.province ? 'selected' : ''}>${regions['0'][f]}</option>`);
+                    provinceNode.append(`<option value="${f}" ${regions['0'][f] === modal.data.customer.province ? 'selected' : ''}>${regions['0'][f]}</option>`);
                 }
                 provinceNode.change(() => {
                     cityNode.empty().append('<option value="">市</option>');
@@ -124,7 +133,7 @@
                     if (province) {
                         const key = 0 + ',' + province;
                         for (c in regions[key]) {
-                            cityNode.append(`<option value="${c}" ${regions[key][c] === modal.data.city ? 'selected' : ''}>${regions[key][c]}</option>`);
+                            cityNode.append(`<option value="${c}" ${regions[key][c] === modal.data.customer.city ? 'selected' : ''}>${regions[key][c]}</option>`);
                         }
                     }
                 }).change();
@@ -135,7 +144,7 @@
                     const key = 0 + ',' + province + ',' + city;
                     if (city) {
                         for (d in regions[key]) {
-                            areaNode.append(`<option value="${d}" ${regions[key][d] === modal.data.area ? 'selected' : ''}>${regions[key][d]}</option>`);
+                            areaNode.append(`<option value="${d}" ${regions[key][d] === modal.data.customer.area ? 'selected' : ''}>${regions[key][d]}</option>`);
                         }
                     }
                 }).change();
@@ -154,19 +163,19 @@
                                     <div class="mb-3 row">
                                         <label for="inputName" class="col-sm-2 col-form-label">名称</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.name || ''}">
+                                            <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.customer.name || ''}">
                                         </div>
                                     </div>        
                                     <div class="mb-3 row">
                                         <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="phone" id="inputPhone" value="${modal.data.phone || ''}">
+                                            <input type="text" class="form-control" name="phone" id="inputPhone" value="${modal.data.customer.phone || ''}">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="inputType" class="col-sm-2 col-form-label">类型</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="type" id="inputType" value="${modal.data.type || ''}">
+                                            <input type="text" class="form-control" name="type" id="inputType" value="${modal.data.customer.type || ''}">
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
@@ -180,26 +189,117 @@
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 col-form-label">地址</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="address" value="${modal.data.address || ''}">
+                                            <input type="text" class="form-control" name="address" value="${modal.data.customer.address || ''}">
                                         </div>
-                                    </div>                                    
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 col-form-label">图片</label>
+                                        <div class="col-sm-10 d-flex flex-column">
+                                            <div style="max-width:100px;">
+                                                <div class="btn btn-dark d-flex align-items-center file-upload-btn">
+                                                    <input type="file" hidden multiple>
+                                                    <div><span class="file-label">选择(${modal.data.photos.length}/${modal.data.fileLimit})</span></div>
+                                                </div>
+                                            </div>
+                                            <div id="imageBox" class="d-flex flex-wrap mt-3">
+                                            </div>
+                                        </div>
+                                    </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                            <button type="button" class="btn btn-dark">保存</button>
+                            <button type="button" class="btn btn-dark submit">保存</button>
                         </div>
                         </form>
                     </div>
                 </div>
             `;
-            document.querySelector('#editor .btn-dark').addEventListener('click', () => {
-                const data = {};
-                new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
+
+            const renderImageBox = function () {
+                let photoHTML = '';
+                modal.data.photos.filter(photo => !photo.deleted).forEach(photo => {
+                    photoHTML += `
+                        <div data-id="${photo.id}" class="img-lg-preview position-relative">
+                            <img class="w-100 h-100" src="${photo.url}" onclick="helper.preview('${photo.url}');" />
+                            <span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded bg-danger">X</span>
+                        </div>
+                    `;
+                });
+                document.querySelector('#editor #imageBox').innerHTML = photoHTML;
+                document.querySelectorAll('#editor #imageBox .badge').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const imgId = this.parentElement.getAttribute('data-id') || '';
+                        if (imgId.startsWith('upload')) { // new upload file, delete it directly
+                            modal.data.photos = modal.data.photos.filter(photo => photo.id != imgId);
+                            const inputFiles = document.querySelector('#editor input[type="file"]').files;
+                            for (let i = 0; i < inputFiles.length; i++) {
+                                if (inputFiles[i].name === imgId.substring(7)) {
+                                    delete inputFiles[i];
+                                    break;
+                                }
+                            }
+                        } else { // or just give the original photo a mark to delete.
+                            modal.data.photos.filter(photo => photo.id == imgId).forEach(photo => photo.deleted = true);
+                        }
+                        URL.revokeObjectURL(this.getAttribute('src')); // release mem
+                        renderImageBox(); // refresh dom
+                    });
+                });
+                // render file label
+                document.querySelector('#editor .file-label').innerHTML = `选择(${modal.data.photos.filter(photo => !photo.deleted).length}/${modal.data.fileLimit})`;
+            };
+            renderImageBox();
+
+            document.querySelector('#editor .file-upload-btn').addEventListener('click', () => {
+                if (modal.data.photos.filter(photo => !photo.deleted).length < modal.data.fileLimit) {
+                    document.querySelector('#editor input[type="file"]').click();
+                }
+            });
+
+            document.querySelector('#editor input[type="file"]').addEventListener('change', (e) => {
+                const nameSet = new Set(modal.data.photos.filter(file => file.name).map(file => file.name));
+                let seat = modal.data.fileLimit - modal.data.photos.filter(photo => !photo.deleted).length;
+                for (let i = 0; i < e.target.files.length && seat != 0; i++) {
+                    const file = e.target.files[i];
+                    if (nameSet.has(file.name) || file.size > modal.data.fileSize) {
+                        delete e.target.files[i]; // delete invalid photos
+                    } else {
+                        modal.data.photos.push({
+                            id: `upload-${file.name}`, // filename as id
+                            name: file.name, // keep filename to check duplication files
+                            url: URL.createObjectURL(file)
+                        });
+                        seat -= 1;
+                    }
+                }
+                renderImageBox();
+            });
+
+            document.querySelector('#editor .submit').addEventListener('click', async () => {
+                // const create = [];
+                // const newPhotos = document.querySelector('#editor input[type="file"]').files;
+                // const data = {
+                //     photo: {
+                //         delete: modal.data.photos.filter(photo => photo.deleted).map(photo => photo.id),
+                //     }
+                // };
+                const deletePhotoIds = modal.data.photos.filter(photo => photo.deleted).map(photo => photo.id);
+                const newPhotos = document.querySelector('#editor input[type="file"]').files;
+                const form = new FormData(document.getElementById('editorForm'));
+                if (modal.data.customer.id) form.append('id', modal.data.customer.id);
+                if (deletePhotoIds && deletePhotoIds.length > 0) form.append('deletePhotoIds', deletePhotoIds);
+                for (const photo of newPhotos) {
+                    form.append('file', photo);
+                }
                 $.ajax({
-                    url: editor.data.id ? `/customers/${editor.data.id}` : `/customers`,
-                    type: editor.data.id ? 'put' : 'post',
-                    data
+                    url: '/customers',
+                    type: 'post',
+                    data: form,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
                 }).done(function () {
                     helper.toast('操作成功', 'success');
                 }).always(function () {
@@ -212,7 +312,8 @@
         },
         open(title, data) {
             editor.title = title;
-            editor.data = data || {};
+            editor.data.customer = { ...data } || {};
+            editor.data.photos = data?.photos?.map(photo => { return { id: photo.id, url: photo.url, deleted: false, }; }) || [];
             editor.render();
         },
     };

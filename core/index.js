@@ -3,6 +3,7 @@ import fastifyView from '@fastify/view';
 import fastifySession from '@fastify/session';
 import fastifyCookie from '@fastify/cookie';
 import fastifyFormbody from '@fastify/formbody';
+import fastifyMultipart from '@fastify/multipart';
 import fastifyWebSocket from '@fastify/websocket';
 import nunjucks from 'nunjucks';
 import minifier from 'html-minifier';
@@ -39,6 +40,11 @@ const scService = async function (fastify, opts) {
         cookie: {
             secure: process.env.NODE_ENV === 'production',
         },
+    });
+    await fastify.register(fastifyMultipart, {
+        limits: {
+            fileSize: Number(process.env.MULTIPART_FILE_SIZE_LIMIT) || 12582912  // 12MB,
+        }
     });
     await fastify.register(fastifyWebSocket);
 

@@ -17,6 +17,7 @@
   "dependencies": {
     "@fastify/cookie": "^8.3.0",
     "@fastify/formbody": "^7.3.0",
+    "@fastify/multipart": "^7.2.0",
     "@fastify/session": "^10.0.0",
     "@fastify/static": "^6.5.0",
     "@fastify/view": "^7.1.0",

@@ -1,11 +1,24 @@
 import constants from '../lib/constants.js';
 
 const customers = async function (fastify, opts) {
-    // 创建
+    // 创建或修改
     fastify.post('/', async (req, reply) => {
-        const { name, phone, type, pcode, citycode, adcode, address } = req.body;
-        // only admin can create
+        // only admin can create or edit
         if (!req.session.user.isAdmin) return reply.code(403).send();
+
+        const parts = req.parts();
+        let body = { photos: [] };
+        for await (const part of parts) {
+            if (part.file) {
+                const buffer = await part.toBuffer();
+                const url = await fastify.storage.store(part.filename, buffer);
+                body.photos.push(url);
+            } else {
+                body[part.fieldname] = part.value;
+            }
+        }
+        let { id, name, phone, type, pcode, citycode, adcode, address, deletePhotoIds, photos } = body;
+        id = Number(id);
         // 解析省市区
         const province = fastify.regions.parseProvince(pcode) || '';
         const city = fastify.regions.parseProvince(citycode) || '';
@@ -14,37 +27,35 @@ const customers = async function (fastify, opts) {
         if (citycode) adcode2save = citycode;
         if (adcode) adcode2save = adcode;
 
-        const id = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
-        return reply.code(200).send({ id });
-    });
-    // 修改
-    fastify.put('/:id', async (req, reply) => {
-        const id = Number(req.params.id || 0);
-        const { name, phone, type, pcode, citycode, adcode, address } = req.body;
-        // only admin can edit
-        if (!req.session.user.isAdmin) return reply.code(403).send();
-
-        // 解析省市区
-        const province = fastify.regions.parseProvince(pcode) || '';
-        const city = fastify.regions.parseProvince(citycode) || '';
-        const area = fastify.regions.parseArea(adcode) || '';
-        let adcode2save = pcode;
-        if (citycode) adcode2save = citycode;
-        if (adcode) adcode2save = adcode;
-
-        await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
+        if (id && id > 0) { // edit
+            const photoIds = (deletePhotoIds?.split(',') || []).map(id => Number(id) || 0).filter(id => id !== 0);
+            if (photoIds && photoIds.length > 0) {
+                const photosToDelete = await fastify.db.photo.findMany({ where: { id: { in: photoIds } } });
+                for await (const photoToDelete of photosToDelete) fastify.storage.delete(photoToDelete.url); // delete files on disk
+                await fastify.db.photo.deleteMany({ where: { id: { in: photoIds } } }); // delete files in db
+            }
+            await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
+        } else { // create
+            id = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
+        }
+        // save new photos
+        for (const url of photos) { // XXX createMany is not support for SQLite :(
+            await fastify.db.photo.create({
+                data: { url, customerId: id }
+            });
+        }
         return reply.code(200).send();
     });
+
     // 删除
     fastify.delete('/', async (req, reply) => {
+        if (!req.session.user.isAdmin) return reply.code(403).send();
         let { ids } = req.body || { ids: [] };
+        // only admin can delete
         if (ids && ids.length > 0) {
             ids = ids.map(id => Number(id)).filter(id => id);
-            // only admin can delete
-            if (!req.session.user.isAdmin) return reply.code(403).send();
-            const deleteRefPhotos = fastify.db.photo.deleteMany({ where: { customerId: { in: ids } } });
-            const deleteCustomer = fastify.db.customer.deleteMany({ where: { id: { in: ids } } });
-            await fastify.db.$transaction([deleteRefPhotos, deleteCustomer]);
+            await fastify.db.photo.deleteMany({ where: { customerId: { in: ids } } });
+            await fastify.db.customer.deleteMany({ where: { id: { in: ids } } });
         }
         return reply.code(200).send();
     });

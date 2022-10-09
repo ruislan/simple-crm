@@ -1,4 +1,12 @@
 const helper = {
+    blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    },
     confirm(message, onOk, onCancel) {
         const confirm = document.getElementById('confirm');
         confirm.innerHTML = `
@@ -19,16 +27,19 @@ const helper = {
         $('#confirm .modal').modal('show');
     },
     preview(url) { // need jquery & bootstrap
-        const preview = document.getElementById('preview');
-        if (!preview) return;
+        const preview = document.createElement('div');
+        preview.id = 'img-preview';
+        preview.className = 'modal fade';
+        preview.addEventListener('hidden.bs.modal', () => document.body.removeChild(preview));
         preview.innerHTML = `
-                <div class="modal fade">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <img width="100%" src="${url}" />
-                    </div>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="border-1 bg-dark p-2 rounded">
+                    <img width="100%" src="${url}" />
                 </div>
-            `;
-        $('#preview .modal').modal('show');
+            </div>
+        `;
+        document.body.appendChild(preview);
+        $('#img-preview').modal('show');
     },
     async toast(message, type) { // type: success, danger
         type = type || 'info';

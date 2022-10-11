@@ -8,8 +8,8 @@
         <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
         <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
         <div class="pb-2 pb-lg-0 pe-1">
-            <select id="stage" class="form-select" aria-label="状态">
-                <option value="">状态</option>
+            <select id="stage" class="form-select" aria-label="阶段">
+                <option value="">阶段</option>
                 {% for s in data.stages %}
                 <option value="{{s.id}}">{{s.name}}</option>
                 {% endfor %}
@@ -54,90 +54,11 @@
         <div class="spinner-border" role="status"></div>
     </div>
     <div id="table" class="table-responsive"></div>
-    <div id="preview"></div>
-    <div id="confirm"></div>
 </div>
 {% endblock container %}
 {% block script %}
+<script src="/public/js/customers.js"></script>
 <script>
-    const transferDialog = {
-        title: '转交客户',
-        data: {
-            customerId: null,
-        },
-        open(customerId) {
-            this.data.customerId = customerId;
-            this.render();
-        },
-        render() {
-            // clear dom
-            const modal = this;
-            const modalEL = document.createElement('div');
-            modalEL.id = 'transferDialog';
-            modalEL.className = 'modal fade';
-            modalEL.setAttribute('aria-hidden', 'true');
-            modalEL.setAttribute('tabindex', '-1');
-            modalEL.setAttribute('data-bs-backdrop', 'static');
-            modalEL.addEventListener('hidden.bs.modal', () => {
-                modal.data = {};
-                document.body.removeChild(modalEL);
-            });
-            modalEL.addEventListener('show.bs.modal', () => {
-                // load users
-                $.getJSON('/users').done(function (result) {
-                    const { data } = result;
-                    const selectNode = $('#transferDialog select[name="userId"]');
-                    for (const u of data) {
-                        selectNode.append(`<option value="${u.id}" ${u.id == '{{sessionUser.id}}' ? 'selected' : ''}>${u.name} ${u.phone}</option>`);
-                    }
-                }); // XXX 现在先全部读取，后面再改成可输入并查询的吧
-            });
-            document.body.appendChild(modalEL);
-            modalEL.innerHTML = `
-                <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">${modal.title}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="editorForm">
-                            <div class="d-flex flex-column">
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 col-form-label">转给</label>
-                                        <div class="col-sm-10">
-                                            <div class="pb-2 pb-lg-0">
-                                                <select name="userId" class="form-select"></select>
-                                            </div>
-                                        </div>
-                                    </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                            <button type="button" class="btn btn-dark">保存</button>
-                        </div>
-                        </form>
-                    </div>
-                </div>                
-            `;
-            document.querySelector('#transferDialog .btn-dark').addEventListener('click', () => {
-                const userId = document.querySelector('#transferDialog select[name="userId"]').value;
-                $.ajax({
-                    url: `/customers/${transferDialog.data.customerId}/transfer`,
-                    type: 'post',
-                    data: { userId }
-                }).done(function () {
-                    helper.toast('操作成功', 'success');
-                }).always(function () {
-                    $('#transferDialog').modal('hide');
-                    app.search();
-                });
-            });
-            $('#transferDialog').modal('show');
-        }
-    };
-
     const app = {
         data: {
             tableData: [],
@@ -227,7 +148,7 @@
                     <tr>
                         <th scope="col" style="width: 150px; min-width: 150px;">客户</th>
                         <th scope="col" style="width: 100px; min-width: 100px;">类型</th>
-                        <th scope="col" style="width: 150px; min-width: 100px;">状态</th>
+                        <th scope="col" style="width: 150px; min-width: 100px;">阶段</th>
                         <th scope="col" style="width: 200px; min-width: 200px;">地址</th>
                         <th scope="col" style="width: 150px; min-width: 150px;">图片</th>
                         <th scope="col" style="width: 150px; min-width: 150px;">操作</th>
@@ -242,7 +163,12 @@
 
         },
         transfer(customerId) {
-            transferDialog.open(customerId);
+            transferDialog.open({
+                customerId,
+                onDone: () => helper.toast('操作成功', 'success'),
+                onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
+                onAlways: () => app.search(),
+            });
         },
         retreat(customerId) {
             helper.confirm('确定退回吗？', function () {

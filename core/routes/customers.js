@@ -36,7 +36,8 @@ const customers = async function (fastify, opts) {
             }
             await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
         } else { // create
-            id = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
+            const newCustomer = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
+            id = newCustomer.id;
         }
         // save new photos
         for (const url of photos) { // XXX createMany is not support for SQLite :(
@@ -132,18 +133,24 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send({ data });
     });
 
+    // if json return json
     fastify.get('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
+        const isJsonRequest = (req.headers['content-type'] || '').startsWith('application/json');
         const customer = await fastify.db.customer.findUnique({
             where: { id },
             include: { photos: true, stage: true, }
         });
-        if (!customer) return reply.redirect('/not-found');
+        if (!customer) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
         // admin can view all
         // others can only view the customers which were assigned to them
-        if (!req.session.user.isAdmin && req.session.user.id != customer.userId) return reply.redirect('/not-found');
-        const stages = await fastify.db.stage.findMany();
-        return reply.view('customers/detail.html', { data: { customer, stages } });
+        if (!req.session.user.isAdmin && req.session.user.id != customer.userId) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
+        if (isJsonRequest) {
+            return reply.code(200).send(customer);
+        } else {
+            const stages = await fastify.db.stage.findMany();
+            return reply.view('customers/detail.html', { data: { customer, stages } });
+        }
     });
 
     // 退回

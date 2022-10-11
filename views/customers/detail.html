@@ -13,30 +13,48 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column">
-                    <div class="">
-                        电话: {{ data.customer.phone }}
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">电话:</div>
+                        <div>{{ data.customer.phone }}</div>
                     </div>
-                    <div class="mt-1">
-                        类型: {{ data.customer.type}}
+                    <div class="mt-1 d-flex align-items-center">
+                        <div class="me-2">类型:</div>
+                        <div>{{ data.customer.type}}</div>
                     </div>
-                    <div class="mt-1">地区: {{ data.customer.province }} / {{ data.customer.city }} / {{
-                        data.customer.area }}</div>
-                    <div class="mt-1">地址: {{ data.customer.address }}</div>
-                    <div class="mt-1">坐标: {{ data.customer.location }}</div>
+                    <div class="mt-1 d-flex align-items-center">
+                        <div class="me-2">地区:</div>
+                        <div>{{ data.customer.province }} / {{ data.customer.city }} / {{data.customer.area }}</div>
+                    </div>
+                    <div class="mt-1 d-flex align-items-center">
+                        <div class="me-2">地址:</div>
+                        <div>{{ data.customer.address }}</div>
+                    </div>
+                    <div class="mt-1 d-flex align-items-center">
+                        <div class="me-2">坐标:</div>
+                        <div>{{ data.customer.location }}</div>
+                    </div>
+                    <div class="mt-1 d-flex align-items-center">
+                        <div class="me-2">阶段:</div>
+                        <div class="dropdown">
+                            <div id="stage" class="badge bg-secondary dropdown-toggle" style="cursor: pointer;"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ data.customer.stage.name }}
+                            </div>
+                            <ul class="dropdown-menu">
+                                {% for s in data.stages %}
+                                <li><span class="dropdown-item" style="cursor: pointer;"
+                                        onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="dropdown mt-3">
-                    <button id="stage" class="dropdown-toggle btn btn-dark w-100" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        {{ data.customer.stage.name }}
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% for s in data.stages %}
-                        <li><span class="dropdown-item" style="cursor: pointer;"
-                                onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <button class="btn btn-dark btn-sm" onclick="app.edit('{{data.customer.id}}')">编辑</button>
+                <button class="btn btn-dark btn-sm ms-1" onclick="app.transfer('{{data.customer.id}}')">转交</button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="app.retreat('{{data.customer.id}}')">退回</button>
             </div>
         </div>
         <div class="d-flex g-2 flex-wrap">
@@ -63,6 +81,7 @@
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script src="/public/js/customers.js"></script>
 <script>
     const app = {
         data: {
@@ -215,11 +234,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">主题</label>
-                                    <input type="text" class="form-control" name="subject" value="${item?.subject}">
+                                    <input type="text" class="form-control" name="subject" value="${item?.subject || ''}">
                                 </div>
                                 <div>
                                     <label for="linkContent" class="form-label">内容</label>
-                                    <textarea class="form-control" name="content" rows="3">${item?.content}</textarea>
+                                    <textarea class="form-control" name="content" rows="3">${item?.content || ''}</textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -248,6 +267,41 @@
                     });
                 });
                 $('#editor').modal('show');
+            });
+        },
+        retreat(customerId) {
+            helper.confirm('确定退回吗？', function () {
+                $.ajax({
+                    type: 'post',
+                    url: `/customers/${customerId}/retreat`,
+                }).done(function (result) {
+                    window.location.href = '/customers/my';
+                });
+            });
+        },
+        transfer(customerId) {
+            transferDialog.open({
+                customerId,
+                onDone: () => window.location.href = '/customers/my',
+                onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
+            });
+        },
+        edit(customerId) {
+            $.ajax({
+                url: `/customers/${customerId}`,
+                contentType: 'application/json',
+            }).done(function (result) {
+                $.getJSON('/public/regions').done(function (regions) {
+                    editor.open({
+                        title: '编辑',
+                        regions,
+                        data: result,
+                        onDone: () => window.location.reload(),
+                        onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
+                    });
+                }).fail(() => helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger'));
+            }).fail(function () {
+                helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger');
             });
         },
         onReady() {

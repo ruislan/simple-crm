@@ -75,23 +75,36 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
+    // add & edit this customer's link
     fastify.post('/:id/links', async (req, reply) => {
-        const id = Number(req.params.id || 0);
-        let { subject, content, typeId } = req.body;
-        const customer = await fastify.db.customer.findUnique({ where: { id } });
+        const customerId = Number(req.params.id || 0);
+        let { id, subject, content, typeId } = req.body;
+
         // TODO validate params
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+
         // admin can add any
         // others can only do it which were assigned to them
         if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.link.create({
-            data: {
-                subject,
-                content,
-                typeId: Number(typeId) || 0,
-                userId: req.session.user.id,
-                customerId: customer.id,
-            },
-        });
+
+        const link = { subject, content, typeId: Number(typeId) || 0, customerId: customer.id };
+        if (id) {
+            await fastify.db.link.update({ data: link, where: { id: Number(id) } });
+        } else {
+            link.userId = req.session.user.id;
+            await fastify.db.link.create({ data: link });
+        }
+        return reply.code(200).send();
+    });
+
+    fastify.delete('/:customerId/links/:linkId', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const linkId = Number(req.params.linkId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        // admin can delete any
+        // others can only do it which were assigned to them
+        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.link.delete({ where: { id: linkId } });
         return reply.code(200).send();
     });
 

@@ -8,7 +8,9 @@ const helper = {
         });
     },
     confirm(message, onOk, onCancel) {
-        const confirm = document.getElementById('confirm');
+        const confirm = document.createElement('confirm');
+        confirm.id = 'bs-modal-confirm';
+        confirm.addEventListener('hidden.bs.modal', () => document.body.removeChild(confirm));
         confirm.innerHTML = `
                 <div class="modal fade">
                     <div class="modal-dialog modal-dialog-centered">
@@ -22,13 +24,20 @@ const helper = {
                     </div>
                 </div>
             `;
-        if (onOk) $('#confirm .modal .btn-dark').click(() => { onOk(); document.innerHTML = ''; $('#confirm .modal').modal('hide'); });
-        if (onCancel) $('#confirm .modal .btn-secondary').click(() => { onCancel(); document.innerHTML = ''; $('#confirm .modal').modal('hide'); });
-        $('#confirm .modal').modal('show');
+        document.body.appendChild(confirm);
+        if (onOk) $('#bs-modal-confirm .modal .btn-dark').click(() => {
+            onOk();
+            $('#bs-modal-confirm .modal').modal('hide');
+        });
+        if (onCancel) $('#bs-modal-confirm .modal .btn-secondary').click(() => {
+            onCancel();
+            $('#bs-modal-confirm .modal').modal('hide');
+        });
+        $('#bs-modal-confirm .modal').modal('show');
     },
     preview(url) { // need jquery & bootstrap
         const preview = document.createElement('div');
-        preview.id = 'img-preview';
+        preview.id = 'bs-modal-img-preview';
         preview.className = 'modal fade';
         preview.addEventListener('hidden.bs.modal', () => document.body.removeChild(preview));
         preview.innerHTML = `
@@ -39,11 +48,13 @@ const helper = {
             </div>
         `;
         document.body.appendChild(preview);
-        $('#img-preview').modal('show');
+        $('#bs-modal-img-preview').modal('show');
     },
     async toast(message, type) { // type: success, danger
         type = type || 'info';
-        const toast = document.getElementById('toast');
+        const toast = document.createElement('div');
+        toast.id = 'bs-toast';
+        toast.addEventListener('hidden.bs.toast', () => document.body.removeChild(toast));
         toast.innerHTML = `
             <div class="toast-container p-3 top-0 start-50 translate-middle-x">
                 <div class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
@@ -57,6 +68,7 @@ const helper = {
                 </div>
             </div>
             `;
-        $('#toast .toast').toast('show');
+        document.body.appendChild(toast);
+        $('#bs-toast .toast').toast('show');
     },
 };

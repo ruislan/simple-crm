@@ -15,6 +15,10 @@ const helper = {
                 <div class="modal fade">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">请确认</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
                             <div class="modal-body"> ${message} </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>

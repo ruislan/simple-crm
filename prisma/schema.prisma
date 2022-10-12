@@ -114,9 +114,10 @@ model Link {
 
 // 接触类型 email（邮件）, phone（电话）, wechat（微信），video（视频） ...
 model LinkType {
-  id    Int    @id @default(autoincrement())
-  name  String
-  links Link[]
+  id        Int     @id @default(autoincrement())
+  name      String
+  deletable Boolean @default(true)
+  links     Link[]
 }
 
 // 所有活动，谁做了什么事情

@@ -36,8 +36,8 @@ const stages = [
 ];
 
 const linkTypes = [
-    { id: 1, name: '邮件' },
-    { id: 2, name: '电话' },
+    { id: 1, name: '邮件', deletable: false },
+    { id: 2, name: '电话', deletable: false },
     { id: 3, name: '微信' },
     { id: 4, name: 'QQ' },
     { id: 5, name: '短信' },

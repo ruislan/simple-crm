@@ -6,6 +6,13 @@
 没有什么难以理解的概念，不需要更多的文化和知识，适合中小微企业。
 从寻找客户，联系客户，管理客户，最后达到成交，以及维持关系。都是你熟悉的事情。
 
+## 技术栈
+
+* Framework: Fastify
+* Database: SQLite
+* ORM: Prisma
+* Styling: Bootstrap
+
 ## 功能
 
 ### 用户
@@ -48,14 +55,41 @@
 2. 客户阶段的创建、编辑和删除
 3. 客户标签的创建、编辑和删除
 
+## 截图
+
+<div>
+    <img src="./docs/screenshots/screenshot_dashboard.png" width="25%">
+    <img src="./docs/screenshots/screenshot_customers.png" width="25%">
+    <img src="./docs/screenshots/screenshot_my_customers.png" width="25%">
+    <img src="./docs/screenshots/screenshot_customer_detail.png" width="25%">
+    <img src="./docs/screenshots/screenshot_system_dataset.png" width="25%">
+    <img src="./docs/screenshots/screenshot_system_link_type.png" width="25%">
+    <img src="./docs/screenshots/screenshot_system_user.png" width="25%">
+</div>
 
 ## 运行
 
 修改.env.example为.env，并且填入两个地图对应的的API调用KEY，是服务端KEY，这个可以到对应的地图开发者页面免费申请。
 
-```bash
+```shell
+git clone https://github.com/ruislan/simple-crm.git
+cd simple-crm
 yarn install
+yarn prisma db push
+yarn prisma db seed
 yarn start:dev  
+```
+
+访问：http://localhost:5600
+
+```
+Admin User
+User: admin
+Pass: 123123
+
+Normal User
+User: user1
+Pass: 123123
 ```
 
 ## Docker

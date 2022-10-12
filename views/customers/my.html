@@ -154,13 +154,12 @@
                         <th scope="col" style="width: 150px; min-width: 150px;">操作</th>
                     </tr>
                 </thead>
-                <tbody style="font-size: 14px;">
+                <tbody class="fs-small">
                     ${rows}
                 </tbody>
             </table>
             `;
             table.innerHTML = tableHTML;
-
         },
         transfer(customerId) {
             transferDialog.open({

@@ -1,9 +1,9 @@
 <!-- 数据爬取管理 -->
 {% extends 'layouts/default.html' %}
-{% set title = '联系类别' %}
+{% set title = '客户阶段' %}
 {% set menuActive = 'system' %}
 {% block container %}
-<div class="h4 mb-4">系统 - 联系类别</div>
+<div class="h4 mb-4">系统 - 客户阶段</div>
 <div class="d-flex align-items-center justify-content-between flex-wrap">
     <div class="d-flex align-items-center">
         <div><input class="form-control" type="search" id="searchName" placeholder="名称" /></div>
@@ -13,7 +13,7 @@
         <div class="ms-3 d-flex align-items-center flex-wrap">
             <button id="toolbarNew"
                 class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
-                onclick="app.new()" data-toggle="tooltip" title="新增类别">
+                onclick="app.new()" data-toggle="tooltip" title="新增阶段">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg"
                     viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
@@ -42,7 +42,7 @@
 </div>
 {% endblock container %}
 {% block script %}
-<script src="/public/js/links.js"></script>
+<script src="/public/js/stages.js"></script>
 <script>
     const app = {
         data: {
@@ -53,7 +53,7 @@
             const data = { name: $('#searchName').val() };
             $.ajax({
                 type: 'get',
-                url: '/system/link-types/search',
+                url: '/system/stages/search',
                 data,
             }).done(function (result) {
                 app.data.tableData = result.data;
@@ -76,6 +76,7 @@
                     <tr id="row-${item.id}">
                         <th scope="row">${item.id}</th>
                         <td>${item.name}</td>
+                        <td>${item.sequence}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark" onclick="app.edit(${i})">编辑</button>
@@ -91,6 +92,7 @@
                         <tr>
                             <th scope="col">ID</th>
                             <th scope="col">名称</th>
+                            <th scope="col">顺序</th>
                             <th scope="col">操作</th>
                         </tr>
                     </thead>
@@ -102,7 +104,7 @@
             table.innerHTML = tableHTML;
         },
         new() {
-            linkTypeEditor.open({
+            stageEditor.open({
                 title: '新建',
                 onDone: () => helper.toast('操作成功', 'success'),
                 onAlways: () => app.search()
@@ -110,7 +112,7 @@
         },
         edit(idx) {
             const item = this.data.tableData[idx];
-            linkTypeEditor.open({
+            stageEditor.open({
                 title: '编辑',
                 data: item,
                 onDone: () => helper.toast('操作成功', 'success'),
@@ -118,10 +120,10 @@
             });
         },
         delete(id) {
-            helper.confirm('是否删除这个类型，这是一个不可逆操作！', function () {
+            helper.confirm('是否删除这一阶段，这是一个不可逆操作！', function () {
                 $.ajax({
-                    url: `/system/link-types/${id}`,
-                    type: 'delete'
+                    url: `/system/stages/${id}`,
+                    type: 'delete',
                 }).done(function () {
                     helper.toast('操作成功', 'success');
                     app.search();

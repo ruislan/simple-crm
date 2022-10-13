@@ -17,9 +17,11 @@ const linkTypes = async function (fastify, opts) {
 
     fastify.delete('/:id', async (req, reply) => {
         const id = Number(req.params.id);
-        // if this link type references to some links, delete all links
-        await fastify.db.link.deleteMany({ where: { typeId: id } });
+
+        const count = await fastify.db.link.count({ where: { typeId: id } });
+        if (count > 0) return reply.code(400).send({ message: '无法删除：该类别下还有联系信息，请先将联系信息的类别进行转换。' });
         await fastify.db.linkType.delete({ where: { id } });
+
         return reply.code(200).send();
     });
 

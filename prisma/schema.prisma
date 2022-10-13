@@ -65,6 +65,7 @@ model Stage {
   name      String
   sequence  Int
   isFinal   Boolean    @default(false) @map("is_final")
+  deletable Boolean    @default(true)
   customers Customer[]
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")

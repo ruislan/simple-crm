@@ -148,7 +148,7 @@ const customers = async function (fastify, opts) {
         if (isJsonRequest) {
             return reply.code(200).send(customer);
         } else {
-            const stages = await fastify.db.stage.findMany();
+            const stages = await fastify.db.stage.findMany({ orderBy: [{ sequence: 'asc' }] });
             return reply.view('customers/detail.html', { data: { customer, stages } });
         }
     });
@@ -192,7 +192,7 @@ const customers = async function (fastify, opts) {
     });
 
     fastify.get('/my', async (req, reply) => {
-        const stages = await fastify.db.stage.findMany({ orderBy: [{ createdAt: 'desc' }] });
+        const stages = await fastify.db.stage.findMany({ orderBy: [{ sequence: 'asc' }] });
         return reply.view("customers/my.html", { data: { stages } });
     });
 

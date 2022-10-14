@@ -10,7 +10,6 @@ import coreService from './core/index.js';
 
 const main = async function () {
     dotenv.config();
-
     const server = fastify({
         logger: {
             transport: process.env.NODE_ENV === 'dev' ? {

@@ -39,8 +39,8 @@ const transferDialog = {
                             <h5 class="modal-title">${modal.title}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
+                        <form id="editorForm">
                         <div class="modal-body">
-                            <form id="editorForm">
                             <div class="d-flex flex-column">
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 col-form-label">转给</label>
@@ -144,8 +144,8 @@ const editor = {
                             <h5 class="modal-title">${modal.title}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
+                        <form id="editorForm">
                         <div class="modal-body">
-                            <form id="editorForm">
                             <div class="d-flex flex-column">
                                     <div class="mb-3 row">
                                         <label for="inputName" class="col-sm-2 col-form-label">名称</label>

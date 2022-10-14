@@ -13,28 +13,29 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column">
-                    <div class="d-flex align-items-center">
-                        <div class="me-2">电话:</div>
+                    <div class="d-flex">
+                        <div class="me-2 text-nowrap">电话:</div>
                         <div>{{ data.customer.phone }}</div>
                     </div>
-                    <div class="mt-1 d-flex align-items-center">
-                        <div class="me-2">类型:</div>
-                        <div>{{ data.customer.type}}</div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">类型:</div>
+                        <div>{{ data.customer.type }}</div>
                     </div>
-                    <div class="mt-1 d-flex align-items-center">
-                        <div class="me-2">地区:</div>
-                        <div>{{ data.customer.province }} / {{ data.customer.city }} / {{data.customer.area }}</div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">地区:</div>
+                        <div>{{ data.customer.province }} / {{ data.customer.city }}
+                            / {{ data.customer.area }}</div>
                     </div>
-                    <div class="mt-1 d-flex align-items-center">
-                        <div class="me-2">地址:</div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">地址:</div>
                         <div>{{ data.customer.address }}</div>
                     </div>
-                    <div class="mt-1 d-flex align-items-center">
-                        <div class="me-2">坐标:</div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">坐标:</div>
                         <div>{{ data.customer.location }}</div>
                     </div>
-                    <div class="mt-1 d-flex align-items-center">
-                        <div class="me-2">阶段:</div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">阶段:</div>
                         <div class="dropdown">
                             <div id="stage" class="badge bg-secondary dropdown-toggle" style="cursor: pointer;"
                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -43,24 +44,30 @@
                             <ul class="dropdown-menu">
                                 {% for s in data.stages %}
                                 <li><span class="dropdown-item" style="cursor: pointer;"
-                                        onclick="app.changeStage('{{s.id}}', '{{s.name}}')">{{s.name}}</span>
+                                        onclick="app.changeStage('{{ s.id }}', '{{ s.name }}')">{{ s.name }}</span>
                                 </li>
                                 {% endfor %}
                             </ul>
                         </div>
                     </div>
+                    <div class="mt-1 d-flex">
+                        <div class="me-2 text-nowrap">标签:</div>
+                        <div id="tags" class="tags"></div>
+                    </div>
                 </div>
             </div>
             <div class="card-footer bg-transparent">
-                <button class="btn btn-dark btn-sm" onclick="app.edit('{{data.customer.id}}')">编辑</button>
-                <button class="btn btn-dark btn-sm ms-1" onclick="app.transfer('{{data.customer.id}}')">转交</button>
-                <button class="btn btn-danger btn-sm ms-1" onclick="app.retreat('{{data.customer.id}}')">退回</button>
+                <button class="btn btn-dark btn-sm" onclick="app.edit('{{ data.customer.id }}')">编辑</button>
+                <button class="btn btn-dark btn-sm ms-1" onclick="app.transfer('{{ data.customer.id }}')">转交
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="app.retreat('{{ data.customer.id }}')">退回
+                </button>
             </div>
         </div>
         <div class="d-flex g-2 flex-wrap">
             {% for photo in data.customer.photos %}
-            <div class="m-1 border border-1 p-1" style="max-width: 150px;" onclick="helper.preview('{{photo.url}}')">
-                <img src="{{photo.url}}" width="100%" />
+            <div class="m-1 border border-1 p-1" style="max-width: 150px;" onclick="helper.preview('{{ photo.url }}')">
+                <img src="{{ photo.url }}" width="100%" />
             </div>
             {% endfor %}
         </div>
@@ -83,14 +90,97 @@
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
 <script src="/public/js/customers.js"></script>
 <script>
+    const tagsDialog = {
+        title: '标签',
+        id: 'tagsDialog',
+        data: {},
+        open({ customerId, onDone, onFail, onAlways }) {
+            this.data.customerId = customerId;
+            this.onDone = onDone;
+            this.onFail = onFail;
+            this.onAlways = onAlways;
+            this.render();
+        },
+        setTag(tagName) {
+            document.querySelector(`#${this.id} input[name="tag"]`).value = tagName;
+        },
+        render() {
+            const modal = this;
+            const modalEL = document.createElement('div');
+            modalEL.id = modal.id;
+            modalEL.className = 'modal fade';
+            modalEL.setAttribute('aria-hidden', 'true');
+            modalEL.setAttribute('tabindex', '-1');
+            modalEL.setAttribute('data-bs-backdrop', 'static');
+            modalEL.addEventListener('hidden.bs.modal', () => {
+                modal.data = {};
+                document.body.removeChild(modalEL);
+            });
+            modalEL.addEventListener('show.bs.modal', () => {
+                // load some tags (hot)
+                $.getJSON('/tags?customerId={{data.customer.id}}').done(function (result) {
+                    const { data } = result;
+                    const parentNode = $(`#${modal.id} .tags`);
+                    for (const u of data) {
+                        parentNode.append(`<div class="tag" onclick="tagsDialog.setTag('${u.name}')">${u.name}</div>`);
+                    }
+                });
+            });
+            document.body.appendChild(modalEL);
+            modalEL.innerHTML = `
+                <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${modal.title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex flex-column">
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 col-form-label">标签：</label>
+                                    <div class="col-sm-10">
+                                        <div class="pb-2 pb-lg-0">
+                                            <input name="tag" class="form-control" placeholder="添加或者选择一个标签"></input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 d-flex flex-wrap align-items-center tags"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-dark">保存</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.querySelector(`#${modal.id} .btn-dark`).addEventListener('click', () => {
+                const name = document.querySelector(`#${modal.id} input[name="tag"]`).value;
+                $.ajax({
+                    url: `/customers/${modal.data.customerId}/tags`,
+                    type: 'post',
+                    data: { name }
+                }).done(function () {
+                    if (modal.onDone) modal.onDone();
+                }).fail(function (result) {
+                    if (modal.onFail) modal.onFail(result);
+                }).always(function () {
+                    $(`#${modal.id}`).modal('hide');
+                    if (modal.onAlways) modal.onAlways();
+                });
+            });
+            $(`#${modal.id}`).modal('show');
+        },
+    };
+
     const app = {
         data: {
             linkList: [],
             typeDefault: `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
-                <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
-                </svg>                 
-            `,
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
+                    <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
+                    </svg>
+                `,
             typeMap: {
                 '微信': `
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-wechat" viewBox="0 0 16 16">
@@ -109,6 +199,56 @@
                     </svg>                
                 `,
             }
+        },
+        newTag(customerId) {
+            tagsDialog.open({
+                customerId,
+                onDone: () => { helper.toast('操作成功', 'success'); app.renderTags(); },
+                onFail: (result) => {
+                    if (result.status === 400) {
+                        helper.toast(result.responseJSON?.message || '未知错误，请刷新重试', 'warning');
+                    } else {
+                        helper.toast('操作失败，请刷新重试或者联系管理员', 'danger');
+                    }
+                }
+            });
+        },
+        deleteTag(tagId) {
+            $.ajax({
+                type: 'delete',
+                url: `/customers/{{data.customer.id}}/tags/${tagId}`,
+            }).done(function () {
+                helper.toast('操作成功', 'success');
+                app.renderTags();
+            });
+        },
+        renderTags() {
+            $.getJSON('/customers/{{data.customer.id}}/tags')
+                .done(function (result) {
+                    const tags = document.querySelector('#tags');
+                    let tagsHTML = '';
+                    for (const tag of result.data) {
+                        tagsHTML += `
+                            <div class="tag tag-secondary">
+                                ${tag.name}
+                                <button type="button" class="btn-close btn-close-white btn-close-sm delete" onclick="app.deleteTag(${tag.id})"></button>
+                            </div>                        
+                        `;
+                    }
+                    tagsHTML += `
+                        <div class="d-flex aligne-items-center mb-2">
+                            <button class="btn btn-outline-secondary btn-mini py-0"
+                                onclick="app.newTag('{{data.customer.id}}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-plus" viewBox="0 0 16 16">
+                                    <path
+                                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    tags.innerHTML = tagsHTML;
+                });
         },
         renderLinkList() {
             const list = document.getElementById('linkList');
@@ -303,14 +443,12 @@
             }).fail(function () {
                 helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger');
             });
-        },
-        onReady() {
-            this.loadLinkList();
         }
     };
 
     $(document).ready(async function () {
-        app.onReady();
-    })
+        app.loadLinkList();
+        app.renderTags();
+    });
 </script>
 {% endblock script %}

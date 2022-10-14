@@ -76,6 +76,49 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
+    // tags
+    fastify.get('/:id/tags', async (req, reply) => {
+        const customerId = Number(req.params.id || 0);
+        const refs = await fastify.db.customerTagRef.findMany({ where: { customerId }, include: { tag: true } });
+        const tags = refs.map(ref => ref.tag);
+        return reply.code(200).send({ data: tags });
+    });
+
+    fastify.post('/:id/tags', async (req, reply) => {
+        const customerId = Number(req.params.id || 0);
+        let { name } = req.body;
+        if (!name && name.length < 1) return reply.code(400).send({ message: '标签至少1个字符' });
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        let tag = await fastify.db.tag.findUnique({ where: { name } });
+
+        // admin can add any
+        // others can only do it which were assigned to them
+        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        if (!tag) tag = await fastify.db.tag.create({ data: { name } }); // no tag ? create one.
+
+        const ref = { customerId, tagId: tag.id, };
+        await fastify.db.customerTagRef.upsert({
+            create: ref,
+            update: ref,
+            where: { customerId_tagId: { customerId, tagId: tag.id } }
+        }); // use upsert to avoid duplicate errors
+
+        return reply.code(200).send();
+    });
+
+    fastify.delete('/:customerId/tags/:tagId', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const tagId = Number(req.params.tagId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const tag = await fastify.db.tag.findUnique({ where: { id: tagId } });
+        // admin can delete any
+        // others can only do it which were assigned to them
+        if (!customer || !tag || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.customerTagRef.delete({ where: { customerId_tagId: { customerId, tagId: tag.id } } }); // delete relationship
+        return reply.code(200).send();
+    });
+    // end tags
+
     // add & edit this customer's link
     fastify.post('/:id/links', async (req, reply) => {
         const customerId = Number(req.params.id || 0);
@@ -139,12 +182,12 @@ const customers = async function (fastify, opts) {
         const isJsonRequest = (req.headers['content-type'] || '').startsWith('application/json');
         const customer = await fastify.db.customer.findUnique({
             where: { id },
-            include: { photos: true, stage: true, }
+            include: { photos: true, stage: true }
         });
         if (!customer) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
         // admin can view all
         // others can only view the customers which were assigned to them
-        if (!req.session.user.isAdmin && req.session.user.id != customer.userId) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
+        if (!req.session.user.isAdmin && req.session.user.id !== customer.userId) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
         if (isJsonRequest) {
             return reply.code(200).send(customer);
         } else {
@@ -228,7 +271,7 @@ const customers = async function (fastify, opts) {
         });
 
         for (const item of data) {
-            if (!req.session.user.isAdmin && item.userId != req.session.user.id) { // 不是admin也不是自己的 掩盖 联系方式, 
+            if (!req.session.user.isAdmin && item.userId !== req.session.user.id) { // 不是admin也不是自己的 掩盖 联系方式,
                 if (item.phone && item.phone.length > 3) {
                     item.phone = item.phone.substring(0, 3) + '***';
                 }

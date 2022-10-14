@@ -60,7 +60,7 @@ const helper = {
         toast.id = 'bs-toast';
         toast.addEventListener('hidden.bs.toast', () => document.body.removeChild(toast));
         toast.innerHTML = `
-            <div class="toast-container p-3 top-0 start-50 translate-middle-x">
+            <div class="toast-container  position-fixed p-3 top-0 start-50 translate-middle-x">
                 <div class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="d-flex">
                         <div class="toast-body">

@@ -76,6 +76,7 @@
                     <tr id="row-${item.id}">
                         <th scope="row">${item.id}</th>
                         <td>${item.name}</td>
+                        <td><label class="color-cube" style="background-color:${item.colorHex || ''};"></label></td>
                         <td>${item.sequence}</td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -92,6 +93,7 @@
                         <tr>
                             <th scope="col">ID</th>
                             <th scope="col">名称</th>
+                            <th scope="col">颜色</th>
                             <th scope="col">顺序</th>
                             <th scope="col">操作</th>
                         </tr>

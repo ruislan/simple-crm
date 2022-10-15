@@ -39,7 +39,78 @@ const stageEditor = {
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control" name="sequence" id="inputName" value="${modal.data.stage?.sequence || '100'}" required>
                                     </div>
-                                </div>                                
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="inputName" class="col-sm-2 col-form-label">颜色</label>
+                                    <div class="col-sm-10 d-flex align-items-center">
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#212529" ${(!modal.data.stage?.colorHex || modal.data.stage?.colorHex === '#212529') ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#212529;"></span>
+                                            </div>
+                                        </label>                                        
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#6C757D" ${modal.data.stage?.colorHex === '#6C757D' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#6C757D;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#206bc4" ${modal.data.stage?.colorHex === '#206bc4' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#206bc4;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#4299e1" ${modal.data.stage?.colorHex === '#4299e1' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#4299e1;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#4263eb" ${modal.data.stage?.colorHex === '#4263eb' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#4263eb;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#ae3ec9" ${modal.data.stage?.colorHex === '#ae3ec9' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#ae3ec9;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#d6336c" ${modal.data.stage?.colorHex === '#d6336c' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#d6336c;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#d63939" ${modal.data.stage?.colorHex === '#d63939' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#d63939;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#f76707" ${modal.data.stage?.colorHex === '#f76707' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#f76707;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#f59f00" ${modal.data.stage?.colorHex === '#f59f00' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#f59f00;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="color" type="radio" value="#74b816" ${modal.data.stage?.colorHex === '#74b816' ? 'checked' : ''}>
+                                                <span class="color-check-color" style="background-color:#74b816;"></span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>                                               
                             </div>
                         </div>
                         <div class="modal-footer">

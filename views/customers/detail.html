@@ -144,6 +144,78 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 col-form-label">颜色：</label>
+                                    <div class="col-sm-10 d-flex align-items-center">
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#212529" checked>
+                                                <span class="color-check-color" style="background-color:#212529;"></span>
+                                            </div>
+                                        </label>                                        
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#6C757D">
+                                                <span class="color-check-color" style="background-color:#6C757D;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#206bc4">
+                                                <span class="color-check-color" style="background-color:#206bc4;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#4299e1">
+                                                <span class="color-check-color" style="background-color:#4299e1;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#4263eb">
+                                                <span class="color-check-color" style="background-color:#4263eb;"></span>
+                                            </div>
+                                        </label>
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#ae3ec9">
+                                                <span class="color-check-color" style="background-color:#ae3ec9;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#d6336c">
+                                                <span class="color-check-color" style="background-color:#d6336c;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#d63939">
+                                                <span class="color-check-color" style="background-color:#d63939;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#f76707">
+                                                <span class="color-check-color" style="background-color:#f76707;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#f59f00">
+                                                <span class="color-check-color" style="background-color:#f59f00;"></span>
+                                            </div>
+                                        </label>                                            
+                                        <label class="color-input">
+                                            <div class="col-auto">
+                                                <input class="color-check-input" name="tagColor" type="radio" value="#74b816">
+                                                <span class="color-check-color" style="background-color:#74b816;"></span>
+                                            </div>
+                                        </label>
+                                    
+                                    </div>
+                                </div>
                                 <div class="mb-3 d-flex flex-wrap align-items-center tags"></div>
                             </div>
                         </div>
@@ -156,10 +228,11 @@
             `;
             document.querySelector(`#${modal.id} .btn-dark`).addEventListener('click', () => {
                 const name = document.querySelector(`#${modal.id} input[name="tag"]`).value;
+                const color = document.querySelector(`#${modal.id} input[name="tagColor"]:checked`).value;
                 $.ajax({
                     url: `/customers/${modal.data.customerId}/tags`,
                     type: 'post',
-                    data: { name }
+                    data: { name, color }
                 }).done(function () {
                     if (modal.onDone) modal.onDone();
                 }).fail(function (result) {
@@ -229,10 +302,10 @@
                     let tagsHTML = '';
                     for (const tag of result.data) {
                         tagsHTML += `
-                            <div class="tag tag-secondary">
+                            <div class="tag tag-secondary" style="background-color:${tag.colorHex || ''};">
                                 ${tag.name}
                                 <button type="button" class="btn-close btn-close-white btn-close-sm delete" onclick="app.deleteTag(${tag.id})"></button>
-                            </div>                        
+                            </div>
                         `;
                     }
                     tagsHTML += `

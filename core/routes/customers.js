@@ -86,15 +86,15 @@ const customers = async function (fastify, opts) {
 
     fastify.post('/:id/tags', async (req, reply) => {
         const customerId = Number(req.params.id || 0);
-        let { name } = req.body;
+        let { name, color } = req.body;
         if (!name && name.length < 1) return reply.code(400).send({ message: '标签至少1个字符' });
+        if (!color) color = '#000000'; // black as default
         const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
         let tag = await fastify.db.tag.findUnique({ where: { name } });
-
         // admin can add any
         // others can only do it which were assigned to them
         if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        if (!tag) tag = await fastify.db.tag.create({ data: { name } }); // no tag ? create one.
+        if (!tag) tag = await fastify.db.tag.create({ data: { name, colorHex: color } }); // no tag ? create one.
 
         const ref = { customerId, tagId: tag.id, };
         await fastify.db.customerTagRef.upsert({

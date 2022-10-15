@@ -64,11 +64,13 @@ model Stage {
   id        Int        @id @default(autoincrement())
   name      String
   sequence  Int
+  colorHex  String?    @map("color_hex")
   isFinal   Boolean    @default(false) @map("is_final")
   deletable Boolean    @default(true)
-  customers Customer[]
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
+  // ref
+  customers Customer[]
 }
 
 // 客户图片
@@ -85,6 +87,7 @@ model Photo {
 model Tag {
   id        Int              @id @default(autoincrement())
   name      String           @unique
+  colorHex  String?          @map("color_hex")
   // ref
   customers CustomerTagRef[]
 }

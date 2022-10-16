@@ -17,40 +17,46 @@
                         <div class="me-2 text-nowrap">电话:</div>
                         <div>{{ data.customer.phone }}</div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">类型:</div>
                         <div>{{ data.customer.type }}</div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">地区:</div>
                         <div>{{ data.customer.province }} / {{ data.customer.city }}
                             / {{ data.customer.area }}</div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">地址:</div>
                         <div>{{ data.customer.address }}</div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">坐标:</div>
                         <div>{{ data.customer.location }}</div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">阶段:</div>
                         <div class="dropdown">
-                            <div id="stage" class="badge bg-secondary dropdown-toggle" style="cursor: pointer;"
+                            <div id="stage" class="badge dropdown-toggle"
+                                style="cursor: pointer; background-color: {{ data.customer.stage.colorHex }};"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ data.customer.stage.name }}
                             </div>
                             <ul class="dropdown-menu">
                                 {% for s in data.stages %}
-                                <li><span class="dropdown-item" style="cursor: pointer;"
-                                        onclick="app.changeStage('{{ s.id }}', '{{ s.name }}')">{{ s.name }}</span>
+                                <li>
+                                    <div class="dropdown-item d-flex align-items-center" style="cursor: pointer;"
+                                        onclick="app.changeStage('{{data.customer.id}}', '{{s.id}}')">
+                                        <label class="color-cube me-2"
+                                            style="background-color:{{s.colorHex}}; cursor: pointer;"></label>
+                                        {{s.name}}
+                                    </div>
                                 </li>
                                 {% endfor %}
                             </ul>
                         </div>
                     </div>
-                    <div class="mt-1 d-flex">
+                    <div class="my-1 d-flex">
                         <div class="me-2 text-nowrap">标签:</div>
                         <div id="tags" class="tags"></div>
                     </div>

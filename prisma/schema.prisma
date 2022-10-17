@@ -59,6 +59,14 @@ model Customer {
   stage  Stage?           @relation(fields: [stageId], references: [id])
 }
 
+// 虽然是关系表，但是不需要建立N*M关系约束
+model UserCustomerHiddenRef {
+  customerId Int @map("customer_id")
+  userId     Int @map("user_id")
+
+  @@id([customerId, userId])
+}
+
 // 客户情况：未联系（默认）, 加微信未通过, 添加微信成功, 下单, 暂时未接通
 model Stage {
   id        Int        @id @default(autoincrement())

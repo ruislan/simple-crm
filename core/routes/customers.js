@@ -221,6 +221,23 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
+    // 隐藏
+    fastify.post('/hide', async (req, reply) => {
+        let { ids } = req.body || { ids: [] };
+        if (ids && ids.length > 0) {
+            ids = ids.map(id => Number(id)).filter(id => id);
+            for (const id of ids) {
+                await fastify.db.userCustomerHiddenRef.create({
+                    data: {
+                        userId: req.session.user.id,
+                        customerId: id,
+                    },
+                });
+            }
+        }
+        return reply.code(200).send();
+    });
+
     // 认领
     fastify.post('/acquire', async (req, reply) => {
         let { ids } = req.body || { ids: [] };
@@ -257,6 +274,14 @@ const customers = async function (fastify, opts) {
         if (keyword) whereClause.name = { contains: keyword };
         if (stageId) whereClause.stageId = stageId;
         if (my) whereClause.userId = req.session.user.id;
+
+        // 读取该用户的hidden，customer不需要这些数据
+        const ignoreIds = (await fastify.db.userCustomerHiddenRef.findMany({
+            where: {
+                userId: req.session.user.id,
+            },
+        })).map(item => item.customerId);
+        if (ignoreIds.length > 0) whereClause.NOT = { id: { in: ignoreIds } };
 
         const count = await fastify.db.customer.count({ where: whereClause });
         const data = await fastify.db.customer.findMany({

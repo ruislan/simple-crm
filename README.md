@@ -41,8 +41,8 @@
 12. 数据获取 G和B （O）
 13. 客户添加标签 O
 14. 标签增加颜色，方便辨识 O
-15. 未认领客户，员工筛选时屏蔽
-16. 阶段加颜色，方便辨识
+15. 未认领客户，员工筛选时屏蔽 O
+16. 阶段加颜色，方便辨识 O
 
 ### 收益
 
@@ -56,7 +56,7 @@
 
 1. 联系类型的创建、编辑和删除 O
 2. 客户阶段的创建、编辑和删除 O
-3. 客户标签的创建、编辑和删除
+3. 客户标签的创建、编辑和删除 O
 
 ### 待思考功能
 
@@ -86,7 +86,7 @@ cd simple-crm
 yarn install
 yarn prisma db push
 yarn prisma db seed
-yarn start:dev  
+yarn start:dev
 ```
 
 访问：<http://localhost:5600>

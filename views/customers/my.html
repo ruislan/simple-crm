@@ -117,7 +117,7 @@
                         </td>
                         <td>${item.type}</td>
                         <td>
-                            <div class="badge dropdown-toggle" style="cursor: pointer; background-color: ${item.stage?.colorHex};" data-bs-toggle="dropdown" aria-expanded="false">${item.stage?.name || '未知'}</div>
+                            <div class="badge dropdown-toggle" style="cursor: pointer; background-color: ${item.stage?.colorHex || '#212529'};" data-bs-toggle="dropdown" aria-expanded="false">${item.stage?.name || '未知'}</div>
                             <ul class="dropdown-menu">
                             {% for s in data.stages %}
                                 <li>

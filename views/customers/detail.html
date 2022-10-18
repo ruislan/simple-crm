@@ -38,7 +38,7 @@
                         <div class="me-2 text-nowrap">阶段:</div>
                         <div class="dropdown">
                             <div id="stage" class="badge dropdown-toggle"
-                                style="cursor: pointer; background-color: {{data.customer.stage.colorHex}};"
+                                style="cursor: pointer; background-color: {{ data.customer.stage.colorHex if data.customer.stage.colorHex else '#212529' }};"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ data.customer.stage.name }}
                             </div>

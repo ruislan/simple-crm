@@ -8,6 +8,7 @@ import fastifyWebSocket from '@fastify/websocket';
 import nunjucks from 'nunjucks';
 import minifier from 'html-minifier';
 import auth from './lib/auth.js';
+import events from './lib/events.js';
 import customers from './routes/customers.js';
 import home from './routes/home.js';
 import settings from './routes/settings.js';
@@ -49,6 +50,7 @@ const scService = async function (fastify, opts) {
     });
     await fastify.register(fastifyWebSocket);
 
+    // init auth
     auth.config({
         forbiddenUrl: '/forbidden',
         loginUrl: '/login',
@@ -57,6 +59,9 @@ const scService = async function (fastify, opts) {
         ]
     });
     fastify.addHook('onRequest', auth.requireAuth);
+
+    events.init(fastify); // init event handlers
+
     await fastify.register(home, { prefix: '/' });
     await fastify.register(customers, { prefix: '/customers' });
     await fastify.register(settings, { prefix: '/settings' });

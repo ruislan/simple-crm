@@ -19,18 +19,7 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // ref
-  loginHistory UserLoginHistory[]
-  Link         Link[]
-}
-
-// 登陆历史（最长90天？）
-model UserLoginHistory {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // ref
-  user User @relation(fields: [userId], references: [id])
+  Link Link[]
 }
 
 model Customer {

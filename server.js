@@ -2,6 +2,7 @@ import fastify from 'fastify';
 import dotenv from 'dotenv';
 import path from 'path';
 import fastifyStatic from '@fastify/static';
+import eventsPlugin from './plugins/events.js';
 import prismaPlugin from './plugins/prisma.js';
 import bcryptPlugin from './plugins/bcrypt.js';
 import regionsPlugin from './plugins/regions.js';
@@ -20,10 +21,11 @@ const main = async function () {
     });
 
     // plugins
-    await server.register(bcryptPlugin); // global 
-    await server.register(prismaPlugin); // global 
+    await server.register(eventsPlugin); // global
+    await server.register(bcryptPlugin); // global
+    await server.register(prismaPlugin); // global
     await server.register(storagePlugin, { base: './public/uploads', urlPrefix: '/public/uploads' }); // global
-    await server.register(regionsPlugin, { web: true }); // global 
+    await server.register(regionsPlugin, { web: true }); // global
     await server.register(fastifyStatic, { root: path.join(process.cwd(), './public'), prefix: '/public', }); // static service
     await server.register(coreService); // our service
 

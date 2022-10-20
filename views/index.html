@@ -1,54 +1,134 @@
 {% extends 'layouts/default.html' %}
 {% set title = 'Simple CRM' %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/funnel-graph-js@1.3.9/dist/css/main.min.css">
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/funnel-graph-js@1.3.9/dist/css/theme.min.css">
+{% endblock style %}
 {% block container %}
 <div class="container-xl">
-    <div class="d-flex m-2 p-2 flex-wrap">
-        <div class="statistic bg-dark text-bg-dark">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <div class="h5">员工</div>
-                <div class="h6"></div>
+    <div class="row">
+        <div class="col-lg-6 d-flex flex-column">
+            <div class="h4 mb-3">基础数据</div>
+            <div class="d-flex flex-wrap mb-3">
+                <div class="statistic bg-dark text-bg-dark ms-0">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <div class="h5">员工</div>
+                        <div class="h6"></div>
+                    </div>
+                    <div class="fw-bold fs-2">{{data.count.user}}</div>
+                </div>
             </div>
-            <div class="fw-bold fs-2">{{data.count.user}}</div>
+            <div class="h4 mb-3">客户数据</div>
+            <div class="d-flex flex-wrap justify-content-between mb-3">
+                <div class="statistic bg-warning text-bg-dark ms-0">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <div class="h5">客户</div>
+                        <div class="h6">未联系</div>
+                    </div>
+                    <div class="fw-bold fs-2">{{data.count.unLink}}</div>
+                </div>
+                <div class="statistic bg-info text-bg-dark">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <div class="h5">客户</div>
+                        <div class="h6">已联系</div>
+                    </div>
+                    <div class="fw-bold fs-2">{{data.count.linking}}</div>
+                </div>
+                <div class="statistic bg-success text-bg-success">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <div class="h5">客户</div>
+                        <div class="h6">已下单</div>
+                    </div>
+                    <div class="fw-bold fs-2">{{data.count.sold}}</div>
+                </div>
+            </div>
+            <div class="h4 mb-3">客户漏斗</div>
+            <div class="d-flex flex-wrap">
+                <div class="d-flex w-100" style="background-color: #393862;">
+                    <div class="funnel m-4 w-100"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex flex-wrap flex-column">
+            <div class="d-flex flex-column">
+                <div class="h4 mb-3">我的动态</div>
+                <div id="activities" class="mt-2"></div>
+            </div>
         </div>
     </div>
-    <div class="d-flex m-2 p-2 flex-wrap">
-        <div class="statistic bg-warning text-bg-dark">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <div class="h5">客户</div>
-                <div class="h6">未接触</div>
-            </div>
-            <div class="fw-bold fs-2">{{data.count.unLink}}</div>
-        </div>
-        <div class="statistic bg-info text-bg-dark">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <div class="h5">客户</div>
-                <div class="h6">接触中</div>
-            </div>
-            <div class="fw-bold fs-2">{{data.count.linking}}</div>
-        </div>
-        <div class="statistic bg-success text-bg-success">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <div class="h5">客户</div>
-                <div class="h6">已下单</div>
-            </div>
-            <div class="fw-bold fs-2">{{data.count.sold}}</div>
-        </div>
-        <div id="funnel"></div>
-    </div>
+
 </div>
 {% endblock container %}
 {% block script %}
+<script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script src="https://unpkg.com/funnel-graph-js@1.3.9/dist/js/funnel-graph.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/2.15.0/plotly.min.js"></script>
 <script>
-    var gd = document.getElementById('funnel');
-    var data = [{
-        type: 'funnel',
-        y: ["未接触", "接触中", "已下单"],
-        x: ['{{data.count.unLink}}', '{{data.count.linking}}', '{{data.count.sold}}'],
-        hoverinfo: 'percent total+x',
-    }];
-    var layout = { title: '销售漏斗图', showlegend: false, height: 500, };
-    Plotly.newPlot('funnel', data, layout, { staticPlot: true });
-
+    const app = {
+        async renderActivities() {
+            $.ajax({
+                type: 'get',
+                url: '/activities/my'
+            }).done(function (result) {
+                const { data } = result;
+                const dom = document.getElementById('activities');
+                while (dom.firstChild) dom.removeChild(dom.firstChild);
+                let html = '';
+                for (let i = 0; i < data.length; i++) {
+                    const item = data[i];
+                    const extra = JSON.parse(item.extra || '{}');
+                    let one = '';
+                    switch (item.action) {
+                        case 'user.login': one = `
+                                <div class="paragraph mb-2">你登录了系统，IP：${extra.ip || '未知'}</div>
+                                <div class="fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
+                        default: break;
+                    }
+                    html += `
+                        <div class="d-flex">
+                            <div class="d-flex flex-column me-2">
+                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                    </svg>
+                                </div>
+                                <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
+                            </div>
+                            <div class="d-flex flex-column flex-grow-1 mb-4">
+                                <div class="p-3 border border-dark border-opacity-25 shadow-sm rounded mb-2">
+                                    <div class="d-flex flex-column">
+                                        ${one}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                dom.innerHTML = html;
+            });
+        },
+        async renderFunnel() {
+            var graph = new FunnelGraph({
+                container: '.funnel',
+                subLabelValue: 'raw',
+                gradientDirection: 'vertical',
+                height: 260,
+                data: {
+                    labels: ['未联系', '联系中', '已下单'],
+                    colors: ['#FFB178', '#FF78B1', '#FF3C8E'],
+                    values: ['{{data.count.unLink}}', '{{data.count.linking}}', '{{data.count.sold}}']
+                },
+                displayPercent: true,
+                direction: 'vertical'
+            });
+            graph.draw();
+        }
+    };
+    $(document).ready(async function () {
+        app.renderFunnel();
+        app.renderActivities();
+    });
 </script>
 {% endblock script %}

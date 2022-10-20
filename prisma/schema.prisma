@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  password  String
-  phone     String   @unique
-  email     String   @unique
-  isAdmin   Boolean  @default(false) @map("is_admin")
-  isLocked  Boolean  @default(false) @map("is_locked")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  password    String
+  phone       String   @unique
+  email       String   @unique
+  isAdmin     Boolean  @default(false) @map("is_admin")
+  isLocked    Boolean  @default(false) @map("is_locked")
+  lastLoginIp String?  @map("last_login_ip")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // ref
   Link Link[]
@@ -123,11 +124,11 @@ model LinkType {
 
 // 所有活动，谁做了什么事情
 model Activity {
-  id       Int    @id @default(autoincrement())
-  template String // 什么事儿，简单模板，例如：给{{customer.name}}打了一个电话
-  data     String // 模板数据，JSON格式（如果数据库支持的话）e.g { "customer": { "name": "张三"} }
-  action   String // 动作
-  userId   Int    @map("user_id") // 谁
+  id       Int     @id @default(autoincrement())
+  userId   Int     @map("user_id") // 谁（主）
+  action   String // 动作（谓）
+  targetId Int?    @map("target_id") // 谁（宾）
+  extra    String? // 额外的数据，JSON格式（如果数据库支持的话）e.g { "customer": { "name": "张三"} }
 
   createdAt DateTime @default(now()) @map("created_at")
 }

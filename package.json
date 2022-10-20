@@ -23,7 +23,7 @@
     "@fastify/static": "^6.5.0",
     "@fastify/view": "^7.1.0",
     "@fastify/websocket": "^7.0.1",
-    "@prisma/client": "^4.4.0",
+    "@prisma/client": "^4.5.0",
     "bcrypt": "^5.0.1",
     "chalk": "^5.0.1",
     "dayjs": "^1.11.5",
@@ -40,6 +40,6 @@
     "gulp-clean-css": "^4.3.0",
     "gulp-uglify": "^3.0.2",
     "gulp-vinyl-zip": "^2.5.0",
-    "prisma": "^4.4.0"
+    "prisma": "^4.5.0"
   }
 }

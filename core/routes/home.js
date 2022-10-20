@@ -24,10 +24,13 @@ const home = async function (fastify, opts) {
         if (!user) return reply.view('login.html', { hasError: true, name, message });
         if (user.isLocked) return reply.view('login.html', { hasError: true, name, message: '您已经被锁定，更多信息请联系系统管理员或者您的上级' });
 
-        const isPasswordMatched = await this.bcrypt.compare(password, user.password);
+        const isPasswordMatched = await fastify.bcrypt.compare(password, user.password);
         if (!isPasswordMatched) return reply.view('login.html', { hasError: true, name, message });
+        await fastify.db.user.update({ data: { lastLoginIp: req.ip }, where: { id: user.id } });
 
+        user.lastLoginIp = req.ip;
         fastify.events.emit(events.names.USER_LOGIN, { payload: user });
+
         req.session.authenticated = true;
         req.session.user = user;
         return reply.redirect('/');

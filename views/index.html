@@ -80,8 +80,20 @@
                     let one = '';
                     switch (item.action) {
                         case 'user.login': one = `
-                                <div class="paragraph mb-2">你登录了系统，IP：${extra.ip || '未知'}</div>
-                                <div class="fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="paragraph">你登录了系统，IP：${extra.user?.ip || '未知'}</div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
+                        case 'user.logout': one = `
+                                <div class="paragraph">你登出了系统</div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
+                        case 'customer.stage.change': one = `
+                                <div class="paragraph">
+                                    <span class="fw-semibold">${extra.user?.name || '未知'}</span> 更改客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的状态为 <span class="fw-semibold">${extra.stage?.name || '未知'}</span>
+                                </div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         default: break;
@@ -89,16 +101,16 @@
                     html += `
                         <div class="d-flex">
                             <div class="d-flex flex-column me-2">
-                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon text-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon-sm text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
                                     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
                                     </svg>
                                 </div>
                                 <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
                             </div>
-                            <div class="d-flex flex-column flex-grow-1 mb-4">
-                                <div class="p-3 border border-dark border-opacity-25 shadow-sm rounded mb-2">
-                                    <div class="d-flex flex-column">
+                            <div class="d-flex flex-column flex-grow-1 mb-2">
+                                <div class="p-2 border border-dark border-opacity-25 shadow-sm rounded mb-2">
+                                    <div class="d-flex align-items-baseline">
                                         ${one}
                                     </div>
                                 </div>

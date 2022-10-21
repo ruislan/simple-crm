@@ -1,4 +1,5 @@
 import constants from '../lib/constants.js';
+import events from '../lib/events.js';
 
 const customers = async function (fastify, opts) {
     // 创建或修改
@@ -35,12 +36,14 @@ const customers = async function (fastify, opts) {
                 await fastify.db.photo.deleteMany({ where: { id: { in: photoIds } } }); // delete files in db
             }
             await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
+            fastify.events.emit(events.names.CUSTOMER_UPDATE, { user: req.session.user, target: { id, name } });
         } else { // create
             const newCustomer = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
             id = newCustomer.id;
+            fastify.events.emit(events.names.CUSTOMER_CREATE, { user: req.session.user, target: { id, name } });
         }
         // save new photos
-        for (const url of photos) { // XXX createMany is not support for SQLite :(
+        for (const url of photos) { // XXX createMany is not supported for SQLite :(
             await fastify.db.photo.create({
                 data: { url, customerId: id }
             });
@@ -62,17 +65,17 @@ const customers = async function (fastify, opts) {
     });
 
     fastify.put('/:id/stage', async (req, reply) => {
-        const id = Number(req.params.id || 0);
-        let { stageId } = req.body;
-        const customer = await fastify.db.customer.findUnique({ where: { id } });
-
+        const { stageId } = req.body;
+        const customer = await fastify.db.customer.findUnique({ where: { id: Number(req.params.id || 0) } });
+        const stage = await fastify.db.stage.findUnique({ where: { id: Number(stageId) || 0 } });
         // admin can edit
         // others can only do it which were assigned to them
-        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        if (!customer || !stage || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
         await fastify.db.customer.update({
-            where: { id },
-            data: { stageId: Number(stageId) || customer.stageId },
+            where: { id: customer.id },
+            data: { stageId: stage.id },
         });
+        fastify.events.emit(events.names.CUSTOMER_STAGE_CHANGE, { user: req.session.user, customer, stage });
         return reply.code(200).send();
     });
 
@@ -119,6 +122,24 @@ const customers = async function (fastify, opts) {
     });
     // end tags
 
+    // this customer's activities
+    fastify.get('/:id/activities', async (req, reply) => {
+        const id = Number(req.params.id || 0); // todo pagination
+        let data = [];
+        const customer = await fastify.db.customer.findUnique({ where: { id } });
+        // admin can view all
+        // others can only view the customers which were assigned to them
+        if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
+            data = await fastify.db.activity.findMany({
+                where: { targetId: customer.id, },
+                orderBy: [{ createdAt: 'desc' }]
+            });
+        }
+        return reply.code(200).send({ data });
+    });
+
+    // end activities
+
     // add & edit this customer's link
     fastify.post('/:id/links', async (req, reply) => {
         const customerId = Number(req.params.id || 0);
@@ -153,7 +174,7 @@ const customers = async function (fastify, opts) {
     });
 
     fastify.get('/:id/links', async (req, reply) => {
-        const id = Number(req.params.id || 0);
+        const id = Number(req.params.id || 0); // todo pagination
         let data = [];
         const customer = await fastify.db.customer.findUnique({ where: { id } });
         // admin can view all
@@ -205,19 +226,20 @@ const customers = async function (fastify, opts) {
             where: { id },
             data: { userId: null },
         });
+        fastify.events.emit(events.names.CUSTOMER_RETREAT, { user: req.session.user, customer });
         return reply.code(200).send();
     });
 
     // 转移
     fastify.post('/:id/transfer', async (req, reply) => {
-        const id = Number(req.params.id) || 0;
-        const userId = Number(req.body.userId) || null;
-        const customer = await fastify.db.customer.findUnique({ where: { id } });
-        if (!userId || !customer || req.session.user.id !== customer.userId) return reply.code(403).send();
+        const customer = await fastify.db.customer.findUnique({ where: { id: Number(req.params.id) || 0 } });
+        const toUser = await fastify.db.user.findUnique({ where: { id: Number(req.body.userId) || 0 } });
+        if (!toUser || !customer || req.session.user.id !== customer.userId) return reply.code(403).send();
         await fastify.db.customer.update({
-            where: { id },
-            data: { userId },
+            where: { id: customer.id },
+            data: { userId: toUser.id },
         });
+        fastify.events.emit(events.names.CUSTOMER_TRANSFER, { user: req.session.user, customer, toUser });
         return reply.code(200).send();
     });
 

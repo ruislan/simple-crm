@@ -120,6 +120,11 @@
     padding: 3px;
 }
 
+.activity-icon-sm {
+    width  : 24px;
+    height : 24px;
+}
+
 .tags {
     align-items    : center;
     display        : flex;

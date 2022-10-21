@@ -8,10 +8,17 @@
 
 ## 技术栈
 
+* Language: NodeJS v16.17.1
 * Framework: Fastify
 * Database: SQLite
 * ORM: Prisma
-* Styling: Bootstrap
+* Styling: Bootstrap v5
+
+## 环境和工具
+
+* OS: macOS Monterey
+* IDE: Visual Studio Code
+* DBTool: Beekeeper Studio
 
 ## 功能
 
@@ -19,7 +26,7 @@
 
 1. 用户列表 O
 2. 用户的添加、编辑和删除 O
-3. 用户的登录 O
+3. 用户的登录和登出 O
 4. 用户的基本信息修改 O
 5. 用户的密码修改 O
 6. 用户的锁定和解锁 O
@@ -29,20 +36,18 @@
 
 1. 客户列表 O
 2. 客户明细 O
-3. 客户地图展示
-4. 客户上传、删除图片 O
-5. 转交客户 O
-6. 退回客户 O
-7. 编辑客户 O
-8. 删除客户 O
-9. 对客户添加联系 O
-10. 修改联系 O
-11. 删除联系 O
-12. 数据获取 G和B （O）
-13. 客户添加标签 O
-14. 标签增加颜色，方便辨识 O
-15. 未认领客户，员工筛选时屏蔽 O
-16. 阶段加颜色，方便辨识 O
+3. 客户上传、删除图片 O
+4. 转交客户 O
+5. 退回客户 O
+6. 编辑客户 O
+7. 删除客户 O
+8. 对客户添加、修改和删除联系 O
+9. 数据获取 G和B （O）
+10. 向客户添加和删除标签 O
+11. 标签增加颜色，方便辨识 O
+12. 未认领客户，筛选时可以进行屏蔽 O
+13. 客户阶段增加颜色，方便辨识 O
+14. 客户位置地图展示
 
 ### 收益
 
@@ -71,6 +76,7 @@
     <img src="./docs/screenshots/screenshot_customers.png" width="25%">
     <img src="./docs/screenshots/screenshot_my_customers.png" width="25%">
     <img src="./docs/screenshots/screenshot_customer_detail.png" width="25%">
+    <img src="./docs/screenshots/screenshot_customer_detail_2.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_dataset.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_link_type.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_user.png" width="25%">
@@ -89,9 +95,10 @@ yarn prisma db seed
 yarn start:dev
 ```
 
-访问：<http://localhost:5600>
+Win环境下注意修改命令start:dev，将NODE_ENV单独设置为dev。
+启动成功后访问：<http://localhost:5600>
 
-```
+```text
 Admin User
 User: admin
 Pass: 123123

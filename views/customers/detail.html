@@ -82,22 +82,18 @@
         <div class="d-flex justify-content-between flex-wrap mb-3">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">联系</a>
+                    <a id="tabActivity" class="nav-link" href="#" onclick="app.switchTab('activity')">动态</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">动态</a>
+                    <a id="tabLink" class="nav-link" href="#" onclick="app.switchTab('link')">联系</a>
                 </li>
             </ul>
-            <div class="mt-2">
-                <button class="btn btn-dark btn-sm" onclick="app.openLinkForm()">新增</button>
-            </div>
+            <div class="mt-2 tab-toolbar"></div>
         </div>
         <div id="spinner" class="text-center" style="display: none;">
             <div class="spinner-border" role="status"></div>
         </div>
-        <div class="p-1">
-            <div id="linkList" class="activity-container"></div>
-        </div>
+        <div id="tabContent" class="p-1 activity-container"></div>
     </div>
 </div>
 {% endblock container %}
@@ -263,6 +259,7 @@
     const app = {
         data: {
             linkList: [],
+            activityList: [],
             typeDefault: `
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
                     <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
@@ -286,6 +283,41 @@
                     </svg>
                 `,
             }
+        },
+        retreat(customerId) {
+            helper.confirm('确定退回吗？', function () {
+                $.ajax({
+                    type: 'post',
+                    url: `/customers/${customerId}/retreat`,
+                }).done(function (result) {
+                    window.location.href = '/customers/my';
+                });
+            });
+        },
+        transfer(customerId) {
+            transferDialog.open({
+                customerId,
+                onDone: () => window.location.href = '/customers/my',
+                onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
+            });
+        },
+        edit(customerId) {
+            $.ajax({
+                url: `/customers/${customerId}`,
+                contentType: 'application/json',
+            }).done(function (result) {
+                $.getJSON('/public/regions').done(function (regions) {
+                    editor.open({
+                        title: '编辑',
+                        regions,
+                        data: result,
+                        onDone: () => window.location.reload(),
+                        onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
+                    });
+                }).fail(() => helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger'));
+            }).fail(function () {
+                helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger');
+            });
         },
         newTag(customerId) {
             tagsDialog.open({
@@ -337,9 +369,121 @@
                     tags.innerHTML = tagsHTML;
                 });
         },
+        changeStage(stageId, stageName, stageColorHex) {
+            $.ajax({
+                type: 'put',
+                url: `/customers/{{data.customer.id}}/stage`,
+                data: { stageId },
+            }).done(function (result) {
+                const stage = document.getElementById('stage');
+                stage.textContent = stageName;
+                stage.style = `background-color: ${stageColorHex || '#212529'};`;
+                app.loadActivityList();
+                helper.toast('操作成功', 'success');
+            });
+        },
+        // tab
+        switchTab(name) {
+            document.querySelector('.tab-toolbar').innerHTML = ''; // clear toolbar
+            document.getElementById('tabContent').innerHTML = ''; // clear tab content
+            document.querySelectorAll('.nav-item a').forEach(el => el.classList.remove('active'));
+            switch (name) {
+                case 'activity': {
+                    document.querySelector('#tabActivity').classList.add('active');
+                    app.loadActivityList();
+                    break;
+                }
+                default: { // default is link
+                    document.querySelector('#tabLink').classList.add('active');
+                    document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.openLinkForm()">新增</button>`;
+                    app.loadLinkList();
+                    break;
+                }
+            }
+        },
+        // activity
+        loadActivityList() {
+            $('#spinner').show();
+            $.ajax({
+                type: 'get',
+                url: `/customers/{{data.customer.id}}/activities`,
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
+                const { data } = result;
+                app.data.activityList = data;
+                app.renderActivityList();
+            }).always(function () {
+                $('#spinner').hide();
+            });
+        },
+        renderActivityList() {
+            let html = '';
+            for (let i = 0; i < this.data.activityList.length; i++) {
+                const item = this.data.activityList[i];
+                const extra = JSON.parse(item.extra || '{}');
+                let one = '';
+                switch (item.action) {
+                    case 'customer.create': {
+                        one = `
+                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 创建了这个客户</div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                        break;
+                    }
+                    case 'customer.update': {
+                        one = `
+                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 编辑了这个客户</div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                        break;
+                    }
+                    case 'customer.stage.change': {
+                        one = `
+                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 改变这个客户的阶段为 <span class="fw-semibold">${extra.stage?.name}</span></div>
+                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                        break;
+                    }
+                    default: break;
+                }
+                html += `
+                        <div class="d-flex">
+                            <div class="d-flex flex-column me-2">
+                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                    </svg>
+                                </div>
+                                <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
+                            </div>
+                            <div class="d-flex flex-column flex-grow-1 mb-2">
+                                <div class="p-3 border border-dark border-opacity-25 shadow-sm rounded mb-4">
+                                    <div class="d-flex align-items-baseline">
+                                        ${one}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            }
+            document.getElementById('tabContent').innerHTML = html;
+        },
+        // link
+        loadLinkList() {
+            $('#spinner').show();
+            $.ajax({
+                type: 'get',
+                url: `/customers/{{data.customer.id}}/links`,
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
+                const { data } = result;
+                app.data.linkList = data;
+                app.renderLinkList();
+            }).always(function () {
+                $('#spinner').hide();
+            });
+        },
         renderLinkList() {
-            const list = document.getElementById('linkList');
-            while (list.firstChild) list.removeChild(list.firstChild);
             let html = '';
             for (let i = 0; i < this.data.linkList.length; i++) {
                 const item = this.data.linkList[i];
@@ -379,33 +523,7 @@
                 </div>
                 `;
             }
-            list.innerHTML = html;
-        },
-        changeStage(stageId, stageName, stageColorHex) {
-            $.ajax({
-                type: 'put',
-                url: `/customers/{{data.customer.id}}/stage`,
-                data: { stageId },
-            }).done(function (result) {
-                const stage = document.getElementById('stage');
-                stage.textContent = stageName;
-                stage.style = `background-color: ${stageColorHex};`;
-                helper.toast('操作成功', 'success');
-            });
-        },
-        loadLinkList() {
-            $('#spinner').show();
-            $.ajax({
-                type: 'get',
-                url: `/customers/{{data.customer.id}}/links`,
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function (result) {
-                const { data } = result;
-                app.data.linkList = data;
-                app.renderLinkList();
-            }).always(function () {
-                $('#spinner').hide();
-            });
+            document.getElementById('tabContent').innerHTML = html;
         },
         deleteLink(itemIndex) {
             const item = itemIndex > -1 ? app.data.linkList[itemIndex] : undefined;
@@ -498,45 +616,10 @@
                 $('#editor').modal('show');
             });
         },
-        retreat(customerId) {
-            helper.confirm('确定退回吗？', function () {
-                $.ajax({
-                    type: 'post',
-                    url: `/customers/${customerId}/retreat`,
-                }).done(function (result) {
-                    window.location.href = '/customers/my';
-                });
-            });
-        },
-        transfer(customerId) {
-            transferDialog.open({
-                customerId,
-                onDone: () => window.location.href = '/customers/my',
-                onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
-            });
-        },
-        edit(customerId) {
-            $.ajax({
-                url: `/customers/${customerId}`,
-                contentType: 'application/json',
-            }).done(function (result) {
-                $.getJSON('/public/regions').done(function (regions) {
-                    editor.open({
-                        title: '编辑',
-                        regions,
-                        data: result,
-                        onDone: () => window.location.reload(),
-                        onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
-                    });
-                }).fail(() => helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger'));
-            }).fail(function () {
-                helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger');
-            });
-        }
     };
 
     $(document).ready(async function () {
-        app.loadLinkList();
+        app.switchTab('activity');
         app.renderTags();
     });
 </script>

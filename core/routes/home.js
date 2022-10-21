@@ -29,7 +29,7 @@ const home = async function (fastify, opts) {
         await fastify.db.user.update({ data: { lastLoginIp: req.ip }, where: { id: user.id } });
 
         user.lastLoginIp = req.ip;
-        fastify.events.emit(events.names.USER_LOGIN, { payload: user });
+        fastify.events.emit(events.names.USER_LOGIN, { user });
 
         req.session.authenticated = true;
         req.session.user = user;
@@ -38,6 +38,7 @@ const home = async function (fastify, opts) {
 
     fastify.all('/logout', async function (req, reply) {
         if (req.session.authenticated) {
+            fastify.events.emit(events.names.USER_LOGOUT, { user: req.session.user });
             req.session.destroy();
         }
         return reply.redirect('/');

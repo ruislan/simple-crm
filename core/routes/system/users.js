@@ -1,14 +1,17 @@
+import events from '../../lib/events.js';
 import pagination from '../../lib/pagination.js';
 
 const users = async function (fastify, opts) {
     fastify.put('/:id/lock', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        await fastify.db.user.update({ where: { id }, data: { isLocked: true } });
+        const blockUser = await fastify.db.user.update({ where: { id }, data: { isLocked: true } });
+        fastify.events.emit(events.names.USER_BLOCK, { user: req.session.user, blockUser });
         return reply.code(200).send();
     });
     fastify.put('/:id/unlock', async (req, reply) => {
         const id = Number(req.params.id || 0);
         await fastify.db.user.update({ where: { id }, data: { isLocked: false } });
+        fastify.events.emit(events.names.USER_UNBLOCK, { user: req.session.user, unblockUser });
         return reply.code(200).send();
     });
 
@@ -90,9 +93,11 @@ const users = async function (fastify, opts) {
         }
 
         password = await fastify.bcrypt.hash(password);
-        await fastify.db.user.create({
+        const newUser = await fastify.db.user.create({
             data: { id: undefined, name, email, password, phone }
         });
+
+        fastify.events.emit(events.names.USER_CREATE, { user: req.session.user, newUser });
         return reply.send({ hasError: false, message: '创建成功' });
     });
 

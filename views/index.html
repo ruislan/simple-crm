@@ -62,7 +62,6 @@
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
 <script src="https://unpkg.com/funnel-graph-js@1.3.9/dist/js/funnel-graph.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/2.15.0/plotly.min.js"></script>
 <script>
     const app = {
         async renderActivities() {
@@ -81,19 +80,31 @@
                     switch (item.action) {
                         case 'user.login': one = `
                                 <div class="paragraph">你登录了系统，IP：${extra.user?.ip || '未知'}</div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         case 'user.logout': one = `
                                 <div class="paragraph">你登出了系统</div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
+                        case 'customer.create':
+                            one = `
+                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 创建了客户  <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
+                        case 'customer.update':
+                            one = `
+                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 编辑了客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         case 'customer.stage.change': one = `
                                 <div class="paragraph">
                                     <span class="fw-semibold">${extra.user?.name || '未知'}</span> 更改客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的状态为 <span class="fw-semibold">${extra.stage?.name || '未知'}</span>
                                 </div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         default: break;
@@ -110,7 +121,7 @@
                             </div>
                             <div class="d-flex flex-column flex-grow-1 mb-2">
                                 <div class="p-2 border border-dark border-opacity-25 shadow-sm rounded mb-2">
-                                    <div class="d-flex align-items-baseline">
+                                    <div class="d-flex flex-column">
                                         ${one}
                                     </div>
                                 </div>

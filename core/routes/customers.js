@@ -36,11 +36,11 @@ const customers = async function (fastify, opts) {
                 await fastify.db.photo.deleteMany({ where: { id: { in: photoIds } } }); // delete files in db
             }
             await fastify.db.customer.update({ where: { id }, data: { name, phone, type, province, city, area, adcode: adcode2save, address } });
-            fastify.events.emit(events.names.CUSTOMER_UPDATE, { user: req.session.user, target: { id, name } });
+            fastify.events.emit(events.names.CUSTOMER_UPDATE, { user: req.session.user, customer: { id, name } });
         } else { // create
             const newCustomer = await fastify.db.customer.create({ data: { name, phone, type, province, city, area, adcode: adcode2save, address, creatorId: req.session.user.id } });
             id = newCustomer.id;
-            fastify.events.emit(events.names.CUSTOMER_CREATE, { user: req.session.user, target: { id, name } });
+            fastify.events.emit(events.names.CUSTOMER_CREATE, { user: req.session.user, customer: { id, name } });
         }
         // save new photos
         for (const url of photos) { // XXX createMany is not supported for SQLite :(
@@ -267,9 +267,10 @@ const customers = async function (fastify, opts) {
             ids = ids.map(id => Number(id)).filter(id => id);
             await fastify.db.customer.updateMany({
                 where: { id: { in: ids } },
-                data: { userId: req.session.user.id, stageId: 1 } // XXX: magic number
+                data: { userId: req.session.user.id, stageId: 1 } // FIXME: magic number
             });
         }
+        // TODO emit event: multi customers will merge into one.
         return reply.code(200).send();
     });
 
@@ -282,14 +283,16 @@ const customers = async function (fastify, opts) {
 
     fastify.get('/search', async function (req, reply) {
         // params
-        let { keyword, province, city, skip, stageId, limit, my } = req.query;
+        let { keyword, province, city, skip, stageId, hide, limit, my } = req.query;
         const provinceText = fastify.regions.parseProvince(province);
         const cityText = fastify.regions.parseCity(city);
         skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
         limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
-        my = Boolean(my) || false;
         stageId = Number(stageId) || null;
-        // process
+        hide = hide === 'true'; // Be careful, Boolean('false') won't return false, this is javascript.
+        my = my === 'true';
+
+        // search conditions
         let whereClause = { userId: null };
         if (provinceText) whereClause.province = { contains: provinceText };
         if (cityText) whereClause.city = { contains: cityText };
@@ -297,13 +300,14 @@ const customers = async function (fastify, opts) {
         if (stageId) whereClause.stageId = stageId;
         if (my) whereClause.userId = req.session.user.id;
 
-        // 读取该用户的hidden，customer不需要这些数据
-        const ignoreIds = (await fastify.db.userCustomerHiddenRef.findMany({
-            where: {
-                userId: req.session.user.id,
-            },
-        })).map(item => item.customerId);
-        if (ignoreIds.length > 0) whereClause.NOT = { id: { in: ignoreIds } };
+        if (hide) { // 读取该用户的hidden，customer不需要这些数据
+            const ignoreIds = (await fastify.db.userCustomerHiddenRef.findMany({
+                where: {
+                    userId: req.session.user.id,
+                },
+            })).map(item => item.customerId);
+            if (ignoreIds.length > 0) whereClause.NOT = { id: { in: ignoreIds } };
+        }
 
         const count = await fastify.db.customer.count({ where: whereClause });
         const data = await fastify.db.customer.findMany({

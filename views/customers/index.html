@@ -4,9 +4,15 @@
 {% block container %}
 <div class="h4 mb-4">客户 - 未分配的</div>
 <div class="d-flex justify-content-between align-items-center flex-wrap">
-    <div class="d-flex align-items-center flex-wrap">
+    <div id="searcher" class="d-flex align-items-center flex-wrap">
         <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
         <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
+        <div class="pb-2 pb-lg-0 pe-1">
+            <select id="hide" class="form-select" aria-label="隐藏">
+                <option value="true">不看隐藏</option>
+                <option value="false">查看隐藏</option>
+            </select>
+        </div>
         <div class="pb-2 pb-lg-0 pe-1"><input type="text" name="keyword" class="form-control" id="keyword"
                 placeholder="名称">
         </div>
@@ -223,9 +229,7 @@
                         <td>
                             <div>${item.name}</div>
                             <div>${item.phone}</div>
-                        </td>
-                        <td>
-                            <div class="d-flex">${photoHTML}</div>
+                            <div class="d-flex flex-wrap">${photoHTML}</div>
                         </td>
                         <td>${item.type}</td>
                         <td>
@@ -251,8 +255,7 @@
                 <thead>
                     <tr>
                         <th scope="col"><input class="form-check-input m-0 align-middle" type="checkbox"></th>
-                        <th scope="col" style="min-width: 100px;">客户</th>
-                        <th scope="col" style="min-width: 100px;">图片</th>
+                        <th scope="col" style="min-width: 260px;">客户</th>
                         <th scope="col" style="min-width: 100px;">类型</th>
                         <th scope="col" style="min-width: 200px;">地址</th>
                         <th scope="col" style="width: 220px; min-width: 220px;">操作</th>
@@ -286,16 +289,17 @@
             this.search();
         },
         search() {
-            $('#searchBtn').attr('disabled', true);
+            $('#searcher #searchBtn').attr('disabled', true);
             $('#spinner').show();
 
-            const province = $('#province').val();
-            const city = $('#city').val();
-            const keyword = $('#keyword').val();
+            const province = $('#searcher #province').val();
+            const city = $('#searcher #city').val();
+            const keyword = $('#searcher #keyword').val();
+            const hide = $('#searcher #hide').val();
             $.ajax({
                 type: 'get',
                 url: '/customers/search',
-                data: { province, city, keyword, skip: app.data.skip, limit: app.data.limit },
+                data: { province, city, keyword, hide, skip: app.data.skip, limit: app.data.limit },
                 contentType: 'application/json'
             }).done(function (result) {
                 const { data, count, skip, limit } = result;
@@ -310,7 +314,7 @@
 
                 app.renderTable();
             }).always(function () {
-                $('#searchBtn').attr('disabled', false);
+                $('#searcher #searchBtn').attr('disabled', false);
                 $('#spinner').hide();
             });
         },

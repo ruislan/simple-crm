@@ -426,21 +426,21 @@
                     case 'customer.create': {
                         one = `
                                 <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 创建了这个客户</div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                         break;
                     }
                     case 'customer.update': {
                         one = `
                                 <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 编辑了这个客户</div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                         break;
                     }
                     case 'customer.stage.change': {
                         one = `
                                 <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 改变这个客户的阶段为 <span class="fw-semibold">${extra.stage?.name}</span></div>
-                                <div class="ms-2 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                         break;
                     }
@@ -458,7 +458,7 @@
                             </div>
                             <div class="d-flex flex-column flex-grow-1 mb-2">
                                 <div class="p-3 border border-dark border-opacity-25 shadow-sm rounded mb-4">
-                                    <div class="d-flex align-items-baseline">
+                                    <div class="d-flex flex-column">
                                         ${one}
                                     </div>
                                 </div>

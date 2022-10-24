@@ -88,21 +88,27 @@
                                 <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
+                        case 'user.create':
+                            one = `
+                                <div class="paragraph">你创建了用户  <span class="fw-semibold">${extra.newUser?.name || '未知'}</span></div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
                         case 'customer.create':
                             one = `
-                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 创建了客户  <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
+                                <div class="paragraph">你创建了客户  <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
                                 <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         case 'customer.update':
                             one = `
-                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 编辑了客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
+                                <div class="paragraph">你编辑了客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>
                                 <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
                         case 'customer.stage.change': one = `
                                 <div class="paragraph">
-                                    <span class="fw-semibold">${extra.user?.name || '未知'}</span> 更改客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的状态为 <span class="fw-semibold">${extra.stage?.name || '未知'}</span>
+                                    你更改了客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的状态为 <span class="fw-semibold">${extra.stage?.name || '未知'}</span>
                                 </div>
                                 <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;

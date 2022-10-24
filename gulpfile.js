@@ -30,7 +30,7 @@ function archive(cb) {
         // XXX 这里很奇怪，如果直接执行流管道操作，打包的内容不全，所以我们等待1秒，等src读完所有的内容就可以了。
         gulp.src('build/**/*').pipe(zip.zip(filename)).pipe(gulp.dest('./'));
         cb();
-    }, 1000);
+    }, 1500);
 };
 
 export default gulp.series(clean, prepare, compress, archive);

@@ -140,6 +140,44 @@ const customers = async function (fastify, opts) {
 
     // end activities
 
+    // this customer's contracts
+    fastify.post('/:id/contracts', async (req, reply) => {
+        const customerId = Number(req.params.id || 0);
+        let { id, number, name, amount, remark } = req.body;
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+
+        // admin can add any
+        // others can only do it which were assigned to them
+        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+
+        const contract = { number, name, amount: Number(amount) || 0, remark, customerId: customer.id };
+        if (!number || number.length < 1) {
+            contract.number = '' + new Date().getTime(); // TODO don't use timestamp
+        }
+        if (id) {
+            await fastify.db.contract.update({ data: contract, where: { id: Number(id) } });
+        } else {
+            contract.userId = req.session.user.id;
+            await fastify.db.contract.create({ data: contract });
+        }
+        return reply.code(200).send();
+    });
+
+    fastify.get('/:id/contracts', async (req, reply) => {
+        const id = Number(req.params.id || 0); // todo pagination
+        let data = [];
+        const customer = await fastify.db.customer.findUnique({ where: { id } });
+        // admin can view all
+        // others can only view the customers which were assigned to them
+        if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
+            data = await fastify.db.contract.findMany({
+                where: { customerId: customer.id, }
+            });
+        }
+        return reply.code(200).send({ data });
+    });
+    // end contracts
+
     // add & edit this customer's link
     fastify.post('/:id/links', async (req, reply) => {
         const customerId = Number(req.params.id || 0);

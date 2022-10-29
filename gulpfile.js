@@ -16,7 +16,7 @@ function prepare() {
     gulp.src(['plugins/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/plugins'));
     gulp.src(['prisma/**/*', '!**/.DS_Store', '!**/*.db']).pipe(gulp.dest('build/prisma'));
     gulp.src(['views/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/views'));
-    return gulp.src(['public/**/*', '!public/**/*.js', '!public/**/*.css', '!**/.DS_Store']).pipe(gulp.dest('build/public'));
+    return gulp.src(['public/**/*', '!**/uploads/**/*', '!**/.DS_Store']).pipe(gulp.dest('build/public'));
 };
 
 function compress() {

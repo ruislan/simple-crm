@@ -87,6 +87,9 @@
                 <li class="nav-item">
                     <a id="tabLink" class="nav-link" href="#" onclick="app.switchTab('link')">联系</a>
                 </li>
+                <li class="nav-item">
+                    <a id="tabContract" class="nav-link" href="#" onclick="app.switchTab('contract')">合同</a>
+                </li>
             </ul>
             <div class="mt-2 tab-toolbar"></div>
         </div>
@@ -260,6 +263,7 @@
         data: {
             linkList: [],
             activityList: [],
+            contractList: [],
             typeDefault: `
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
                     <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
@@ -393,6 +397,12 @@
                     app.loadActivityList();
                     break;
                 }
+                case 'contract': {
+                    document.querySelector('#tabContract').classList.add('active');
+                    app.loadContractList();
+                    document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.openContractForm()">新增</button>`;
+                    break;
+                }
                 default: { // default is link
                     document.querySelector('#tabLink').classList.add('active');
                     document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.openLinkForm()">新增</button>`;
@@ -400,6 +410,122 @@
                     break;
                 }
             }
+        },
+        // contract
+        loadContractList() {
+            $('#spinner').show();
+            $.ajax({
+                type: 'get',
+                url: `/customers/{{data.customer.id}}/contracts`,
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
+                const { data } = result;
+                app.data.contractList = data;
+                app.renderContractList();
+            }).always(function () {
+                $('#spinner').hide();
+            });
+        },
+        renderContractList() {
+            let rows = '';
+            for (let i = 0; i < this.data.contractList.length; i++) {
+                const item = this.data.contractList[i];
+                rows += `
+                    <tr id="contract-row-${item.id}">
+                        <td>${item.number}</td>
+                        <td>${item.name}</td>
+                        <td>${item.amount}</td>
+                        <td><div class="">${item.remark}</div></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-danger ms-1" onclick="app.contractDrop(${item.id})">作废</button>
+                                <button class="btn btn-sm btn-success ms-1" onclick="app.contractClose(${item.id})">完成</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            const html = `
+            <table class="table table-bordered table-group-divider table-light">
+                <thead>
+                    <tr>
+                        <th scope="col">编号</th>
+                        <th scope="col">名称</th>
+                        <th scope="col">金额</th>
+                        <th scope="col">备注</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="fs-small">
+                    ${rows}
+                </tbody>
+            </table>
+            `;
+            document.getElementById('tabContent').innerHTML = html;
+        },
+        openContractForm(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            // show modal
+            const editorEl = document.createElement('div');
+            editorEl.id = 'editor';
+            editorEl.className = 'modal fade';
+            editorEl.setAttribute('aria-hidden', 'true');
+            editorEl.setAttribute('tabindex', '-1');
+            editorEl.setAttribute('data-bs-backdrop', 'static');
+            editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+            document.body.appendChild(editorEl);
+            editorEl.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">新建合同</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="editorForm">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">编号</label>
+                                        <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">名称</label>
+                                        <input type="text" class="form-control" name="name" value="${item?.name || ''}">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">金额</label>
+                                        <input type="text" class="form-control" name="amount" value="${item?.amount || ''}">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">备注</label>
+                                        <textarea class="form-control" name="remark" rows="3">${item?.remark || ''}</textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-dark">保存</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                const data = {};
+                new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
+                if (item?.id) data.id = item.id;
+
+                $.ajax({
+                    url: `/customers/{{data.customer.id}}/contracts`,
+                    type: 'post',
+                    data,
+                    statusCode: { 401: () => window.location.href = '/login', }
+                }).done(function () {
+                    helper.toast('操作成功', 'success');
+                }).always(function () {
+                    $('#editor').modal('hide');
+                    app.loadContractList();
+                });
+            });
+            $('#editor').modal('show');
         },
         // activity
         loadActivityList() {

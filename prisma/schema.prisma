@@ -122,6 +122,22 @@ model LinkType {
   links     Link[]
 }
 
+// 一次合同
+model Contract {
+  id          Int      @id @default(autoincrement())
+  number      String // 合同编号
+  name        String
+  customerId  Int      @map("customer_id") // 合同客户
+  amount      Decimal // 金额
+  remark      String // 备注
+  userId      Int?     @map("user_id") // 负责人
+  isDraft     Boolean  @default(false) @map("is_draft") // 是否是草稿
+  isCompleted Boolean  @default(false) @map("is_completed") // 是否完成
+  isAbandoned Boolean  @default(false) @map("is_abandoned") // 是否废弃
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
 // 所有活动，谁做了什么事情
 model Activity {
   id       Int     @id @default(autoincrement())

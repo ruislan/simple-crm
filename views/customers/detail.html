@@ -430,29 +430,47 @@
             let rows = '';
             for (let i = 0; i < this.data.contractList.length; i++) {
                 const item = this.data.contractList[i];
+                let actions = ``;
+                if (!item.isAbandoned && !item.isCompleted) {
+                    actions = `
+                        <button class="btn btn-sm btn-danger ms-1" onclick="app.abandonContract(${item.id})">作废</button>
+                        <button class="btn btn-sm btn-dark ms-1" onclick="app.completeContract(${item.id})">完成</button>
+                    `;
+                }
                 rows += `
                     <tr id="contract-row-${item.id}">
-                        <td>${item.number}</td>
-                        <td>${item.name}</td>
+                        <td>
+                            <div class="">${item.number}</div>
+                            <div class="">${item.name}</div>
+                            ${item.isAbandoned ? '<div class="tag tag-secondary bg-danger mt-1">已作废</div>' : ''}
+                            ${item.isCompleted ? '<div class="tag tag-secondary bg-dark mt-1">已完成</div>' : ''}
+                        </td>
                         <td>${item.amount}</td>
                         <td><div class="">${item.remark}</div></td>
                         <td>
-                            <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-danger ms-1" onclick="app.contractDrop(${item.id})">作废</button>
-                                <button class="btn btn-sm btn-success ms-1" onclick="app.contractClose(${item.id})">完成</button>
-                            </div>
+                            <div class="">${dayjs(item.createdAt).format("YYYY-MM-DD")}</div>
+                            <div class="">${dayjs(item.createdAt).format("HH:mm:ss")}</div>
+                        </td>
+                        <td>
+                            <div class="">${dayjs(item.updatedAt).format("YYYY-MM-DD")}</div>
+                            <div class="">${dayjs(item.updatedAt).format("HH:mm:ss")}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">${actions}</div>
                         </td>
                     </tr>
                 `;
             }
             const html = `
+            <div class="table-responsive">
             <table class="table table-bordered table-group-divider table-light">
                 <thead>
                     <tr>
-                        <th scope="col">编号</th>
-                        <th scope="col">名称</th>
+                        <th scope="col">合同</th>
                         <th scope="col">金额</th>
                         <th scope="col">备注</th>
+                        <th scope="col">创建</th>
+                        <th scope="col">更新</th>
                         <th scope="col">操作</th>
                     </tr>
                 </thead>
@@ -460,8 +478,37 @@
                     ${rows}
                 </tbody>
             </table>
+            </div>
             `;
             document.getElementById('tabContent').innerHTML = html;
+        },
+        abandonContract(itemId) {
+            if (itemId) {
+                helper.confirm('确定作废这个合同吗？作废后该合同将不能再改动，且金额将不再计入业务统计。', function () {
+                    $.ajax({
+                        type: 'post',
+                        url: `/customers/{{data.customer.id}}/contracts/${itemId}/abandon`,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        app.loadContractList();
+                        helper.toast('操作成功', 'success');
+                    });
+                });
+            }
+        },
+        completeContract(itemId) {
+            if (itemId) {
+                helper.confirm('确定完成这个合同吗？完成后该合同将不能再改动', function () {
+                    $.ajax({
+                        type: 'post',
+                        url: `/customers/{{data.customer.id}}/contracts/${itemId}/complete`,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        app.loadContractList();
+                        helper.toast('操作成功', 'success');
+                    });
+                });
+            }
         },
         openContractForm(itemIndex) {
             const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
@@ -655,7 +702,6 @@
             const item = itemIndex > -1 ? app.data.linkList[itemIndex] : undefined;
             if (item) {
                 helper.confirm('确定删除这个联系吗？', function () {
-                    ;
                     $.ajax({
                         type: 'delete',
                         url: `/customers/{{data.customer.id}}/links/${item.id}`,

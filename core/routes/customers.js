@@ -171,10 +171,33 @@ const customers = async function (fastify, opts) {
         // others can only view the customers which were assigned to them
         if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
             data = await fastify.db.contract.findMany({
-                where: { customerId: customer.id, }
+                where: { customerId: customer.id, },
+                orderBy: [{ updatedAt: 'desc' }]
             });
         }
         return reply.code(200).send({ data });
+    });
+
+    fastify.post('/:customerId/contracts/:contractId/abandon', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const contractId = Number(req.params.contractId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        // admin or owner can do this
+        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.contract.update({ data: { isAbandoned: true }, where: { id: contract.id } });
+        return reply.code(200).send();
+    });
+
+    fastify.post('/:customerId/contracts/:contractId/complete', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const contractId = Number(req.params.contractId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        // admin or owner can do this
+        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.contract.update({ data: { isCompleted: true }, where: { id: contract.id } });
+        return reply.code(200).send();
     });
     // end contracts
 

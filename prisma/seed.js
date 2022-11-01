@@ -43,6 +43,17 @@ const linkTypes = [
     { id: 5, name: '短信' },
 ]
 
+const paymentMethods = [
+    { id: 1, name: '现金' },
+    { id: 2, name: '支票' },
+    { id: 3, name: '邮政汇款' },
+    { id: 4, name: '电汇' },
+    { id: 5, name: '银行转账' },
+    { id: 6, name: '网上转账' },
+    { id: 7, name: '支付宝' },
+    { id: 8, name: '微信' },
+];
+
 async function main() {
     // await db.user.deleteMany();
     for (const u of users) {
@@ -56,6 +67,10 @@ async function main() {
     for (const t of linkTypes) {
         await db.linkType.upsert({ create: t, update: t, where: { id: t.id } });
         console.log(`Created or Update link type with id: ${t.id}`);
+    }
+    for (const p of paymentMethods) {
+        await db.paymentMethod.upsert({ create: p, update: p, where: { id: p.id, } });
+        console.log(`Created or Update payment method with id: ${p.id}`);
     }
     // await db.photo.deleteMany();
     // await db.customer.deleteMany();

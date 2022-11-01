@@ -106,6 +106,19 @@
                                 <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                             `;
                             break;
+                        case 'customer.acquire':
+                            let customersHtml = '';
+                            let len = extra.customers?.length || 0;
+                            for (let i = 0; i < len; i++) {
+                                customersHtml += `<span class="fw-semibold">${extra.customers[i].name || '未知'}</span>`;
+                                if (i < len - 1) customersHtml += ', ';
+                                else customersHtml += ' 等客户';
+                            }
+                            one = `
+                                <div class="paragraph">你领取了 ${customersHtml}</div>
+                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                            `;
+                            break;
                         case 'customer.stage.change': one = `
                                 <div class="paragraph">
                                     你更改了客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的状态为 <span class="fw-semibold">${extra.stage?.name || '未知'}</span>

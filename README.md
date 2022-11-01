@@ -20,6 +20,11 @@
 * IDE: Visual Studio Code
 * DBTool: Beekeeper Studio
 
+## 灵感来源
+
+* [Dribbble](https://dribbble.com/)
+* [tabler](https://preview.tabler.io/)
+
 ## 功能
 
 ### 用户
@@ -51,8 +56,14 @@
 
 ### 合同与回款
 
-1. 客户合同创建、编辑、作废、完成
+1. 客户合同创建、编辑、作废、完成 O
 2. 合同回款创建、编辑、删除
+3. 相关统计和展示
+
+### 产品
+
+1. 产品创建、编辑、删除、查看
+2. 客户、合同关联产品
 3. 相关统计和展示
 
 ### 配置
@@ -60,6 +71,7 @@
 1. 联系类型的创建、编辑和删除 O
 2. 客户阶段的创建、编辑和删除 O
 3. 客户标签的创建、编辑和删除 O
+4. 系统统一处理错误
 
 ### 待思考功能
 
@@ -75,6 +87,7 @@
     <img src="./docs/screenshots/screenshot_my_customers.png" width="25%">
     <img src="./docs/screenshots/screenshot_customer_detail.png" width="25%">
     <img src="./docs/screenshots/screenshot_customer_detail_2.png" width="25%">
+    <img src="./docs/screenshots/screenshot_customer_detail_3.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_dataset.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_link_type.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_user.png" width="25%">
@@ -82,7 +95,7 @@
 
 ## 运行
 
-修改.env.example为.env，并且填入两个地图对应的的API调用KEY，是服务端KEY，这个可以到对应的地图开发者页面免费申请。没有KEY也可以使用，只是不能收集数据。
+修改.env.example为.env，并且填入两个地图对应的的API调用KEY，是服务端KEY，这个可以到对应的地图开发者页面免费申请。没有KEY也可以使用，只是不能通过收集数据。
 
 ```shell
 git clone https://github.com/ruislan/simple-crm.git

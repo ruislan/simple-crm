@@ -9,6 +9,7 @@ const events = {
         CUSTOMER_UPDATE: 'customer.update',
         CUSTOMER_RETREAT: 'customer.retreat',
         CUSTOMER_TRANSFER: 'customer.transfer',
+        CUSTOMER_ACQUIRE: 'customer.acquire',
         CUSTOMER_STAGE_CHANGE: 'customer.stage.change',
         // TODO finish these events...
     },
@@ -24,7 +25,18 @@ const events = {
         fastify.events.addHandler(this.names.CUSTOMER_UPDATE, this.handleCustomerUpdate);
         fastify.events.addHandler(this.names.CUSTOMER_RETREAT, this.handleCustomerRetreat);
         fastify.events.addHandler(this.names.CUSTOMER_TRANSFER, this.handleCustomerTransfer);
+        fastify.events.addHandler(this.names.CUSTOMER_ACQUIRE, this.handleCustomerAcquire);
         fastify.events.addHandler(this.names.CUSTOMER_STAGE_CHANGE, this.handleCustomerStageChange);
+    },
+    async handleCustomerAcquire(data) {
+        let { user, customers } = data;
+        customers = customers.map(customer => { return { id: customer.id, name: customer.name }; });
+        const activity = {
+            action: events.names.CUSTOMER_ACQUIRE,
+            userId: user.id,
+            extra: JSON.stringify({ user: { id: user.id, name: user.name }, customers }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
     },
     async handleUserCreate(data) {
         const { user, newUser } = data;

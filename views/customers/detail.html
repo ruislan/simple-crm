@@ -102,6 +102,7 @@
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
 <script src="/public/js/customers.js"></script>
 <script>
     const tagsDialog = {
@@ -433,10 +434,13 @@
                 let actions = ``;
                 if (!item.isAbandoned && !item.isCompleted) {
                     actions = `
-                        <button class="btn btn-sm btn-danger ms-1" onclick="app.abandonContract(${item.id})">作废</button>
+                        <button class="btn btn-sm btn-dark ms-1" onclick="app.openContractForm(${i})">编辑</button>
+                        <button class="btn btn-sm btn-dark ms-1" onclick="app.openReceivableForm(${i})">回款</button>
                         <button class="btn btn-sm btn-dark ms-1" onclick="app.completeContract(${item.id})">完成</button>
+                        <button class="btn btn-sm btn-danger ms-1" onclick="app.abandonContract(${item.id})">作废</button>
                     `;
                 }
+                const receivablePercent = item.receivables.reduce((acc, cur) => acc + Number(cur.amount) || 0, 0) * 100 / (Number(item.amount) || 0.01);
                 rows += `
                     <tr id="contract-row-${item.id}">
                         <td>
@@ -445,7 +449,19 @@
                             ${item.isAbandoned ? '<div class="tag tag-secondary bg-danger mt-1">已作废</div>' : ''}
                             ${item.isCompleted ? '<div class="tag tag-secondary bg-dark mt-1">已完成</div>' : ''}
                         </td>
-                        <td>${item.amount}</td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
+                                        <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
+                                    </svg>
+                                    ${item.amount}
+                                </div>
+                                <div class="progress" onmouseover="">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: ${receivablePercent}%" aria-valuenow="${receivablePercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </td>
                         <td><div class="">${item.remark}</div></td>
                         <td>
                             <div class="">${dayjs(item.createdAt).format("YYYY-MM-DD")}</div>
@@ -525,7 +541,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">新建合同</h5>
+                                <h5 class="modal-title">编辑合同</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <form id="editorForm">
@@ -573,6 +589,86 @@
                 });
             });
             $('#editor').modal('show');
+        },
+        openReceivableForm(itemIndex) {
+            $.ajax({
+                type: 'get',
+                url: '/payment-methods',
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
+                const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+                // read paymentMethods from server
+                const { data } = result;
+                let optionsHTML = '';
+                for (let i = 0; i < data.length; i++) {
+                    const option = data[i];
+                    optionsHTML += `<option value="${option.id}">${option.name}</option>`;
+                }
+                // show modal
+                const editorEl = document.createElement('div');
+                editorEl.id = 'editor';
+                editorEl.className = 'modal fade';
+                editorEl.setAttribute('aria-hidden', 'true');
+                editorEl.setAttribute('tabindex', '-1');
+                editorEl.setAttribute('data-bs-backdrop', 'static');
+                editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+                document.body.appendChild(editorEl);
+                editorEl.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">新增回款</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="editorForm">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">方式</label>
+                                        <select class="form-select" name="paymentMethodId" name="paymentMethodId">
+                                            ${optionsHTML}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">金额</label>
+                                        <input type="text" class="form-control" name="amount">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">日期</label>
+                                        <input class="form-control" placeholder="选择日期" name="date" id="datepicker" value="${dayjs(new Date(), 'yyyy-MM-dd')}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">备注</label>
+                                        <textarea class="form-control" name="remark" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-dark">保存</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                new Litepicker({ element: document.getElementById('datepicker') });
+                document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                    const data = {};
+                    new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
+                    // if (item?.id) data.id = item.id; // 回款不能编辑，只能删除和新建
+
+                    $.ajax({
+                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivable`,
+                        type: 'post',
+                        data,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        helper.toast('操作成功', 'success');
+                    }).always(function () {
+                        $('#editor').modal('hide');
+                        app.loadContractList();
+                    });
+                });
+                $('#editor').modal('show');
+            });
         },
         // activity
         loadActivityList() {

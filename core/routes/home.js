@@ -14,6 +14,12 @@ const home = async function (fastify, opts) {
     fastify.get('/not-found', async (_, reply) => reply.view('not-found.html'));
     fastify.get('/forbidden', async (_, reply) => reply.view('forbidden.html'));
 
+    // XXX move me to the right place, maybe?
+    fastify.get('/payment-methods', async (req, reply) => {
+        const data = await fastify.db.paymentMethod.findMany();
+        return reply.code(200).send({ data });
+    });
+
     fastify.post('/login', async function (req, reply) {
         const { name, password } = req.body;
         let user = null;

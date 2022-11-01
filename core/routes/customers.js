@@ -172,10 +172,33 @@ const customers = async function (fastify, opts) {
         if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
             data = await fastify.db.contract.findMany({
                 where: { customerId: customer.id, },
-                orderBy: [{ updatedAt: 'desc' }]
+                orderBy: [{ updatedAt: 'desc' }],
+                include: { receivables: true }
             });
         }
         return reply.code(200).send({ data });
+    });
+
+    fastify.post('/:customerId/contracts/:contractId/receivable', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const contractId = Number(req.params.contractId);
+        let { paymentMethodId, amount, date, remark } = req.body;
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        // admin or owner can do this
+        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.receivable.create({
+            data: {
+                customerId: customer.id,
+                contractId: contract.id,
+                userId: customer.userId, // 这个客户的负责人也是这个回款的负责人
+                paymentMethodId: Number(paymentMethodId) || null,
+                date: new Date(date) || new Date(),
+                amount: Number(amount) || 0,
+                remark
+            }
+        });
+        return reply.code(200).send();
     });
 
     fastify.post('/:customerId/contracts/:contractId/abandon', async (req, reply) => {
@@ -330,8 +353,10 @@ const customers = async function (fastify, opts) {
                 where: { id: { in: ids } },
                 data: { userId: req.session.user.id, stageId: 1 } // FIXME: magic number
             });
+            ids = ids.slice(0, 5);
+            const customers = await fastify.db.customer.findMany({ where: { id: { in: ids } } });
+            fastify.events.emit(events.names.CUSTOMER_ACQUIRE, { user: req.session.user, customers });
         }
-        // TODO emit event: multi customers will merge into one.
         return reply.code(200).send();
     });
 

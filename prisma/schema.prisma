@@ -136,6 +136,34 @@ model Contract {
   isAbandoned Boolean  @default(false) @map("is_abandoned") // 是否废弃
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // ref
+  receivables Receivable[] // 回款
+}
+
+// 一次回款
+model Receivable {
+  id              Int      @id @default(autoincrement())
+  amount          Decimal // 金额
+  remark          String // 备注
+  paymentMethodId Int?     @map("payment_method_id") // 付款方式
+  date            DateTime @default(now()) // 回款日期
+  customerId      Int?     @map("customer_id") // 回款对应的客户
+  contractId      Int?     @map("contract_id") // 回款对应的合同
+  userId          Int      @map("user_id") // 添加回款的人
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // ref
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id]) // 付款方式
+  contract      Contract?      @relation(fields: [contractId], references: [id])
+}
+
+// 付款方式
+model PaymentMethod {
+  id          Int          @id @default(autoincrement())
+  name        String
+  receivables Receivable[]
 }
 
 // 所有活动，谁做了什么事情

@@ -179,7 +179,7 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send({ data });
     });
 
-    fastify.post('/:customerId/contracts/:contractId/receivable', async (req, reply) => {
+    fastify.post('/:customerId/contracts/:contractId/receivables', async (req, reply) => {
         const customerId = Number(req.params.customerId);
         const contractId = Number(req.params.contractId);
         let { paymentMethodId, amount, date, remark } = req.body;
@@ -198,6 +198,17 @@ const customers = async function (fastify, opts) {
                 remark
             }
         });
+        return reply.code(200).send();
+    });
+    fastify.delete('/:customerId/contracts/:contractId/receivables/:receivableId', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const contractId = Number(req.params.contractId);
+        const receivableId = Number(req.params.receivableId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        // admin or owner can do this
+        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.receivable.delete({ where: { id: receivableId }});
         return reply.code(200).send();
     });
 

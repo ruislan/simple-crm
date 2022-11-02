@@ -383,11 +383,14 @@
                 const stage = document.getElementById('stage');
                 stage.textContent = stageName;
                 stage.style = `background-color: ${stageColorHex || '#212529'};`;
-                app.loadActivityList();
+                if (app.isTabActive('#tabActivity')) app.loadActivityList();
                 helper.toast('操作成功', 'success');
             });
         },
         // tab
+        isTabActive(tabId) {
+            return document.querySelector(tabId).classList.contains('active');
+        },
         switchTab(name) {
             document.querySelector('.tab-toolbar').innerHTML = ''; // clear toolbar
             document.getElementById('tabContent').innerHTML = ''; // clear tab content
@@ -413,6 +416,95 @@
             }
         },
         // contract
+        openReceivableListModal(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            // show modal
+            const modalEl = document.createElement('div');
+            modalEl.id = 'modal';
+            modalEl.className = 'modal fade';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.setAttribute('tabindex', '-1');
+            modalEl.setAttribute('data-bs-backdrop', 'static');
+            modalEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(modalEl));
+            document.body.appendChild(modalEl);
+            modalEl.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">回款信息</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#modal').modal('show');
+            app.loadReceivableList(itemIndex);
+        },
+        loadReceivableList(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            let rows = '';
+            for (const r of item.receivables) {
+                rows += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
+                                    <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
+                                </svg>
+                                ${r.amount}
+                            </div>
+                        </td>
+                        <td><div class="">${dayjs(r.date).format("YYYY-MM-DD HH:mm:ss")}</div></td>
+                        <td><div class="">${r.remark}</div></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-danger ms-1" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            document.querySelector('#modal .modal-body').innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-group-divider table-light">
+                        <thead>
+                            <tr>
+                                <th scope="col">金额</th>
+                                <th scope="col">日期</th>
+                                <th scope="col">备注</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fs-small">
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        },
+        deleteReceivable(itemIndex, itemId) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            if (item && itemId) {
+                helper.confirm('确定删除这条回款吗？', function () {
+                    $.ajax({
+                        type: 'delete',
+                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables/${itemId}`,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        item.receivables = item.receivables.filter(v => v.id != itemId); // delete local
+                        app.renderContractList(); // rerender contract list to refresh the progress bar
+                        app.loadReceivableList(itemIndex);
+                        helper.toast('操作成功', 'success');
+                    });
+                });
+            }
+        },
         loadContractList() {
             $('#spinner').show();
             $.ajax({
@@ -457,7 +549,7 @@
                                     </svg>
                                     ${item.amount}
                                 </div>
-                                <div class="progress" onmouseover="">
+                                <div class="progress cursor-pointer" onclick="app.openReceivableListModal(${i})">
                                     <div class="progress-bar bg-success" role="progressbar" style="width: ${receivablePercent}%" aria-valuenow="${receivablePercent}" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
@@ -656,7 +748,7 @@
                     // if (item?.id) data.id = item.id; // 回款不能编辑，只能删除和新建
 
                     $.ajax({
-                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivable`,
+                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables`,
                         type: 'post',
                         data,
                         statusCode: { 401: () => window.location.href = '/login', }

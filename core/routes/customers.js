@@ -156,9 +156,11 @@ const customers = async function (fastify, opts) {
         }
         if (id) {
             await fastify.db.contract.update({ data: contract, where: { id: Number(id) } });
+            fastify.events.emit(events.names.CUSTOMER_CONTRACT_UPDATE, { user: req.session.user, customer, contract });
         } else {
             contract.userId = req.session.user.id;
             await fastify.db.contract.create({ data: contract });
+            fastify.events.emit(events.names.CUSTOMER_CONTRACT_CREATE, { user: req.session.user, customer, contract });
         }
         return reply.code(200).send();
     });
@@ -208,7 +210,7 @@ const customers = async function (fastify, opts) {
         const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
         // admin or owner can do this
         if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.receivable.delete({ where: { id: receivableId }});
+        await fastify.db.receivable.delete({ where: { id: receivableId } });
         return reply.code(200).send();
     });
 
@@ -220,6 +222,7 @@ const customers = async function (fastify, opts) {
         // admin or owner can do this
         if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
         await fastify.db.contract.update({ data: { isAbandoned: true }, where: { id: contract.id } });
+        fastify.events.emit(events.names.CUSTOMER_CONTRACT_ABANDON, { user: req.session.user, customer, contract });
         return reply.code(200).send();
     });
 
@@ -231,6 +234,7 @@ const customers = async function (fastify, opts) {
         // admin or owner can do this
         if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
         await fastify.db.contract.update({ data: { isCompleted: true }, where: { id: contract.id } });
+        fastify.events.emit(events.names.CUSTOMER_CONTRACT_COMPLETE, { user: req.session.user, customer, contract });
         return reply.code(200).send();
     });
     // end contracts

@@ -104,6 +104,7 @@
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
 <script src="/public/js/customers.js"></script>
+<script src="/public/js/activities.js"></script>
 <script>
     const tagsDialog = {
         title: '标签',
@@ -532,7 +533,8 @@
                         <button class="btn btn-sm btn-danger ms-1" onclick="app.abandonContract(${item.id})">作废</button>
                     `;
                 }
-                const receivablePercent = item.receivables.reduce((acc, cur) => acc + Number(cur.amount) || 0, 0) * 100 / (Number(item.amount) || 0.01);
+                const receivableAmount = item.receivables.reduce((acc, cur) => acc + Number(cur.amount) || 0, 0);
+                const receivablePercent = receivableAmount * 100 / (Number(item.amount) || 0.01);
                 rows += `
                     <tr id="contract-row-${item.id}">
                         <td>
@@ -544,10 +546,19 @@
                         <td>
                             <div class="d-flex flex-column">
                                 <div class="d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
-                                        <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
-                                    </svg>
-                                    ${item.amount}
+                                    <div class="d-flex align-items-center text-muted">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
+                                            <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
+                                        </svg>
+                                        ${receivableAmount}
+                                    </div>
+                                    <div class="mx-1">/</div>
+                                    <div class="d-flex align-items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
+                                            <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
+                                        </svg>
+                                        ${item.amount}
+                                    </div>
                                 </div>
                                 <div class="progress cursor-pointer" onclick="app.openReceivableListModal(${i})">
                                     <div class="progress-bar bg-success" role="progressbar" style="width: ${receivablePercent}%" aria-valuenow="${receivablePercent}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -579,7 +590,7 @@
                         <th scope="col">备注</th>
                         <th scope="col">创建</th>
                         <th scope="col">更新</th>
-                        <th scope="col">操作</th>
+                        <th scope="col" style="width: 220px;min-width: 220px;">操作</th>
                     </tr>
                 </thead>
                 <tbody class="fs-small">
@@ -778,55 +789,7 @@
             });
         },
         renderActivityList() {
-            let html = '';
-            for (let i = 0; i < this.data.activityList.length; i++) {
-                const item = this.data.activityList[i];
-                const extra = JSON.parse(item.extra || '{}');
-                let one = '';
-                switch (item.action) {
-                    case 'customer.create': {
-                        one = `
-                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 创建了这个客户</div>
-                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
-                            `;
-                        break;
-                    }
-                    case 'customer.update': {
-                        one = `
-                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 编辑了这个客户</div>
-                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
-                            `;
-                        break;
-                    }
-                    case 'customer.stage.change': {
-                        one = `
-                                <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 改变这个客户的阶段为 <span class="fw-semibold">${extra.stage?.name}</span></div>
-                                <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
-                            `;
-                        break;
-                    }
-                    default: break;
-                }
-                html += `
-                        <div class="d-flex">
-                            <div class="d-flex flex-column me-2">
-                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon text-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                                    </svg>
-                                </div>
-                                <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
-                            </div>
-                            <div class="d-flex flex-column flex-grow-1 mb-2">
-                                <div class="p-3 border border-dark border-opacity-25 shadow-sm rounded mb-4">
-                                    <div class="d-flex flex-column">
-                                        ${one}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-            }
+            let html = activities.render({ data: this.data.activityList, isMy: false });
             document.getElementById('tabContent').innerHTML = html;
         },
         // link

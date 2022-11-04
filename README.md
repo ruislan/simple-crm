@@ -2,13 +2,17 @@
 
 ## 简介
 
-不懂CRM，没有关系，你只要会做业务，就会用Simple CRM。
-没有什么难以理解的概念，不需要更多的文化和知识，适合中小微企业。
-从寻找客户，联系客户，管理客户，最后达到成交，以及维持关系。都是你熟悉的事情。
+Simple CRM 天然契合小微企业或者小团队及个人使用。
+
+* 不懂CRM？没有关系，Simple CRM 没有难懂的概念，不需多高的文化和知识.
+* 就几个销售？那刚刚好，Simple CRM 没有复杂的组织管理和权限设置，开箱即用。
+* 找不到客户？都给你准备好了，Simple CRM 可以帮助你搜索客户，即刻联系。
+
+从寻找客户，联系客户，管理客户，达到成交，以及维持关系。都是你熟悉的事情。
 
 ## 技术栈
 
-* Language: NodeJS v16.17.1
+* Language: NodeJS v16
 * Framework: Fastify
 * Database: SQLite
 * ORM: Prisma
@@ -16,7 +20,7 @@
 
 ## 环境和工具
 
-* OS: macOS Monterey
+* OS: macOS Ventura
 * IDE: Visual Studio Code
 * DBTool: Beekeeper Studio
 
@@ -60,7 +64,7 @@
 
 1. 客户合同创建、编辑、作废、完成 O
 2. 合同回款创建、删除 O
-3. 相关操作记录入活动
+3. 相关操作记录入活动 O
 4. 相关统计和展示
 
 ### 产品
@@ -98,7 +102,7 @@
 
 ## 运行
 
-修改.env.example为.env，并且填入两个地图对应的的API调用KEY，是服务端KEY，这个可以到对应的地图开发者页面免费申请。没有KEY也可以使用，只是不能通过收集数据。
+修改.env.example为.env，并且填入两个地图对应的的API调用KEY，是服务端KEY，这个可以到对应的地图开发者页面免费申请。没有KEY也可以使用，只是无法使用收集客户数据的能力。
 
 ```shell
 git clone https://github.com/ruislan/simple-crm.git
@@ -109,7 +113,7 @@ yarn prisma db seed
 yarn start:dev
 ```
 
-Win环境下注意修改命令start:dev，将NODE_ENV单独设置为dev。
+Win环境下注意修改package.json中的命令start:dev，将NODE_ENV进行单独设置（set NODE_ENV=dev）。
 启动成功后访问：<http://localhost:5600>
 
 ```text
@@ -126,4 +130,4 @@ Pass: 123123
 
 docker build --pull --rm -f "Dockerfile" -t simple-crm:latest "server"
 
-docker run --rm -d  -p 5700:5700/tcp simple-crm:latest
+docker run --rm -d -p 5600:5600/tcp simple-crm:latest

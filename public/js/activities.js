@@ -83,12 +83,12 @@ const activities = {
                 case 'customer.contract.update':
                     one = isMy ? `
                     <div class="paragraph">
-                        你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 修改了合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span>
+                        你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 编辑了合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span>
                     </div>
                     <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                 `: `
                     <div class="paragraph">
-                        <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 修改了合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span>
+                        <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 编辑了合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span>
                     </div>
                     <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                 `;
@@ -118,6 +118,71 @@ const activities = {
                     </div>
                     <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                 `;
+                    break;
+                case 'customer.receivable.create':
+                    one = isMy ? `
+                        <div class="paragraph">
+                            你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span> 新增了 <span class="fw-semibold">回款 ${extra.receivable?.amount || ''}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    ` : `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span> 新增了 <span class="fw-semibold">回款 ${extra.receivable?.amount || ''}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
+                case 'customer.receivable.delete':
+                    one = isMy ? `
+                        <div class="paragraph">
+                            你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span> 删除了 <span class="fw-semibold">回款 ${extra.receivable?.amount || ''}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    ` : `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 的合同 <span class="fw-semibold">${extra.contract?.name || '未知'}</span> 删除了 <span class="fw-semibold">回款 ${extra.receivable?.amount || ''}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
+                case 'customer.link.create':
+                    one = isMy ? `
+                        <div class="paragraph">
+                            你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 新增了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `: `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 新增了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
+                case 'customer.link.update':
+                    one = isMy ? `
+                        <div class="paragraph">
+                            你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 编辑了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `: `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 编辑了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
+                case 'customer.link.delete':
+                    one = isMy ? `
+                        <div class="paragraph">
+                            你为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 删除了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `: `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 为客户 <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 删除了联系 <span class="fw-semibold">${extra.link?.subject || '未知'}</span>
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
                     break;
                 default: break;
             }

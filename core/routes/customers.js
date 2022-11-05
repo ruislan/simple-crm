@@ -189,7 +189,7 @@ const customers = async function (fastify, opts) {
         const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
         // admin or owner can do this
         if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.receivable.create({
+        const receivable = await fastify.db.receivable.create({
             data: {
                 customerId: customer.id,
                 contractId: contract.id,
@@ -200,17 +200,21 @@ const customers = async function (fastify, opts) {
                 remark
             }
         });
+        fastify.events.emit(events.names.CUSTOMER_RECEIVABLE_CREATE, { user: req.session.user, customer, contract, receivable });
         return reply.code(200).send();
     });
+
     fastify.delete('/:customerId/contracts/:contractId/receivables/:receivableId', async (req, reply) => {
         const customerId = Number(req.params.customerId);
         const contractId = Number(req.params.contractId);
         const receivableId = Number(req.params.receivableId);
         const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
         const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        const receivable = await fastify.db.receivable.findUnique({ where: { id: receivableId } });
         // admin or owner can do this
-        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.receivable.delete({ where: { id: receivableId } });
+        if (!customer || !contract || !receivable || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.receivable.delete({ where: { id: receivable.id } });
+        fastify.events.emit(events.names.CUSTOMER_RECEIVABLE_DELETE, { user: req.session.user, customer, contract, receivable });
         return reply.code(200).send();
     });
 
@@ -251,12 +255,14 @@ const customers = async function (fastify, opts) {
         // others can only do it which were assigned to them
         if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
 
-        const link = { subject, content, typeId: Number(typeId) || 0, customerId: customer.id };
+        let link = { subject, content, typeId: Number(typeId) || 0, customerId: customer.id };
         if (id) {
-            await fastify.db.link.update({ data: link, where: { id: Number(id) } });
+            link = await fastify.db.link.update({ data: link, where: { id: Number(id) } });
+            fastify.events.emit(events.names.CUSTOMER_LINK_UPDATE, { user: req.session.user, customer, link });
         } else {
             link.userId = req.session.user.id;
-            await fastify.db.link.create({ data: link });
+            link = await fastify.db.link.create({ data: link });
+            fastify.events.emit(events.names.CUSTOMER_LINK_CREATE, { user: req.session.user, customer, link });
         }
         return reply.code(200).send();
     });
@@ -265,10 +271,12 @@ const customers = async function (fastify, opts) {
         const customerId = Number(req.params.customerId);
         const linkId = Number(req.params.linkId);
         const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const link = await fastify.db.link.findUnique({ where: { id: linkId } });
         // admin can delete any
         // others can only do it which were assigned to them
-        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
-        await fastify.db.link.delete({ where: { id: linkId } });
+        if (!customer || !link || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        await fastify.db.link.delete({ where: { id: link.id } });
+        fastify.events.emit(events.names.CUSTOMER_LINK_DELETE, { user: req.session.user, customer, link });
         return reply.code(200).send();
     });
 

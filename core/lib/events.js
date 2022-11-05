@@ -14,13 +14,19 @@ const events = {
         CUSTOMER_CONTRACT_CREATE: 'customer.contract.create',
         CUSTOMER_CONTRACT_UPDATE: 'customer.contract.update',
         CUSTOMER_CONTRACT_COMPLETE: 'customer.contract.complete',
-        CUSTOMER_CONTRACT_ABANDON: 'customer.contract.abandon'
-        // TODO finish these events...
+        CUSTOMER_CONTRACT_ABANDON: 'customer.contract.abandon',
+        CUSTOMER_RECEIVABLE_CREATE: 'customer.receivable.create',
+        CUSTOMER_RECEIVABLE_DELETE: 'customer.receivable.delete',
+        CUSTOMER_LINK_CREATE: 'customer.link.create',
+        CUSTOMER_LINK_UPDATE: 'customer.link.update',
+        CUSTOMER_LINK_DELETE: 'customer.link.delete'
+        // XXX 持续追加事件...
         // XXX 动态事件目前在系统中看来有三种
         // 1. 谁做了什么，例如：X登录了系统。
         // 2. 谁对谁做了什么，例如： X 创建了 Y；张三 创建了 合同。
         // 3. 谁对谁的什么做了什么，例如： X 为 Y 创建了一个 Z；张三 为 客户李四 创建了一个 合同。
         // 目前的设计是 user -> target 然后extra附加描述的形式来处理这三种分类
+        // XXX 这里设计和事件处理都略显仓促和粗糙，后面有时间来改进，现在只能说能用
     },
     init(fastify) {
         events.fastify = fastify;
@@ -30,17 +36,101 @@ const events = {
         fastify.events.addHandler(this.names.USER_CREATE, this.handleUserCreate);
         fastify.events.addHandler(this.names.USER_BLOCK, this.handleUserBlock);
         fastify.events.addHandler(this.names.USER_UNBLOCK, this.handleUserUnBlock);
+
         fastify.events.addHandler(this.names.CUSTOMER_CREATE, this.handleCustomerCreate);
         fastify.events.addHandler(this.names.CUSTOMER_UPDATE, this.handleCustomerUpdate);
         fastify.events.addHandler(this.names.CUSTOMER_RETREAT, this.handleCustomerRetreat);
         fastify.events.addHandler(this.names.CUSTOMER_TRANSFER, this.handleCustomerTransfer);
         fastify.events.addHandler(this.names.CUSTOMER_ACQUIRE, this.handleCustomerAcquire);
+
         fastify.events.addHandler(this.names.CUSTOMER_STAGE_CHANGE, this.handleCustomerStageChange);
+
         fastify.events.addHandler(this.names.CUSTOMER_CONTRACT_CREATE, this.handleCustomerContractCreate);
         fastify.events.addHandler(this.names.CUSTOMER_CONTRACT_UPDATE, this.handleCustomerContractUpdate);
         fastify.events.addHandler(this.names.CUSTOMER_CONTRACT_COMPLETE, this.handleCustomerContractComplete);
         fastify.events.addHandler(this.names.CUSTOMER_CONTRACT_ABANDON, this.handleCustomerContractAbandon);
+
+        fastify.events.addHandler(this.names.CUSTOMER_RECEIVABLE_CREATE, this.handleCustomerReceivableCreate);
+        fastify.events.addHandler(this.names.CUSTOMER_RECEIVABLE_DELETE, this.handleCustomerReceivableDelete);
+
+        fastify.events.addHandler(this.names.CUSTOMER_LINK_CREATE, this.handleCustomerLinkCreate);
+        fastify.events.addHandler(this.names.CUSTOMER_LINK_UPDATE, this.handleCustomerLinkUpdate);
+        fastify.events.addHandler(this.names.CUSTOMER_LINK_DELETE, this.handleCustomerLinkDelete);
     },
+    async handleCustomerLinkCreate(data) {
+        const { user, customer, link } = data;
+        const activity = {
+            action: events.names.CUSTOMER_LINK_CREATE,
+            userId: user.id,
+            targetId: customer.id,
+            extra: JSON.stringify({
+                user: { id: user.id, name: user.name },
+                customer: { id: customer.id, name: customer.name },
+                link: { id: link.id, subject: link.subject }
+            }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
+    },
+    async handleCustomerLinkUpdate(data) {
+        const { user, customer, link } = data;
+        const activity = {
+            action: events.names.CUSTOMER_LINK_UPDATE,
+            userId: user.id,
+            targetId: customer.id,
+            extra: JSON.stringify({
+                user: { id: user.id, name: user.name },
+                customer: { id: customer.id, name: customer.name },
+                link: { id: link.id, subject: link.subject }
+            }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
+    },
+    async handleCustomerLinkDelete(data) {
+        const { user, customer, link } = data;
+        const activity = {
+            action: events.names.CUSTOMER_LINK_DELETE,
+            userId: user.id,
+            targetId: customer.id,
+            extra: JSON.stringify({
+                user: { id: user.id, name: user.name },
+                customer: { id: customer.id, name: customer.name },
+                link: { id: link.id, subject: link.subject }
+            }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
+    },
+
+    async handleCustomerReceivableCreate(data) {
+        const { user, customer, contract, receivable } = data;
+        const activity = {
+            action: events.names.CUSTOMER_RECEIVABLE_CREATE,
+            userId: user.id,
+            targetId: customer.id,
+            extra: JSON.stringify({
+                user: { id: user.id, name: user.name },
+                customer: { id: customer.id, name: customer.name },
+                contract: { id: contract.id, name: contract.name },
+                receivable: { id: receivable.id, amount: receivable.amount }
+            }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
+    },
+    async handleCustomerReceivableDelete(data) {
+        const { user, customer, contract, receivable } = data;
+        const activity = {
+            action: events.names.CUSTOMER_RECEIVABLE_DELETE,
+            userId: user.id,
+            targetId: customer.id,
+            extra: JSON.stringify({
+                user: { id: user.id, name: user.name },
+                customer: { id: customer.id, name: customer.name },
+                contract: { id: contract.id, name: contract.name },
+                receivable: { id: receivable.id, amount: receivable.amount }
+            }),
+        };
+        await events.fastify.db.activity.create({ data: activity });
+    },
+
     async handleCustomerContractComplete(data) {
         const { user, customer, contract } = data;
         const activity = {

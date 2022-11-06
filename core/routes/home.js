@@ -4,8 +4,8 @@ const home = async function (fastify, opts) {
     fastify.get('/', async function (req, reply) {
         // FIXME 这里用的是魔术数字
         const unLink = await fastify.db.customer.count({ where: { OR: [{ stageId: 1 }, { stageId: null }] } });
-        const linking = await fastify.db.customer.count({ where: { stageId: { gt: 2 }, } });
-        const sold = await fastify.db.customer.count({ where: { stageId: 2, } });
+        const linking = await fastify.db.customer.count({ where: { stageId: 2, } });
+        const sold = await fastify.db.customer.count({ where: { stageId: 3, } });
         const user = await fastify.db.user.count();
 
         return reply.view('index.html', { data: { count: { unLink, linking, sold, user } } });

@@ -29,6 +29,7 @@ Simple CRM 的诞生来自于一次朋友小D的公司的需求。小D最开始�
 * Database: SQLite
 * ORM: Prisma
 * Styling: Bootstrap v5
+* Template: Nunjucks
 
 ## 环境和工具
 
@@ -51,8 +52,7 @@ Simple CRM 的诞生来自于一次朋友小D的公司的需求。小D最开始�
 4. 用户的基本信息修改 O
 5. 用户的密码修改 O
 6. 用户的锁定和解锁 O
-7. 我/用户的动态（首页可点击更多进入，admin可以查看任意用户动态）
-8. 系统用户管理，展示TA的动态
+7. 我/用户的动态 O
 
 ### 客户
 

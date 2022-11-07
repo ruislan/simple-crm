@@ -1,0 +1,60 @@
+{% extends 'layouts/default.html' %}
+{% set title = '动态' %}
+{% block container %}
+<div class="h4 mb-4">动态 - {{data.user.name}}</div>
+<div class="col-md-12">
+    <div id="spinner" class="text-center" style="display: none;">
+        <div class="spinner-border" role="status"></div>
+    </div>
+    <div id="activity">
+        <div id="content"></div>
+        <div id="more" class="mt-2"></div>
+    </div>
+</div>
+{% endblock container %}
+{% block script %}
+<script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script src="/public/js/activities.js"></script>
+<script>
+    const app = {
+        data: {
+            activityList: [],
+            limit: 15,
+            skip: 0,
+            count: 0,
+        },
+        renderActivityList() {
+            document.querySelector('#activity #content').innerHTML = activities.render({ isMy: false, data: app.data.activityList });
+            document.querySelector('#activity #more').innerHTML = app.data.activityList.length < app.data.count ? `
+                    <button class="btn btn-dark" onclick="app.loadActivityList()">加载更多</button>
+                ` : '';
+        },
+        loadActivityList() {
+            $('#spinner').show();
+            $.ajax({
+                type: 'get',
+                url: '/activities',
+                data: { userId: '{{data.user.id}}', skip: app.data.skip, limit: app.data.limit },
+                contentType: 'application/json',
+            }).done(function (result) {
+                const { data, count, skip, limit } = result;
+                app.data.activityList = [...app.data.activityList, ...data];
+                app.data.count = Number(count) || 0;
+                app.data.limit = Number(limit) || app.data.limit;
+                app.data.skip = (Number(skip) || 0) + app.data.limit;
+                app.renderActivityList();
+            }).always(function () {
+                $('#searcher #searchBtn').attr('disabled', false);
+                $('#spinner').hide();
+            });
+        },
+        async onReady() {
+            app.loadActivityList();
+        }
+    };
+
+    $(document).ready(async function () {
+        app.onReady();
+    });
+</script>
+{% endblock script %}

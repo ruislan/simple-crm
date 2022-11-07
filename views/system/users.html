@@ -80,6 +80,8 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark"
+                                    onclick="window.location.href='/activities?userId={{user.id}}'">动态</button>
+                                <button type="button" class="btn btn-sm btn-dark ms-1"
                                     onclick="app.edit('{{user.id}}')">编辑</button>
                                 {% if user.id !== 1 %}
                                 {% if user.isLocked %}

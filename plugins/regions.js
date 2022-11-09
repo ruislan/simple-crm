@@ -4540,6 +4540,7 @@ const regionsPlugin = async (fastify, opts, next) => {
     fastify.decorate('regions', {
         data: regions,
         parseAdCode(adcode) {
+            if (!adcode) return null;
             adcode = String(adcode) || '';
             if (adcode === '') return null;
             const pcode = adcode.substring(0, 2) + '0000';
@@ -4550,12 +4551,14 @@ const regionsPlugin = async (fastify, opts, next) => {
             return { province, city, area };
         },
         parseProvince(adcode) {
+            if (!adcode) return null;
             adcode = String(adcode) || '';
             if (adcode === '') return null;
             const pcode = adcode.substring(0, 2) + '0000';
             return regions[0][pcode];
         },
         parseCity(adcode) {
+            if (!adcode) return null;
             adcode = String(adcode) || '';
             if (adcode === '') return null;
             const pcode = adcode.substring(0, 2) + '0000';
@@ -4563,6 +4566,7 @@ const regionsPlugin = async (fastify, opts, next) => {
             return regions[`0,${pcode}`][citycode];
         },
         parseArea(adcode) {
+            if (!adcode) return null;
             adcode = String(adcode) || '';
             if (adcode === '') return null;
             const pcode = adcode.substring(0, 2) + '0000';

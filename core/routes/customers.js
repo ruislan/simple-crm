@@ -393,8 +393,8 @@ const customers = async function (fastify, opts) {
     fastify.get('/search', async function (req, reply) {
         // params
         let { keyword, province, city, skip, stageId, hide, limit, my } = req.query;
-        const provinceText = fastify.regions.parseProvince(province);
-        const cityText = fastify.regions.parseCity(city);
+        const provinceText = fastify.regions.parseProvince(province || null);
+        const cityText = fastify.regions.parseCity(city || null);
         skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
         limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
         stageId = Number(stageId) || null;

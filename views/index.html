@@ -7,59 +7,98 @@
 {% block container %}
 <div class="container-xl">
     <div class="row">
-        <div class="col-lg-6 d-flex flex-column">
-            <div class="h4 mb-3">基础数据</div>
-            <div class="d-flex flex-wrap mb-3">
-                <div class="statistic bg-dark text-bg-dark ms-0">
-                    <div class="d-flex justify-content-between align-items-baseline">
-                        <div class="h5">员工</div>
-                        <div class="h6"></div>
+        <div class="col-lg-8 d-flex flex-column">
+            <div class="d-flex flex-column mb-5">
+                <div class="h4 mb-3">基础数据</div>
+                <div class="d-flex flex-wrap justify-content-between">
+                    <div class="statistic ms-0 rounded mb-1 mb-lg-0">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <div class="h4 text-dark">员工数量</div>
+                            <div class="h6"></div>
+                        </div>
+                        <div class="fw-bold fs-2">{{data.count.user}}</div>
                     </div>
-                    <div class="fw-bold fs-2">{{data.count.user}}</div>
+                    <div class="statistic rounded mb-1 mb-lg-0">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <div class="h4 text-warning">客户数量</div>
+                            <div class="h6"></div>
+                        </div>
+                        <div class="fw-bold fs-2">{{data.count.customer}}</div>
+                    </div>
+                    <div class="statistic rounded mb-1 mb-lg-0">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <div class="h4 text-info">合同数量</div>
+                            <div class="h6"></div>
+                        </div>
+                        <div class="fw-bold fs-2">{{data.count.contract}}</div>
+                    </div>
+                    <div class="statistic rounded mb-1 mb-lg-0">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <div class="h4 text-success">回款金额</div>
+                            <div class="h6"></div>
+                        </div>
+                        <div class="fw-bold fs-2">¥{{data.count.receivable}}</div>
+                    </div>
                 </div>
             </div>
-            <div class="h4 mb-3">客户数据</div>
-            <div class="d-flex flex-wrap justify-content-between mb-3">
-                <div class="statistic bg-warning text-bg-dark ms-0">
-                    <div class="d-flex justify-content-between align-items-baseline">
-                        <div class="h5">客户</div>
-                        <div class="h6">未联系</div>
+            <div class="d-flex flex-column mb-5">
+                <div class="h4 mb-3">客户数据</div>
+                <div class="row">
+                    <div class="col-lg-9 mb-lg-0 mb-3" style="min-height: 300px;">
+                        <div class="d-flex w-100 h-100 panel">
+                            <div id="funnel" class="funnel w-100 text-dark"></div>
+                        </div>
                     </div>
-                    <div class="fw-bold fs-2">{{data.count.unLink}}</div>
-                </div>
-                <div class="statistic bg-info text-bg-dark">
-                    <div class="d-flex justify-content-between align-items-baseline">
-                        <div class="h5">客户</div>
-                        <div class="h6">已联系</div>
+                    <div class="col-lg-3 d-flex flex-column">
+                        <div class="statistic rounded mb-1">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <div class="h4">待联系</div>
+                                <div class="h6"></div>
+                            </div>
+                            <div class="fw-bold fs-2">{{data.count.unLink}}</div>
+                        </div>
+                        <div class="statistic rounded mb-1">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <div class="h4">联系中</div>
+                                <div class="h6"></div>
+                            </div>
+                            <div class="fw-bold fs-2">{{data.count.linking}}</div>
+                        </div>
+                        <div class="statistic rounded">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <div class="h4">已下单</div>
+                                <div class="h6"></div>
+                            </div>
+                            <div class="fw-bold fs-2">{{data.count.sold}}</div>
+                        </div>
                     </div>
-                    <div class="fw-bold fs-2">{{data.count.linking}}</div>
-                </div>
-                <div class="statistic bg-success text-bg-success">
-                    <div class="d-flex justify-content-between align-items-baseline">
-                        <div class="h5">客户</div>
-                        <div class="h6">已下单</div>
-                    </div>
-                    <div class="fw-bold fs-2">{{data.count.sold}}</div>
                 </div>
             </div>
-            <div class="h4 mb-3">客户漏斗</div>
-            <div class="d-flex flex-wrap">
-                <div class="d-flex w-100" style="background-color: #393862;">
-                    <div class="funnel m-4 w-100"></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 d-flex flex-wrap flex-column">
-            <div class="d-flex flex-column">
-                <div class="mb-2 d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column mb-5">
+                <div class="mb-2 d-flex justify-content-between align-items-baseline">
                     <div class="h4 mb-0">我的动态</div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                        class="bi bi-three-dots cursor-pointer" viewBox="0 0 16 16" onclick="window.location.href='/activities'">
-                        <path
-                            d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                    </svg>
+                    <div class="fs-small text-muted cursor-pointer" onclick="window.location.href='/activities'">更多
+                    </div>
                 </div>
                 <div id="activities" class="mt-2"></div>
+            </div>
+        </div>
+        <div class="col-lg-4 d-flex flex-column">
+            <div class="d-flex flex-column mb-5">
+                <div class="h4 mb-3">合同数据</div>
+                <div class="d-flex panel mb-3">
+                    <div id="contractsBar" class="w-100 p-4"></div>
+                </div>
+                <div id="receivableBar">
+                </div>
+            </div>
+            <div class="d-flex flex-column mb-5">
+                <div class="mb-2 d-flex justify-content-between align-items-baseline">
+                    <div class="h4 mb-0">我的客户</div>
+                    <div class="fs-small text-muted cursor-pointer" onclick="window.location.href='/customers/my'">更多
+                    </div>
+                </div>
+                <div id="myCustomers" class="mt-2"></div>
             </div>
         </div>
     </div>
@@ -68,40 +107,187 @@
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
-<script src="https://unpkg.com/funnel-graph-js@1.3.9/dist/js/funnel-graph.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/lib/antv/g2/4.2.7/dist/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.11.1/dist/data-set.js"></script>
 <script src="public/js/activities.js"></script>
 <script>
     const app = {
         async renderActivities() {
             $.ajax({
                 type: 'get',
-                url: '/activities/my'
+                url: '/activities/my',
+                data: { limit: 10 }
             }).done(function (result) {
                 const { data } = result;
-                const dom = document.getElementById('activities');
-                dom.innerHTML = activities.render({ isMy: true, data });
+                document.getElementById('activities').innerHTML = activities.render({ isMy: true, data });
+            });
+        },
+        async renderReceivableBar() {
+            $.ajax({
+                type: 'get',
+                url: '/statistic/contracts/receivable',
+            }).done(function (result) {
+                let { data } = result;
+                const percent = (Number(data.done) || 0) / (Number(data.total) || 1) * 100;
+                document.getElementById('receivableBar').innerHTML = `
+                    <div class="statistic-narrow rounded mb-3 justify-content-between">
+                        <div class="fs-5">回款总金额</div>
+                        <div class="fs-5 ms-2">¥${data.done || 0}</div>
+                    </div>
+                    <div class="statistic-narrow rounded mb-3 justify-content-between">
+                        <div class="fs-5">合同总金额</div>
+                        <div class="fs-5 ms-2">¥${data.total || 0}</div>
+                    </div>
+                    <div class="progress progress-fat">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-dark" role="progressbar"
+                            aria-label="Basic example" style="width: ${percent.toFixed(2)}%" aria-valuenow="50" aria-valuemin="0"
+                            aria-valuemax="100">
+                            <span class="fw-bold">${percent.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+        },
+        async renderContractsChart() {
+            $.ajax({
+                type: 'get',
+                url: '/statistic/contracts/last7days',
+            }).done(function (result) {
+                let { data } = result;
+                data = Object.keys(data).map(day => {
+                    return {
+                        name: '合同',
+                        日期: dayjs(day).format('MM-DD'),
+                        数量: data[day],
+                    };
+                });
+                const chart = new G2.Chart({
+                    container: 'contractsBar',
+                    autoFit: true,
+                    height: 200,
+                });
+                chart.data(data).legend(false);
+                chart.tooltip({ showMarkers: false, shared: false, });
+                chart.interval().position('日期*数量').color('name', ['#000', '#555'])
+                chart.render();
+            });
+        },
+        async renderMyCustomers() {
+            $.ajax({
+                type: 'get',
+                url: '/customers/search',
+                data: { hide: true, my: true, limit: 10 }
+            }).done(function (result) {
+                const { data } = result;
+                let row = '';
+                for (const u of data) {
+                    row += `
+                        <li class="list-group-item cursor-pointer" onclick="window.location.href='/customers/${u.id}'">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex flex-column">
+                                    <div>${u.name}</div>
+                                    <div>${u.phone}</div>
+                                </div>
+                                <div class="badge" style="background-color: ${u.stage?.colorHex || '#212529'};">${u.stage?.name || '未知'}</div>
+                            </div>
+                        </li>
+                    `;
+                }
+                let html = `
+                    <ul class="list-group">
+                        ${row}
+                    </ul>
+                `;
+                document.getElementById('myCustomers').innerHTML = html;
             });
         },
         async renderFunnel() {
-            var graph = new FunnelGraph({
-                container: '.funnel',
-                subLabelValue: 'raw',
-                gradientDirection: 'vertical',
-                height: 260,
-                data: {
-                    labels: ['未联系', '联系中', '已下单'],
-                    colors: ['#FFB178', '#FF78B1', '#FF3C8E'],
-                    values: ['{{data.count.unLink}}', '{{data.count.linking}}', '{{data.count.sold}}']
+            const { DataView } = DataSet;
+            const dv = new DataView().source([
+                { action: '待联系', pv: Number('{{data.count.unLink}}') },
+                { action: '联系中', pv: Number('{{data.count.linking}}') },
+                { action: '已下单', pv: Number('{{data.count.sold}}') },
+            ]);
+            const total = Number('{{data.count.unLink}}') + Number('{{data.count.linking}}') + Number('{{data.count.sold}}');
+            dv.transform({
+                type: 'map',
+                callback(row) {
+                    row.percent = row.pv / total;
+                    return row;
                 },
-                displayPercent: true,
-                direction: 'vertical'
             });
-            graph.draw();
+            const data = dv.rows;
+            const chart = new G2.Chart({
+                container: 'funnel',
+                autoFit: true,
+                padding: [20, 30, 20],
+            });
+            chart.data(data);
+            chart.axis(false);
+            chart.legend(false);
+            chart.tooltip({
+                showTitle: false,
+                showMarkers: false,
+                itemTpl:
+                    '<li style="margin-bottom:4px;list-style-type:none;padding: 0;">' +
+                    '<span style="background-color:{color};" class="g2-tooltip-marker"></span>' +
+                    '{name}<br/>' +
+                    '<span style="padding-left: 16px;line-height: 16px;">浏览人数：{pv}</span><br/>' +
+                    '<span style="padding-left: 16px;line-height: 16px;">占比：{percent}</span><br/>' +
+                    '</li>',
+            });
+            chart
+                .coordinate('rect')
+                .transpose()
+                .scale(1, -1);
+            chart
+                .interval()
+                .adjust('symmetric')
+                .position('action*percent')
+                .shape('funnel')
+                .color('action', ['#000', '#333', '#777'])
+                .tooltip('action*pv*percent', (action, pv, percent) => {
+                    return {
+                        name: action,
+                        percent: (+percent * 100).toFixed(2) + '%',
+                        pv,
+                    };
+                })
+                .animate({
+                    appear: { animation: 'fade-in' },
+                    update: { annotation: 'fade-in' }
+                });
+
+            chart.interaction('element-active');
+            chart.on('beforepaint', () => {
+                chart.annotation().clear(true);
+                const chartData = chart.getData();
+                // 中间标签文本
+                chartData.forEach((obj) => {
+                    chart.annotation().text({
+                        top: true,
+                        position: {
+                            action: obj.action,
+                            percent: 'center',
+                        },
+                        content: (+obj.percent * 100).toFixed(2) + '%', // 显示的文本内容
+                        style: {
+                            stroke: null,
+                            fill: '#fff',
+                            textAlign: 'center',
+                        },
+                    });
+                });
+            });
+            chart.render();
         }
     };
     $(document).ready(async function () {
-        app.renderFunnel();
         app.renderActivities();
+        app.renderMyCustomers();
+        app.renderContractsChart();
+        app.renderReceivableBar();
+        app.renderFunnel();
     });
 </script>
 {% endblock script %}

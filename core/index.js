@@ -17,6 +17,7 @@ import links from './routes/links.js';
 import users from './routes/users.js';
 import tags from './routes/tags.js';
 import activities from './routes/activities.js';
+import statistic from './routes/statistic.js';
 
 const scService = async function (fastify, opts) {
     await fastify.register(fastifyView, {
@@ -70,6 +71,7 @@ const scService = async function (fastify, opts) {
     await fastify.register(users, { prefix: '/users' });
     await fastify.register(tags, { prefix: '/tags' });
     await fastify.register(activities, { prefix: '/activities' });
+    await fastify.register(statistic, { prefix: '/statistic' });
     await fastify.register(system, { prefix: '/system' });
 };
 

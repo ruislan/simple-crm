@@ -307,12 +307,14 @@ const customers = async function (fastify, opts) {
     // if json return json
     fastify.get('/:id', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        const isJsonRequest = (req.headers['content-type'] || '').startsWith('application/json');
         const customer = await fastify.db.customer.findUnique({
             where: { id },
             include: { photos: true, stage: true }
         });
+
+        const isJsonRequest = req.isJsonRequest();
         if (!customer) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');
+
         // admin can view all
         // others can only view the customers which were assigned to them
         if (!req.session.user.isAdmin && req.session.user.id !== customer.userId) return isJsonRequest ? reply.code(404).send() : reply.redirect('/not-found');

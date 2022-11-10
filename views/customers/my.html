@@ -219,6 +219,7 @@
         transfer(customerId) {
             transferDialog.open({
                 customerId,
+                currentUserId: '{{sessionUser.id}}',
                 onDone: () => helper.toast('操作成功', 'success'),
                 onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
                 onAlways: () => app.search(),

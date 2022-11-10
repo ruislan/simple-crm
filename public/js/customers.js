@@ -1,8 +1,9 @@
 const transferDialog = {
     title: '转交客户',
     data: {},
-    open({ customerId, onDone, onFail, onAlways }) {
+    open({ customerId, onDone, onFail, onAlways, currentUserId }) {
         this.data.customerId = customerId;
+        this.data.currentUserId = currentUserId;
         this.onDone = onDone;
         this.onFail = onFail;
         this.onAlways = onAlways;
@@ -27,7 +28,7 @@ const transferDialog = {
                 const { data } = result;
                 const selectNode = $('#transferDialog select[name="userId"]');
                 for (const u of data) {
-                    selectNode.append(`<option value="${u.id}" ${u.id == '{{sessionUser.id}}' ? 'selected' : ''}>${u.name} ${u.phone}</option>`);
+                    selectNode.append(`<option value="${u.id}" ${u.id == modal.data.currentUserId ? 'selected' : ''}>${u.name} ${u.phone}</option>`);
                 }
             }); // XXX 现在先全部读取，后面再改成可输入并查询的吧
         });
@@ -58,7 +59,7 @@ const transferDialog = {
                         </div>
                         </form>
                     </div>
-                </div>                
+                </div>
             `;
         document.querySelector('#transferDialog .btn-dark').addEventListener('click', () => {
             const userId = document.querySelector('#transferDialog select[name="userId"]').value;
@@ -152,7 +153,7 @@ const editor = {
                                         <div class="col-sm-10">
                                             <input type="text" class="form-control" name="name" id="inputName" value="${modal.data.customer.name || ''}" required>
                                         </div>
-                                    </div>        
+                                    </div>
                                     <div class="mb-3 row">
                                         <label for="inputPhone" class="col-sm-2 col-form-label">电话</label>
                                         <div class="col-sm-10">

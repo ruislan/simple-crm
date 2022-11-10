@@ -1,0 +1,14 @@
+{% extends 'layouts/blank.html' %}
+{% set title = '5xx - 服务器错误' %}
+{% block body %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="p-5" style="max-width: 800px;">
+        <div class="display-4 mb-4">5xx - 服务器错误</div>
+        <div class="fs-6 fw-normal mb-4">
+            首先，正常情况下你应该看不到本页面的，可能是服务器出了问题，然后，可能是你发现了什么漏洞，请联系一下那个管服务器的。<br />
+            最后这里该有一张很酷的插图，但是我太懒了，所以就这样了。
+        </div>
+        <a class="btn btn-dark" href="/">返回首页</a>
+    </div>
+</div>
+{% endblock body %}

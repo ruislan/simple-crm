@@ -56,6 +56,25 @@ const activities = {
                     <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                 `;
                     break;
+                case 'customer.transfer':
+                    one = `
+                    <div class="paragraph">
+                        <span class="fw-semibold">${extra.user?.name || '未知'}</span> 将客户
+                        <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 转给了
+                        <span class="fw-semibold">${extra.toUser?.name || '未知'}</span>
+                    </div>
+                    <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                `;
+                    break;
+                case 'customer.retreat':
+                    one = `
+                        <div class="paragraph">
+                            <span class="fw-semibold">${extra.user?.name || '未知'}</span> 将客户
+                            <span class="fw-semibold">${extra.customer?.name || '未知'}</span> 退回
+                        </div>
+                        <div class="mt-1 fs-small text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
                 case 'customer.stage.change':
                     one = isMy ? `
                     <div class="paragraph">

@@ -52,6 +52,15 @@ const scService = async function (fastify, opts) {
     });
     await fastify.register(fastifyWebSocket);
 
+    // init some useful functions
+    fastify.addHook('onRequest', async (req, reply) => {
+        req.isJsonRequest = function () {
+            return req && (req.headers['content-type'] || '').includes('application/json');
+        };
+        req.isJsonResponse = function () {
+            return req && (req.headers['accept'] || '').includes('application/json');
+        };
+    });
     // init auth
     auth.config({
         forbiddenUrl: '/forbidden',
@@ -64,6 +73,7 @@ const scService = async function (fastify, opts) {
 
     events.init(fastify); // init event handlers
 
+    // init routes
     await fastify.register(home, { prefix: '/' });
     await fastify.register(customers, { prefix: '/customers' });
     await fastify.register(settings, { prefix: '/settings' });
@@ -73,6 +83,12 @@ const scService = async function (fastify, opts) {
     await fastify.register(activities, { prefix: '/activities' });
     await fastify.register(statistic, { prefix: '/statistic' });
     await fastify.register(system, { prefix: '/system' });
+
+    // init error handler
+    fastify.setNotFoundHandler(function (req, reply) {
+        const isJsonResponse = req.isJsonResponse();
+        isJsonResponse ? reply.status(404).send() : reply.redirect('/not-found');
+    });
 };
 
 export default scService;

@@ -63,10 +63,12 @@
                 </div>
             </div>
             <div class="card-footer bg-transparent">
-                <button class="btn btn-dark btn-sm" onclick="app.edit('{{ data.customer.id }}')">编辑</button>
-                <button class="btn btn-dark btn-sm ms-1" onclick="app.transfer('{{ data.customer.id }}')">转交
+                {% if sessionUser.isAdmin %}
+                <button class="btn btn-dark btn-sm me-1" onclick="app.edit('{{ data.customer.id }}')">编辑</button>
+                {% endif %}
+                <button class="btn btn-dark btn-sm me-1" onclick="app.transfer('{{ data.customer.id }}')">转交
                 </button>
-                <button class="btn btn-danger btn-sm ms-1" onclick="app.retreat('{{ data.customer.id }}')">退回
+                <button class="btn btn-danger btn-sm" onclick="app.retreat('{{ data.customer.id }}')">退回
                 </button>
             </div>
         </div>
@@ -326,6 +328,7 @@
         transfer(customerId) {
             transferDialog.open({
                 customerId,
+                currentUserId: '{{sessionUser.id}}',
                 onDone: () => window.location.href = '/customers/my',
                 onFail: () => helper.toast('操作失败，请联系系统管理员。', 'danger'),
             });

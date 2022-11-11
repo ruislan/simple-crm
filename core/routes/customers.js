@@ -124,18 +124,22 @@ const customers = async function (fastify, opts) {
 
     // this customer's activities
     fastify.get('/:id/activities', async (req, reply) => {
-        const id = Number(req.params.id || 0); // todo pagination
-        let data = [];
+        const id = Number(req.params.id || 0);
+        let { skip, limit } = req.query;
+        skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
+        limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
         const customer = await fastify.db.customer.findUnique({ where: { id } });
         // admin can view all
         // others can only view the customers which were assigned to them
-        if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
-            data = await fastify.db.activity.findMany({
-                where: { targetId: customer.id, },
-                orderBy: [{ createdAt: 'desc' }]
-            });
-        }
-        return reply.code(200).send({ data });
+        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        let count = await fastify.db.activity.count({ where: { targetId: customer.id } });
+        let data = await fastify.db.activity.findMany({
+            where: { targetId: customer.id, },
+            skip,
+            take: limit,
+            orderBy: [{ createdAt: 'desc' }]
+        });
+        return reply.code(200).send({ data, skip, limit, count });
     });
 
     // end activities
@@ -281,27 +285,32 @@ const customers = async function (fastify, opts) {
     });
 
     fastify.get('/:id/links', async (req, reply) => {
-        const id = Number(req.params.id || 0); // todo pagination
-        let data = [];
+        const id = Number(req.params.id || 0);
+        let { skip, limit } = req.query;
+        skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
+        limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
+
         const customer = await fastify.db.customer.findUnique({ where: { id } });
         // admin can view all
         // others can only view the customers which were assigned to them
-        if (customer && (req.session.user.isAdmin || req.session.user.id === customer.userId)) {
-            data = await fastify.db.link.findMany({
-                where: { customerId: customer.id, },
-                include: {
-                    type: true,
-                    user: {
-                        select: {
-                            name: true,
-                            id: true,
-                        },
-                    }
-                },
-                orderBy: [{ updatedAt: 'desc' }]
-            });
-        }
-        return reply.code(200).send({ data });
+        if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        const count = await fastify.db.link.count({ where: { customerId: customer.id } });
+        const data = await fastify.db.link.findMany({
+            where: { customerId: customer.id, },
+            include: {
+                type: true,
+                user: {
+                    select: {
+                        name: true,
+                        id: true,
+                    },
+                }
+            },
+            skip,
+            take: limit,
+            orderBy: [{ updatedAt: 'desc' }]
+        });
+        return reply.code(200).send({ data, count, skip, limit });
     });
 
     // if json return json

@@ -288,8 +288,18 @@
 
     const app = {
         data: {
-            linkList: [],
-            activityList: [],
+            link: {
+                list: [],
+                skip: 0,
+                limit: 15,
+                count: 0,
+            },
+            activity: {
+                list: [],
+                skip: 0,
+                limit: 5,
+                count: 0,
+            },
             contractList: [],
             typeDefault: `
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
@@ -805,17 +815,26 @@
             $.ajax({
                 type: 'get',
                 url: `/customers/{{data.customer.id}}/activities`,
+                data: { skip: app.data.activity.skip, limit: app.data.activity.limit },
                 statusCode: { 401: () => window.location.href = '/login', }
             }).done(function (result) {
-                const { data } = result;
-                app.data.activityList = data;
+                const { data, limit, skip, count } = result;
+                app.data.activity.list = [...app.data.activity.list, ...data];
+                app.data.activity.skip = skip < count ? skip + limit : skip;
+                app.data.activity.limit = limit;
+                app.data.activity.count = count;
                 app.renderActivityList();
             }).always(function () {
                 $('#spinner').hide();
             });
         },
         renderActivityList() {
-            let html = activities.render({ data: this.data.activityList, isMy: false });
+            let html = activities.render({ data: this.data.activity.list, isMy: false });
+            html += app.data.activity.list.length < app.data.activity.count ? `
+                    <div class="d-flex mt-2">
+                        <button class="btn btn-dark" onclick="app.loadActivityList()">加载更多</button>
+                    </div>
+                ` : '';
             document.getElementById('tabContent').innerHTML = html;
         },
         // link
@@ -824,10 +843,14 @@
             $.ajax({
                 type: 'get',
                 url: `/customers/{{data.customer.id}}/links`,
+                data: { skip: app.data.link.skip, limit: app.data.link.limit },
                 statusCode: { 401: () => window.location.href = '/login', }
             }).done(function (result) {
-                const { data } = result;
-                app.data.linkList = data;
+                const { data, skip, limit, count } = result;
+                app.data.link.list = [...app.data.link.list, ...data];
+                app.data.link.skip = skip < count ? skip + limit : skip;
+                app.data.link.limit = limit;
+                app.data.link.count = count;
                 app.renderLinkList();
             }).always(function () {
                 $('#spinner').hide();
@@ -835,8 +858,8 @@
         },
         renderLinkList() {
             let html = '';
-            for (let i = 0; i < this.data.linkList.length; i++) {
-                const item = this.data.linkList[i];
+            for (let i = 0; i < this.data.link.list.length; i++) {
+                const item = this.data.link.list[i];
                 html += `
                 <div class="d-flex">
                     <div class="d-flex flex-column me-2">
@@ -873,10 +896,15 @@
                 </div>
                 `;
             }
+            html += app.data.link.list.length < app.data.link.count ? `
+                    <div class="d-flex mt-2">
+                        <button class="btn btn-dark" onclick="app.loadLinkList()">加载更多</button>
+                    </div>
+                ` : '';
             document.getElementById('tabContent').innerHTML = html;
         },
         deleteLink(itemIndex) {
-            const item = itemIndex > -1 ? app.data.linkList[itemIndex] : undefined;
+            const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
             if (item) {
                 helper.confirm('确定删除这个联系吗？', function () {
                     $.ajax({
@@ -896,7 +924,7 @@
                 url: '/links/types',
                 statusCode: { 401: () => window.location.href = '/login', }
             }).done(function (result) {
-                const item = itemIndex > -1 ? app.data.linkList[itemIndex] : undefined;
+                const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
 
                 const { data } = result;
                 let optionsHTML = '';

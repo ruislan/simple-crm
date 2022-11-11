@@ -44,7 +44,6 @@
                 app.data.skip = (Number(skip) || 0) + app.data.limit;
                 app.renderActivityList();
             }).always(function () {
-                $('#searcher #searchBtn').attr('disabled', false);
                 $('#spinner').hide();
             });
         },

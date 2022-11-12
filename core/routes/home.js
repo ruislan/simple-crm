@@ -15,6 +15,7 @@ const home = async function (fastify, opts) {
     });
     fastify.get('/login', async (_, reply) => reply.view('login.html'));
     fastify.get('/not-found', async (_, reply) => reply.view('not-found.html'));
+    fastify.get('/not-work', async (_, reply) => reply.view('not-work.html'));
     fastify.get('/forbidden', async (_, reply) => reply.view('forbidden.html'));
 
     // XXX move me to the right place, maybe?

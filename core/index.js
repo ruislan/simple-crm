@@ -66,7 +66,8 @@ const scService = async function (fastify, opts) {
         forbiddenUrl: '/forbidden',
         loginUrl: '/login',
         excludes: [
-            '/not-found'
+            '/not-found',
+            '/not-work'
         ]
     });
     fastify.addHook('onRequest', auth.requireAuth);

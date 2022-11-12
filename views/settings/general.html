@@ -2,36 +2,49 @@
 {% set title = '更换密码' %}
 {% set menuActive = 'settings' %}
 {% block container %}
-<div class="h4 mb-4">设置 - 基本信息</div>
-<div class="w-lg-50">
-    <form method="post">
-        {% if hasError %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="row">
+    <div class="col-lg-2">
+        <nav class="side-menu">
+            <div class="side-menu-label d-flex align-items-center">设置</div>
+            <ul class="side-menu-list">
+                <li><a class="active">基本信息</a></li>
+                <li><a href="/settings/password">修改密码</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="col-lg-10">
+        <div class="h4 mb-4">设置 - 基本信息</div>
+        <div class="w-lg-50">
+            <form method="post">
+                {% if hasError %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% elseif message %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label for="nameInput" class="form-label">名称</label>
+                    <input type="text" name="name" class="form-control" id="nameInput" value="{{sessionUser.name}}"
+                        required autofocus minlength="1">
+                </div>
+                <div class="mb-3">
+                    <label for="phoneInput" class="form-label">电话</label>
+                    <input type="text" name="phone" class="form-control" id="phoneInput" value="{{sessionUser.phone}}"
+                        required minlength="3">
+                </div>
+                <div class="mb-3">
+                    <label for="emailInput" class="form-label">邮件</label>
+                    <input type="email" name="email" class="form-control" id="emailInput" value="{{sessionUser.email}}"
+                        required minlength="3">
+                </div>
+                <button class="btn btn-lg btn-dark" type="submit">保存</button>
+            </form>
         </div>
-        {% elseif message %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endif %}
-        <div class="mb-3">
-            <label for="nameInput" class="form-label">名称</label>
-            <input type="text" name="name" class="form-control" id="nameInput" value="{{sessionUser.name}}" required
-                autofocus minlength="1">
-        </div>
-        <div class="mb-3">
-            <label for="phoneInput" class="form-label">电话</label>
-            <input type="text" name="phone" class="form-control" id="phoneInput" value="{{sessionUser.phone}}" required
-                minlength="3">
-        </div>
-        <div class="mb-3">
-            <label for="emailInput" class="form-label">邮件</label>
-            <input type="email" name="email" class="form-control" id="emailInput" value="{{sessionUser.email}}" required
-                minlength="3">
-        </div>
-        <button class="btn btn-lg btn-dark" type="submit">保存</button>
-    </form>
+    </div>
 </div>
 {% endblock container %}

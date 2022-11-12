@@ -205,3 +205,49 @@
 .progress-fat {
     height: 40px;
 }
+
+.side-menu {
+    font-size: 16px;
+}
+
+.side-menu-label {
+    color      : #212529C0;
+    font-weight: 600;
+    font-size  : 16px;
+}
+
+.side-menu-label:not(:last-child) {
+    margin-bottom: 8px;
+}
+
+.side-menu-label:not(:first-child) {
+    margin-top: 8px;
+}
+
+.side-menu-list {
+    line-height: 1;
+    list-style : none;
+    margin     : 0;
+    padding    : 0;
+}
+
+.side-menu-list a {
+    border-radius  : 4px;
+    color          : #4a4a4a;
+    display        : block;
+    padding        : 12px;
+    margin         : 2px;
+    text-decoration: none;
+    cursor         : pointer;
+}
+
+.side-menu-list a:hover {
+    background-color: #e9ecef;
+    color           : #363636;
+}
+
+.side-menu-list a.active {
+    background-color: #212529;
+    color           : #fff;
+    cursor          : unset;
+}

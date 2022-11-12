@@ -2,107 +2,123 @@
 {% set title = '客户 - 未分配的' %}
 {% set menuActive = 'customers' %}
 {% block container %}
-<div class="h4 mb-4">客户 - 未分配的</div>
-<div class="d-flex justify-content-between align-items-center flex-wrap">
-    <div id="searcher" class="d-flex align-items-center flex-wrap">
-        <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select></div>
-        <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
-        <div class="pb-2 pb-lg-0 pe-1">
-            <select id="hide" class="form-select" aria-label="隐藏">
-                <option value="true">不看隐藏</option>
-                <option value="false">查看隐藏</option>
-            </select>
-        </div>
-        <div class="pb-2 pb-lg-0 pe-1"><input type="text" name="keyword" class="form-control" id="keyword"
-                placeholder="名称">
-        </div>
-        <div class="pb-2 pb-lg-0 pe-1"><button type="button" id="searchBtn" class="btn btn-dark"
-                onclick="app.search()">搜索</button></div>
+<div class="row">
+    <div class="col-lg-2">
+        <nav class="side-menu">
+            <div class="side-menu-label d-flex align-items-center">客户</div>
+            <ul class="side-menu-list">
+                <li><a class="active">未分配的</a></li>
+                <li><a href="/customers/my">我负责的</a></li>
+            </ul>
+        </nav>
     </div>
-    <div class="d-flex align-items-center flex-wrap">
-        <div class="d-flex align-items-center flex-wrap">
-            {% if sessionUser.isAdmin %}
-            <button id="toolbarNew"
-                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
-                onclick="app.new()" data-toggle="tooltip" title="新增客户">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg"
-                    viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
-                </svg>
-            </button>
-            {% endif %}
+    <div class="col-lg-10">
+        <div class="h4 mb-4">客户 - 未分配的</div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div id="searcher" class="d-flex align-items-center flex-wrap">
+                <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select>
+                </div>
+                <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
+                <div class="pb-2 pb-lg-0 pe-1">
+                    <select id="hide" class="form-select" aria-label="隐藏">
+                        <option value="true">不看隐藏</option>
+                        <option value="false">查看隐藏</option>
+                    </select>
+                </div>
+                <div class="pb-2 pb-lg-0 pe-1"><input type="text" name="keyword" class="form-control" id="keyword"
+                        placeholder="名称">
+                </div>
+                <div class="pb-2 pb-lg-0 pe-1"><button type="button" id="searchBtn" class="btn btn-dark"
+                        onclick="app.search()">搜索</button></div>
+            </div>
+            <div class="d-flex align-items-center flex-wrap">
+                <div class="d-flex align-items-center flex-wrap">
+                    {% if sessionUser.isAdmin %}
+                    <button id="toolbarNew"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
+                        onclick="app.new()" data-toggle="tooltip" title="新增客户">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            class="bi bi-plus-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center flex-wrap ms-3">
+                    <button id="toolbarHide"
+                        class="btn btn-dark btn-action d-flex justify-content-center align-items-center"
+                        onclick="app.hide()" data-toggle="tooltip" title="批量屏蔽">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-eye-slash" viewBox="0 0 16 16">
+                            <path
+                                d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z" />
+                            <path
+                                d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z" />
+                            <path
+                                d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z" />
+                        </svg>
+                    </button>
+                    <button id="toolbarAquire"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
+                        onclick="app.acquire()" data-toggle="tooltip" title="批量认领">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            class="bi bi-save" viewBox="0 0 16 16">
+                            <path
+                                d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
+                        </svg>
+                    </button>
+                    {% if sessionUser.isAdmin %}
+                    <button id="toolbarDelete"
+                        class="btn btn-danger btn-action ms-1 d-flex justify-content-center align-items-center"
+                        onclick="app.delete()" data-toggle="tooltip" title="批量删除">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-trash" viewBox="0 0 16 16">
+                            <path
+                                d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                            <path fill-rule="evenodd"
+                                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="ms-3 d-flex align-items-center flex-wrap">
+                    <button id="toolbarRefresh" onclick="app.search()" data-toggle="tooltip" title="刷新"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                            <path
+                                d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                        </svg>
+                    </button>
+                    <button id="toolbarPrevPage" onclick="app.pageTo('prev')" data-toggle="tooltip" title="上一页"
+                        class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
+                        </svg>
+                    </button>
+                    <button id="toolbarNextPage" onclick="app.pageTo('next')" data-toggle="tooltip" title="下一页"
+                        class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short"
+                            width="24" height="24" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="d-flex align-items-center flex-wrap ms-3">
-            <button id="toolbarHide" class="btn btn-dark btn-action d-flex justify-content-center align-items-center"
-                onclick="app.hide()" data-toggle="tooltip" title="批量屏蔽">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-eye-slash" viewBox="0 0 16 16">
-                    <path
-                        d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z" />
-                    <path
-                        d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z" />
-                    <path
-                        d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z" />
-                </svg>
-            </button>
-            <button id="toolbarAquire"
-                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
-                onclick="app.acquire()" data-toggle="tooltip" title="批量认领">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-save"
-                    viewBox="0 0 16 16">
-                    <path
-                        d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
-                </svg>
-            </button>
-            {% if sessionUser.isAdmin %}
-            <button id="toolbarDelete"
-                class="btn btn-danger btn-action ms-1 d-flex justify-content-center align-items-center"
-                onclick="app.delete()" data-toggle="tooltip" title="批量删除">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
-                    viewBox="0 0 16 16">
-                    <path
-                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                    <path fill-rule="evenodd"
-                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                </svg>
-            </button>
-            {% endif %}
-        </div>
-        <div class="ms-3 d-flex align-items-center flex-wrap">
-            <button id="toolbarRefresh" onclick="app.search()" data-toggle="tooltip" title="刷新"
-                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-clockwise" width="24"
-                    height="24" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
-                    <path
-                        d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-                </svg>
-            </button>
-            <button id="toolbarPrevPage" onclick="app.pageTo('prev')" data-toggle="tooltip" title="上一页"
-                class="btn btn-dark ms-1 btn-action d-flex justify-content-center align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-short" width="24"
-                    height="24" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
-                </svg>
-            </button>
-            <button id="toolbarNextPage" onclick="app.pageTo('next')" data-toggle="tooltip" title="下一页"
-                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-right-short" width="24"
-                    height="24" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
-                </svg>
-            </button>
+        <div class="mt-3">
+            <div id="spinner" class="text-center" style="display: none;">
+                <div class="spinner-border" role="status"></div>
+            </div>
+            <div id="table" class="table-responsive"></div>
         </div>
     </div>
-</div>
-<div class="mt-3">
-    <div id="spinner" class="text-center" style="display: none;">
-        <div class="spinner-border" role="status"></div>
-    </div>
-    <div id="table" class="table-responsive"></div>
 </div>
 {% endblock container %}
 {% block script %}

@@ -64,11 +64,12 @@ Simple CRM 的诞生来自于一次朋友小D的公司的需求。小D最开始�
 6. 编辑客户 O
 7. 删除客户 O
 8. 屏蔽客户 O
-9. 对客户添加、编辑和删除联系 O
-10. 对客户添加、删除标签 O
-11. 快捷更改客户阶段 O
-12. 客户数据收集能力（来源G和B） O
-13. 客户位置地图展示
+9. 取消屏蔽客户
+10. 对客户添加、编辑和删除联系 O
+11. 对客户添加、删除标签 O
+12. 快捷更改客户阶段 O
+13. 客户数据收集能力（来源G和B） O
+14. 客户位置地图展示
 
 ### 合同与回款
 
@@ -79,8 +80,8 @@ Simple CRM 的诞生来自于一次朋友小D的公司的需求。小D最开始�
 
 ### 产品
 
-1. 产品创建、编辑、删除、查看
-2. 客户、合同关联产品
+1. 产品创建、编辑、删除、查看 O
+2. 合同关联产品
 3. 相关统计和展示
 
 ### 配置
@@ -109,9 +110,9 @@ Simple CRM 的诞生来自于一次朋友小D的公司的需求。小D最开始�
     <img src="./docs/screenshots/screenshot_customer_detail.png" width="25%">
     <img src="./docs/screenshots/screenshot_customer_detail_2.png" width="25%">
     <img src="./docs/screenshots/screenshot_customer_detail_3.png" width="25%">
-    <img src="./docs/screenshots/screenshot_system_dataset.png" width="25%">
-    <img src="./docs/screenshots/screenshot_system_link_type.png" width="25%">
+    <img src="./docs/screenshots/screenshot_system_stages.png" width="25%">
     <img src="./docs/screenshots/screenshot_system_user.png" width="25%">
+    <img src="./docs/screenshots/screenshot_system_dataset.png" width="25%">
 </div>
 
 ## 运行

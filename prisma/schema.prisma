@@ -166,6 +166,34 @@ model PaymentMethod {
   receivables Receivable[]
 }
 
+// 商品
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  unit        String?
+  sku         String?
+  description String?
+  price       Decimal  @default(0) // 标准价格
+  available   Boolean  @default(true) // 是否有售（上架，下架）
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
+// 合同商品
+model ContractProduct {
+  id         Int     @id @default(autoincrement())
+  productId  Int     @map("product_id")
+  contractId Int     @map("contract_id")
+  name       String
+  unit       String  @default("")
+  sku        String  @default("")
+  purchase   Decimal @default(0) // 售价
+  quantity   Int     @default(0) // 数量
+  discount   Decimal @default(0) // 折扣%
+
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
 // 所有活动，谁做了什么事情
 model Activity {
   id       Int     @id @default(autoincrement())

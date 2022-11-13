@@ -180,7 +180,7 @@
                         <div class="modal-body">
                             <div class="d-flex flex-column">
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label">标签：</label>
+                                    <label class="col-sm-2 col-form-label">标签</label>
                                     <div class="col-sm-10">
                                         <div class="pb-2 pb-lg-0">
                                             <input name="tag" class="form-control" placeholder="添加或者选择一个标签"></input>
@@ -188,7 +188,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label">颜色：</label>
+                                    <label class="col-sm-2 col-form-label">颜色</label>
                                     <div class="col-sm-10 d-flex align-items-center">
                                         <label class="color-input">
                                             <div class="col-auto">
@@ -490,15 +490,13 @@
             for (const r of item.receivables) {
                 rows += `
                     <tr>
+                        <td><div class="">${r.paymentMethod.name}</div></td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
-                                    <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
-                                </svg>
-                                ${r.amount}
+                                ¥${r.amount}
                             </div>
                         </td>
-                        <td><div class="">${dayjs(r.date).format("YYYY-MM-DD HH:mm:ss")}</div></td>
+                        <td><div class="">${dayjs(r.date).format("YYYY-MM-DD")}</div></td>
                         <td><div class="">${r.remark}</div></td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -513,6 +511,7 @@
                     <table class="table table-bordered table-group-divider table-light">
                         <thead>
                             <tr>
+                                <th scope="col">方式</th>
                                 <th scope="col">金额</th>
                                 <th scope="col">日期</th>
                                 <th scope="col">备注</th>
@@ -583,19 +582,13 @@
                         </td>
                         <td>
                             <div class="d-flex flex-column">
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center" style="margin-bottom: 2px;">
                                     <div class="d-flex align-items-center text-muted">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
-                                            <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
-                                        </svg>
-                                        ${receivableAmount}
+                                        ¥${receivableAmount}
                                     </div>
                                     <div class="mx-1">/</div>
                                     <div class="d-flex align-items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-yen" viewBox="0 0 16 16">
-                                            <path d="M8.75 14v-2.629h2.446v-.967H8.75v-1.31h2.445v-.967H9.128L12.5 2h-1.699L8.047 7.327h-.086L5.207 2H3.5l3.363 6.127H4.778v.968H7.25v1.31H4.78v.966h2.47V14h1.502z"/>
-                                        </svg>
-                                        ${item.amount}
+                                        ¥${item.amount}
                                     </div>
                                 </div>
                                 <div class="progress cursor-pointer" onclick="app.openReceivableListModal(${i})">
@@ -687,21 +680,29 @@
                             </div>
                             <form id="editorForm">
                                 <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">编号</label>
-                                        <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">编号</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成">
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">名称</label>
-                                        <input type="text" class="form-control" name="name" value="${item?.name || ''}">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">名称</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="name" value="${item?.name || ''}">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="form-label">金额</label>
-                                        <input type="text" class="form-control" name="amount" value="${item?.amount || ''}">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">金额</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="amount" value="${item?.amount || ''}">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="form-label">备注</label>
-                                        <textarea class="form-control" name="remark" rows="3">${item?.remark || ''}</textarea>
+                                    <div class="row">
+                                        <label class="col-sm-2 form-label">备注</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" name="remark" rows="3">${item?.remark || ''}</textarea>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -763,23 +764,31 @@
                             </div>
                             <form id="editorForm">
                                 <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">方式</label>
-                                        <select class="form-select" name="paymentMethodId" name="paymentMethodId">
-                                            ${optionsHTML}
-                                        </select>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">方式</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-select" name="paymentMethodId" name="paymentMethodId">
+                                                ${optionsHTML}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">金额</label>
-                                        <input type="text" class="form-control" name="amount">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">金额</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" name="amount">
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">日期</label>
-                                        <input class="form-control" placeholder="选择日期" name="date" id="datepicker" value="${dayjs(new Date(), 'yyyy-MM-dd')}">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">日期</label>
+                                        <div class="col-sm-10">
+                                            <input class="form-control" placeholder="选择日期" name="date" id="datepicker" value="${dayjs(new Date(), 'yyyy-MM-dd')}">
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">备注</label>
-                                        <textarea class="form-control" name="remark" rows="3"></textarea>
+                                    <div class="row">
+                                        <label class="col-sm-2 form-label">备注</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" name="remark" rows="3"></textarea>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -952,19 +961,25 @@
                             </div>
                             <form id="editorForm">
                             <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="linkType" class="form-label">方式</label>
-                                    <select class="form-select" name="typeId" id="linkType" name="typeId">
-                                        ${optionsHTML}
-                                    </select>
+                                <div class="mb-3 row">
+                                    <label for="linkType" class="col-sm-2 form-label">方式</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-select" name="typeId" id="linkType" name="typeId">
+                                            ${optionsHTML}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">主题</label>
-                                    <input type="text" class="form-control" name="subject" value="${item?.subject || ''}">
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">主题</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="subject" value="${item?.subject || ''}">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label for="linkContent" class="form-label">内容</label>
-                                    <textarea class="form-control" name="content" rows="3">${item?.content || ''}</textarea>
+                                <div class="row">
+                                    <label class="col-sm-2 form-label">内容</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" name="content" rows="3">${item?.content || ''}</textarea>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">

@@ -179,7 +179,7 @@ const customers = async function (fastify, opts) {
             data = await fastify.db.contract.findMany({
                 where: { customerId: customer.id, },
                 orderBy: [{ updatedAt: 'desc' }],
-                include: { receivables: true }
+                include: { receivables: { include: { paymentMethod: true } } }
             });
         }
         return reply.code(200).send({ data });

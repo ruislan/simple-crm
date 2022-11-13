@@ -29,7 +29,7 @@ const tagEditor = {
                         <div class="modal-body">
                             <div class="d-flex flex-column">
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label">标签：</label>
+                                    <label class="col-sm-2 col-form-label">标签</label>
                                     <div class="col-sm-10">
                                         <div class="pb-2 pb-lg-0">
                                             <input name="tag" class="form-control" placeholder="添加一个标签" value="${modal.data.tag?.name || ''}"></input>
@@ -37,14 +37,14 @@ const tagEditor = {
                                     </div>
                                 </div>
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label">颜色：</label>
+                                    <label class="col-sm-2 col-form-label">颜色</label>
                                     <div class="col-sm-10 d-flex align-items-center">
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#212529" ${(!modal.data.tag?.colorHex || modal.data.tag?.colorHex === '#212529') ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#212529;"></span>
                                             </div>
-                                        </label>                                        
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#6C757D" ${modal.data.tag?.colorHex === '#6C757D' ? 'checked' : ''}>
@@ -74,31 +74,31 @@ const tagEditor = {
                                                 <input class="color-check-input" name="color" type="radio" value="#ae3ec9" ${modal.data.tag?.colorHex === '#ae3ec9' ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#ae3ec9;"></span>
                                             </div>
-                                        </label>                                            
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#d6336c" ${modal.data.tag?.colorHex === '#d6336c' ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#d6336c;"></span>
                                             </div>
-                                        </label>                                            
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#d63939" ${modal.data.tag?.colorHex === '#d63939' ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#d63939;"></span>
                                             </div>
-                                        </label>                                            
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#f76707" ${modal.data.tag?.colorHex === '#f76707' ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#f76707;"></span>
                                             </div>
-                                        </label>                                            
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#f59f00" ${modal.data.tag?.colorHex === '#f59f00' ? 'checked' : ''}>
                                                 <span class="color-check-color" style="background-color:#f59f00;"></span>
                                             </div>
-                                        </label>                                            
+                                        </label>
                                         <label class="color-input">
                                             <div class="col-auto">
                                                 <input class="color-check-input" name="color" type="radio" value="#74b816" ${modal.data.tag?.colorHex === '#74b816' ? 'checked' : ''}>

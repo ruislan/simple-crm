@@ -207,6 +207,21 @@
                 });
             });
         },
+        unhide(id, name) {
+            let tips = id ? `确定不隐藏这个客户(${name})吗？` : '确定批量不隐藏吗？';
+            helper.confirm(tips, function () {
+                const ids = id ? [id] : app.data.tableData.filter(item => item._checked).map(item => item.id);
+                $.ajax({
+                    url: `/customers/unhide`,
+                    type: 'post',
+                    data: JSON.stringify({ ids }),
+                    contentType: 'application/json'
+                }).done(function () {
+                    app.search();
+                    helper.toast('操作成功', 'success');
+                });
+            });
+        },
         hide(id, name) {
             let tips = id ? `确定隐藏这个客户(${name})吗？` : '确定批量隐藏吗？';
             helper.confirm(tips, function () {
@@ -255,7 +270,10 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark" onclick="app.acquire('${item.id}', '${item.name}')">认领</button>
-                                <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.hide('${item.id}', '${item.name}')">隐藏</button>
+                                ${item.ignore ?
+                                    `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.unhide('${item.id}', '${item.name}')">不隐藏</button>` :
+                                    `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.hide('${item.id}', '${item.name}')">隐藏</button>`
+                                }
                                 {% if sessionUser.isAdmin %}
                                 <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit(${i})">编辑</button>
                                 <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.delete('${item.id}', '${item.name}')">删除</button>
@@ -274,7 +292,7 @@
                         <th scope="col" style="min-width: 260px;">客户</th>
                         <th scope="col" style="min-width: 100px;">类型</th>
                         <th scope="col" style="min-width: 200px;">地址</th>
-                        <th scope="col" style="width: 220px; min-width: 220px;">操作</th>
+                        <th scope="col" style="width: 240px; min-width: 240px;">操作</th>
                     </tr>
                 </thead>
                 <tbody class="fs-small">

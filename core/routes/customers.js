@@ -378,6 +378,22 @@ const customers = async function (fastify, opts) {
         return reply.code(200).send();
     });
 
+    // 取消隐藏
+    fastify.post('/unhide', async (req, reply) => {
+        let { ids } = req.body || { ids: [] };
+        if (ids && ids.length > 0) {
+            ids = ids.map(id => Number(id)).filter(id => id);
+            for (const id of ids) {
+                await fastify.db.userCustomerHiddenRef.delete({
+                    where: {
+                        customerId_userId: { customerId: id, userId: req.session.user.id }
+                    },
+                });
+            }
+        }
+        return reply.code(200).send();
+    });
+
     // 认领
     fastify.post('/acquire', async (req, reply) => {
         let { ids } = req.body || { ids: [] };
@@ -420,14 +436,14 @@ const customers = async function (fastify, opts) {
         if (stageId) whereClause.stageId = stageId;
         if (my) whereClause.userId = req.session.user.id;
 
-        if (hide) { // 读取该用户的hidden，customer不需要这些数据
-            const ignoreIds = (await fastify.db.userCustomerHiddenRef.findMany({
-                where: {
-                    userId: req.session.user.id,
-                },
-            })).map(item => item.customerId);
-            if (ignoreIds.length > 0) whereClause.NOT = { id: { in: ignoreIds } };
-        }
+        // 该用户主动隐藏的 Customer
+        const ignoreIds = (await fastify.db.userCustomerHiddenRef.findMany({
+            where: {
+                userId: req.session.user.id,
+            },
+            select: { customerId: true }
+        })).map(item => item.customerId);
+        if (hide && ignoreIds.length > 0) whereClause.NOT = { id: { in: ignoreIds } };
 
         const count = await fastify.db.customer.count({ where: whereClause });
         const data = await fastify.db.customer.findMany({
@@ -441,12 +457,14 @@ const customers = async function (fastify, opts) {
             orderBy: [{ createdAt: 'desc' }]
         });
 
+        const ignoreIdSet = new Set(ignoreIds);
         for (const item of data) {
             if (!req.session.user.isAdmin && item.userId !== req.session.user.id) { // 不是admin也不是自己的 掩盖 联系方式,
                 if (item.phone && item.phone.length > 3) {
                     item.phone = item.phone.substring(0, 3) + '***';
                 }
             }
+            item.ignore = ignoreIdSet.has(item.id);
         }
 
         // result

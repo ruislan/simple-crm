@@ -25,6 +25,13 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap">
             <div class="d-flex align-items-center">
                 <div><input class="form-control" type="search" id="searchName" placeholder="名称" /></div>
+                <div class="ms-1">
+                    <select id="searchAvailable" class="form-select">
+                        <option value="">状态</option>
+                        <option value="true">上架</option>
+                        <option value="false">下架</option>
+                    </select>
+                </div>
                 <div class="ms-1"><button id="searchBtn" class="btn btn-dark" onclick="app.search()">搜索</button></div>
             </div>
             <div class="d-flex align-items-center">
@@ -71,7 +78,7 @@
         search() {
             $('#searchBtn').attr('disabled', true);
             $('#spinner').show();
-            const data = { name: $('#searchName').val() };
+            const data = { name: $('#searchName').val(), available: $('#searchAvailable').val() };
             $.ajax({
                 type: 'get',
                 url: '/system/products/search',

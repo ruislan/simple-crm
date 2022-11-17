@@ -49,8 +49,8 @@
                                 <li>
                                     <div class="dropdown-item d-flex align-items-center" style="cursor: pointer;"
                                         onclick="app.changeStage('{{s.id}}', '{{s.name}}', '{{s.colorHex}}')">
-                                        <label class="color-cube me-2"
-                                            style="background-color:{{s.colorHex}}; cursor: pointer;"></label>
+                                        <label class="color-cube me-2 cursor-pointer"
+                                            style="background-color:{{s.colorHex}};"></label>
                                         {{s.name}}
                                     </div>
                                 </li>
@@ -500,7 +500,7 @@
                         <td><div class="">${r.remark}</div></td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-danger ms-1" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</button>
+                                ${item.isCompleted ? '' : `<button class="btn btn-sm btn-danger ms-1" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</button>`}
                             </div>
                         </td>
                     </tr>
@@ -569,6 +569,8 @@
                         <button class="btn btn-sm btn-dark ms-1" onclick="app.completeContract(${item.id})">完成</button>
                         <button class="btn btn-sm btn-danger ms-1" onclick="app.abandonContract(${item.id})">作废</button>
                     `;
+                } else {
+                    actions = `<button class="btn btn-sm btn-dark ms-1" onclick="app.openContractForm(${i})">查看</button>`;
                 }
                 const receivableAmount = item.receivables.reduce((acc, cur) => acc + Number(cur.amount) || 0, 0);
                 const receivablePercent = receivableAmount * 100 / (Number(item.amount) || 0.01);
@@ -662,6 +664,7 @@
         },
         openContractForm(itemIndex) {
             const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            const disabled = item && (item.isAbandoned || item.isCompleted);
             // show modal
             const editorEl = document.createElement('div');
             editorEl.id = 'editor';
@@ -675,7 +678,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">编辑合同</h5>
+                                <h5 class="modal-title">${disabled ? '编辑' : '查看'}合同</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <form id="editorForm">
@@ -683,25 +686,25 @@
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 form-label">编号</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成">
+                                            <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成" ${disabled ? 'disabled' : ''}>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 form-label">名称</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="name" value="${item?.name || ''}">
+                                            <input type="text" class="form-control" name="name" value="${item?.name || ''}" ${disabled ? 'disabled' : ''}>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
                                         <label class="col-sm-2 form-label">金额</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="amount" value="${item?.amount || ''}">
+                                            <input type="text" class="form-control" name="amount" value="${item?.amount || ''}"${disabled ? 'disabled' : ''}>
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div class="mb-3 row">
                                         <label class="col-sm-2 form-label">备注</label>
                                         <div class="col-sm-10">
-                                            <textarea class="form-control" name="remark" rows="3">${item?.remark || ''}</textarea>
+                                            <textarea class="form-control" name="remark" rows="3" ${disabled ? 'disabled' : ''}>${item?.remark || ''}</textarea>
                                         </div>
                                     </div>
                                 </div>

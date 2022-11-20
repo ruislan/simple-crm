@@ -188,6 +188,7 @@ model ContractProduct {
   unit       String  @default("")
   sku        String  @default("")
   purchase   Decimal @default(0) // 售价
+  price      Decimal @default(0) // 原价
   quantity   Int     @default(0) // 数量
   discount   Decimal @default(0) // 折扣%
 

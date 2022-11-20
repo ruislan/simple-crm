@@ -271,9 +271,9 @@
                             <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-sm btn-dark" onclick="app.acquire('${item.id}', '${item.name}')">认领</button>
                                 ${item.ignore ?
-                                    `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.unhide('${item.id}', '${item.name}')">不隐藏</button>` :
-                                    `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.hide('${item.id}', '${item.name}')">隐藏</button>`
-                                }
+                        `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.unhide('${item.id}', '${item.name}')">不隐藏</button>` :
+                        `<button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.hide('${item.id}', '${item.name}')">隐藏</button>`
+                    }
                                 {% if sessionUser.isAdmin %}
                                 <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit(${i})">编辑</button>
                                 <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.delete('${item.id}', '${item.name}')">删除</button>
@@ -295,7 +295,7 @@
                         <th scope="col" style="width: 240px; min-width: 240px;">操作</th>
                     </tr>
                 </thead>
-                <tbody class="fs-small">
+                <tbody class="fs-sm">
                     ${rows}
                 </tbody>
             </table>
@@ -305,7 +305,9 @@
                 el.addEventListener('change', () => {
                     app.data.tableData[i]._checked = el.checked;
                     const isSemi = app.data.tableData.findIndex(item => !!item._checked != el.checked) > -1;
-                    $('#table th .form-check-input').attr('semi', isSemi ? '1' : '0')[0].indeterminate = isSemi;
+                    const thCheckbox = $('#table th .form-check-input').attr('semi', isSemi ? '1' : '0')[0];
+                    thCheckbox.indeterminate = isSemi;
+                    if (!isSemi) thCheckbox.checked = el.checked;
                 });
             });
             $('#table th .form-check-input').click(function () {
@@ -314,7 +316,7 @@
                 this.checked = checked;
                 this.setAttribute('semi', '0');
                 app.data.tableData.forEach(item => item._checked = checked);
-                $('#table td .form-check-input').prop('checked', checked).change();
+                $('#table td .form-check-input').prop('checked', checked);
             });
         },
         pageTo(d) {

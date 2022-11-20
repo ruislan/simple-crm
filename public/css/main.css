@@ -63,7 +63,7 @@
     cursor: pointer;
 }
 
-.fs-small {
+.fs-sm {
     font-size: 14px;
 }
 
@@ -250,4 +250,13 @@
     background-color: #212529;
     color           : #fff;
     cursor          : unset;
+}
+
+.input-short {
+    width: 68px;
+}
+
+/* override bs modal */
+.modal {
+    --bs-modal-width: 540px;
 }

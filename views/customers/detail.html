@@ -133,6 +133,7 @@
 <script src="/public/js/customers.js"></script>
 <script src="/public/js/activities.js"></script>
 <script>
+    // XXX 逻辑太多了，用 preactjs 改造一下？
     const tagsDialog = {
         title: '标签',
         id: 'tagsDialog',
@@ -296,6 +297,7 @@
                 limit: 15,
                 count: 0,
             },
+            contractProductList: [],
             activity: {
                 list: [],
                 skip: 0,
@@ -500,7 +502,7 @@
                         <td><div class="">${r.remark}</div></td>
                         <td>
                             <div class="d-flex align-items-center">
-                                ${item.isCompleted ? '' : `<button class="btn btn-sm btn-danger ms-1" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</button>`}
+                                ${item.isCompleted || item.isAbandoned ? '' : `<a class="text-danger ms-1" href="#" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</a>`}
                             </div>
                         </td>
                     </tr>
@@ -518,7 +520,7 @@
                                 <th scope="col">操作</th>
                             </tr>
                         </thead>
-                        <tbody class="fs-small">
+                        <tbody class="fs-sm">
                             ${rows}
                         </tbody>
                     </table>
@@ -626,7 +628,7 @@
                         <th scope="col" style="width: 220px;min-width: 220px;">操作</th>
                     </tr>
                 </thead>
-                <tbody class="fs-small">
+                <tbody class="fs-sm">
                     ${rows}
                 </tbody>
             </table>
@@ -662,12 +664,135 @@
                 });
             }
         },
+        // contract product
+        openProductListModal(itemIndex) {
+            const contract = app.data.contractList[itemIndex];
+            if (!contract) return;
+            // show modal
+            const usedSet = new Set();
+            app.data.contractProductList.forEach(item => usedSet.add(item.productId));
+            let productList = []; // cache
+            const modalId = 'product-modal';
+            const modalEl = document.createElement('div');
+            modalEl.id = modalId;
+            modalEl.className = 'modal fade';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.setAttribute('tabindex', '-1');
+            modalEl.setAttribute('data-bs-backdrop', 'static');
+            modalEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(modalEl));
+            document.body.appendChild(modalEl);
+            modalEl.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">产品列表</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="spinner" class="text-center" style="display: none;">
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                            <div class="table-responsive"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">确定</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.querySelector(`#${modalId} .btn-dark`).addEventListener('click', () => {
+                try {
+                    // 选择完成之后，将已经选择的产品写入到contractProductList中
+                    app.data.contractProductList = [];
+                    $(`#${modalId} table td .form-check-input`).each((i, el) => {
+                        if (!!el.checked) {
+                            app.data.contractProductList.push({
+                                productId: productList[i].id,
+                                contractId: contract.id,
+                                name: productList[i].name,
+                                unit: productList[i].unit,
+                                sku: productList[i].sku,
+                                purchase: productList[i].price,
+                                price: productList[i].price,
+                                quantity: 1,
+                                discount: 0,
+                            });
+                        }
+                    });
+                    app.renderContractProductList(true);
+                } finally {
+                    $(`#${modalId}`).modal('hide');
+                };
+            });
+            $(`#${modalId}`).modal('show');
+            $(`#${modalId} spinner`).show();
+            // load product list to choose
+            $.ajax({
+                type: 'get',
+                url: '/system/products/search',
+                data: { available: true },
+            }).done(function (result) {
+                productList = result.data || [];
+                const table = document.querySelector(`#${modalId} .table-responsive`);
+                let rows = '';
+                for (let i = 0; i < productList.length; i++) {
+                    const item = productList[i];
+                    rows += `
+                    <tr id="row-${item.id}">
+                        <td><input class="form-check-input m-0 align-middle" type="checkbox" ${usedSet.has(item.id) ? 'checked' : ''}></td>
+                        <td><div>${item.name}</div></td>
+                        <td><div>${item.sku}</div></td>
+                        <td><div>${item.unit}</div></td>
+                        <td><div>${item.price}</div></td>
+                    </tr>
+                `;
+                }
+                const tableHTML = `
+                    <table class="table table-bordered table-group-divider table-light">
+                        <thead>
+                            <tr>
+                                <th scope="col"><input class="form-check-input m-0 align-middle" type="checkbox"></th>
+                                <th style="min-width:100px;">产品</th>
+                                <th style="min-width:85px;">编号</th>
+                                <th style="min-width:85px;">单位</th>
+                                <th style="min-width:70px;">价格</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                `;
+                table.innerHTML = tableHTML;
+                $(`#${modalId} table td .form-check-input`).each((i, el) => {
+                    el.addEventListener('change', () => {
+                        productList[i]._checked = el.checked;
+                        const isSemi = productList.findIndex(item => !!item._checked != el.checked) > -1;
+                        const thCheckbox = $(`#${modalId} table th .form-check-input`).attr('semi', isSemi ? '1' : '0')[0];
+                        thCheckbox.indeterminate = isSemi;
+                        if (!isSemi) thCheckbox.checked = el.checked;
+                    });
+                });
+                $(`#${modalId} table th .form-check-input`).click(function () {
+                    let checked = this.checked;
+                    if (this.getAttribute('semi') !== '0') checked = true;
+                    this.checked = checked;
+                    this.setAttribute('semi', '0');
+                    productList.forEach(item => item._checked = checked);
+                    $(`#${modalId} table td .form-check-input`).prop('checked', checked);
+                });
+            }).always(function () {
+                $(`#${modalId} spinner`).hide();
+            });
+        },
         openContractForm(itemIndex) {
             const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
             const disabled = item && (item.isAbandoned || item.isCompleted);
             // show modal
+            const editorId = 'contractEditor';
             const editorEl = document.createElement('div');
-            editorEl.id = 'editor';
+            editorEl.id = editorId;
             editorEl.className = 'modal fade';
             editorEl.setAttribute('aria-hidden', 'true');
             editorEl.setAttribute('tabindex', '-1');
@@ -675,65 +800,141 @@
             editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
             document.body.appendChild(editorEl);
             editorEl.innerHTML = `
-                    <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">${disabled ? '编辑' : '查看'}合同</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form id="editorForm">
-                                <div class="modal-body">
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">编号</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成" ${disabled ? 'disabled' : ''}>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">名称</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="name" value="${item?.name || ''}" ${disabled ? 'disabled' : ''}>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">金额</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="amount" value="${item?.amount || ''}"${disabled ? 'disabled' : ''}>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">备注</label>
-                                        <div class="col-sm-10">
-                                            <textarea class="form-control" name="remark" rows="3" ${disabled ? 'disabled' : ''}>${item?.remark || ''}</textarea>
-                                        </div>
+                            <form id="editorForm" class="modal-body">
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">编号</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成" ${disabled ? 'disabled' : ''}>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                    <button type="button" class="btn btn-dark">保存</button>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">名称</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="name" value="${item?.name || ''}" ${disabled ? 'disabled' : ''}>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">金额</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="amount" value="${item?.amount || ''}"${disabled ? 'disabled' : ''}>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">备注</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" name="remark" rows="3" ${disabled ? 'disabled' : ''}>${item?.remark || ''}</textarea>
+                                    </div>
+                                </div>
+                                <div class="my-3 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">产品</label>
+                                        ${disabled ? '' : `
+                                            <a class="form-label fs-sm" href="#" onclick="app.openProductListModal(${itemIndex})">增加产品</a>
+                                        `}
+                                    </div>
+                                    <div class="table-responsive"></div>
                                 </div>
                             </form>
+                            <div class="modal-footer">
+                                ${disabled ? `
+                                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
+                                    `: `
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-dark">保存</button>
+                                    `}
+                            </div>
                         </div>
                     </div>
                 `;
-            document.querySelector('#editor .btn-dark').addEventListener('click', () => {
-                const data = {};
-                new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
-                if (item?.id) data.id = item.id;
+            if (!disabled) {
+                document.querySelector(`#${editorId} .btn-dark`).addEventListener('click', () => {
+                    const data = {};
+                    new FormData(document.querySelector(`#${editorId} #editorForm`)).forEach((v, k) => data[k] = v);
+                    if (item?.id) data.id = item.id;
+                    data.contractProductList = app.data.contractProductList;
 
-                $.ajax({
-                    url: `/customers/{{data.customer.id}}/contracts`,
-                    type: 'post',
-                    data,
-                    statusCode: { 401: () => window.location.href = '/login', }
-                }).done(function () {
-                    helper.toast('操作成功', 'success');
-                }).always(function () {
-                    $('#editor').modal('hide');
-                    app.loadContractList();
+                    $.ajax({
+                        url: `/customers/{{data.customer.id}}/contracts`,
+                        type: 'post',
+                        contentType: 'application/json',
+                        headers: { accept: 'application/json' },
+                        data: JSON.stringify(data),
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        helper.toast('操作成功', 'success');
+                    }).always(function () {
+                        $(`#${editorId}`).modal('hide');
+                        app.loadContractList();
+                    });
                 });
+            }
+            $(`#${editorId}`).modal('show');
+            app.loadContractProductList(item);
+        },
+        deleteContractProduct(index) {
+            app.data.contractProductList = app.data.contractProductList.filter((_, i) => i !== index);
+            app.renderContractProductList(true);
+        },
+        renderContractProductList(enableAction) {
+            const contractEditorId = 'contractEditor';
+            const table = document.querySelector(`#${contractEditorId} .table-responsive`);
+            let rows = '';
+            for (let i = 0; i < app.data.contractProductList?.length || 0; i++) {
+                const item = app.data.contractProductList[i];
+                rows += `
+                    <tr>
+                        <td>
+                            <div>${item.name}</div>
+                            <div class="fs-sm text-muted">${item.sku}</div>
+                        </td>
+                        <td>
+                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short" min="0" value="${item.quantity}">` : item.quantity}</div>
+                            <div class="fs-sm text-muted">单位:${item.unit}</div>
+                        </td>
+                        <td>
+                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short" min="0" value="${item.purchase}">` : item.purchase}</div>
+                            <div class="fs-sm text-muted">原价:${item.price}</div>
+                        </td>
+                        <td>
+                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short"   max="100" min="0" value="${item.discount}">` : item.discount}</div>
+                        </td>
+                        ${!!enableAction ? `
+                            <td>
+                                <a class="text-danger" href="#" onclick="app.deleteContractProduct(${i})">删除</a>
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            }
+            table.innerHTML = `
+                <table class="table table-bordered table-group-divider table-light">
+                    <thead>
+                        <tr>
+                            <th style="min-width:100px;">产品</th>
+                            <th style="min-width:85px;">数量</th>
+                            <th style="min-width:85px;">价格</th>
+                            <th style="min-width:70px;">折扣%</th>
+                            ${enableAction ? '<th style="min-width:50px;">操作</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody class="fs-sm">
+                        ${rows}
+                    </tbody>
+                </table>
+            `;
+        },
+        loadContractProductList(contract) {
+            app.data.contractProductList = []; // clear old data
+            $.getJSON(`/customers/{{data.customer.id}}/contracts/${contract.id}/products`).done(function (result) {
+                app.data.contractProductList = result.data || [];
+                app.renderContractProductList(!(contract && (contract.isAbandoned || contract.isCompleted)));
             });
-            $('#editor').modal('show');
         },
         openReceivableForm(itemIndex) {
             $.ajax({
@@ -889,11 +1090,11 @@
                                     <div class="d-flex flex-column">
                                         <div class="fs-5">${item.subject}</div>
                                         <div class="d-flex align-items-baseline">
-                                            <div class="fs-small text-muted">${item.user.name}</div>
+                                            <div class="fs-sm text-muted">${item.user.name}</div>
                                             <div class="mx-1">·</div>
-                                            <div class="fs-small text-muted">${item.type.name}</div>
+                                            <div class="fs-sm text-muted">${item.type.name}</div>
                                             <div class="mx-1">·</div>
-                                            <div class="fs-small text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                            <div class="fs-sm text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                                         </div>
                                     </div>
                                 </div>

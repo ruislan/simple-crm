@@ -147,7 +147,7 @@ const customers = async function (fastify, opts) {
     // this customer's contracts
     fastify.post('/:id/contracts', async (req, reply) => {
         const customerId = Number(req.params.id || 0);
-        let { id, number, name, amount, remark } = req.body;
+        let { id, number, name, amount, remark, contractProductList } = req.body;
         const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
 
         // admin can add any
@@ -155,9 +155,23 @@ const customers = async function (fastify, opts) {
         if (!customer || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
 
         const contract = { number, name, amount: Number(amount) || 0, remark, customerId: customer.id };
-        if (!number || number.length < 1) {
-            contract.number = '' + new Date().getTime(); // TODO don't use timestamp
+        if (!number || number.length < 1) contract.number = '' + new Date().getTime();
+
+        // delete old contract products, and add new contract products
+        await fastify.db.contractProduct.deleteMany({ where: { contractId: contract.id } });
+        for (let i = 0; i < contractProductList?.length || 0; i++) {
+            const item = contractProductList[i];
+            await fastify.db.contractProduct.create({
+                data: {
+                    ...item,
+                    purchase: Number(item.purchase) || 0,
+                    price: Number(item.price) || 0,
+                    quantity: Number(item.quantity) || 0,
+                    discount: Number(item.discount) || 0,
+                }
+            });
         }
+
         if (id) {
             await fastify.db.contract.update({ data: contract, where: { id: Number(id) } });
             fastify.events.emit(events.names.CUSTOMER_CONTRACT_UPDATE, { user: req.session.user, customer, contract });
@@ -244,6 +258,17 @@ const customers = async function (fastify, opts) {
         await fastify.db.contract.update({ data: { isCompleted: true }, where: { id: contract.id } });
         fastify.events.emit(events.names.CUSTOMER_CONTRACT_COMPLETE, { user: req.session.user, customer, contract });
         return reply.code(200).send();
+    });
+
+    fastify.get('/:customerId/contracts/:contractId/products', async (req, reply) => {
+        const customerId = Number(req.params.customerId);
+        const contractId = Number(req.params.contractId);
+        const customer = await fastify.db.customer.findUnique({ where: { id: customerId } });
+        const contract = await fastify.db.contract.findUnique({ where: { id: contractId } });
+        // admin or owner can do this
+        if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
+        const data = await fastify.db.contractProduct.findMany({ where: { contractId } });
+        return reply.code(200).send({ data });
     });
     // end contracts
 

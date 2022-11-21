@@ -157,28 +157,36 @@ const customers = async function (fastify, opts) {
         const contract = { number, name, amount: Number(amount) || 0, remark, customerId: customer.id };
         if (!number || number.length < 1) contract.number = '' + new Date().getTime();
 
+        if (id) {
+            contract.id = Number(id);
+            await fastify.db.contract.update({ data: contract, where: { id: contract.id } });
+            fastify.events.emit(events.names.CUSTOMER_CONTRACT_UPDATE, { user: req.session.user, customer, contract });
+        } else {
+            contract.userId = req.session.user.id;
+            contract.id = (await fastify.db.contract.create({ data: contract })).id;
+            fastify.events.emit(events.names.CUSTOMER_CONTRACT_CREATE, { user: req.session.user, customer, contract });
+        }
+
         // delete old contract products, and add new contract products
+        // 注意代码顺序，可能是新建合同，所以合同的ID在这里才能确保存在
         await fastify.db.contractProduct.deleteMany({ where: { contractId: contract.id } });
         for (let i = 0; i < contractProductList?.length || 0; i++) {
             const item = contractProductList[i];
+            const productId = Number(item.productId) || 0;
+            if (productId === 0) continue;
             await fastify.db.contractProduct.create({
                 data: {
-                    ...item,
+                    name: item.name,
+                    productId: Number(item.productId) || 0,
+                    contractId: contract.id,
+                    sku: item.sku,
+                    unit: item.unit,
                     purchase: Number(item.purchase) || 0,
                     price: Number(item.price) || 0,
                     quantity: Number(item.quantity) || 0,
                     discount: Number(item.discount) || 0,
                 }
             });
-        }
-
-        if (id) {
-            await fastify.db.contract.update({ data: contract, where: { id: Number(id) } });
-            fastify.events.emit(events.names.CUSTOMER_CONTRACT_UPDATE, { user: req.session.user, customer, contract });
-        } else {
-            contract.userId = req.session.user.id;
-            await fastify.db.contract.create({ data: contract });
-            fastify.events.emit(events.names.CUSTOMER_CONTRACT_CREATE, { user: req.session.user, customer, contract });
         }
         return reply.code(200).send();
     });

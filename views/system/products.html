@@ -81,7 +81,8 @@
             const data = { name: $('#searchName').val(), available: $('#searchAvailable').val() };
             $.ajax({
                 type: 'get',
-                url: '/system/products/search',
+                url: '/products/search',
+                headers: { accept: 'application/json' },
                 data,
             }).done(function (result) {
                 app.data.tableData = result.data;

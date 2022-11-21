@@ -16,6 +16,7 @@ import system from './routes/system/index.js';
 import links from './routes/links.js';
 import users from './routes/users.js';
 import tags from './routes/tags.js';
+import products from './routes/products.js';
 import activities from './routes/activities.js';
 import statistic from './routes/statistic.js';
 
@@ -83,6 +84,7 @@ const scService = async function (fastify, opts) {
     await fastify.register(tags, { prefix: '/tags' });
     await fastify.register(activities, { prefix: '/activities' });
     await fastify.register(statistic, { prefix: '/statistic' });
+    await fastify.register(products, { prefix: "/products" });
     await fastify.register(system, { prefix: '/system' });
 
     // init error handler

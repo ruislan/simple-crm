@@ -133,45 +133,95 @@
 <script src="/public/js/customers.js"></script>
 <script src="/public/js/activities.js"></script>
 <script>
-    // XXX 逻辑太多了，用 preactjs 改造一下？
-    const tagsDialog = {
-        title: '标签',
-        id: 'tagsDialog',
-        data: {},
-        open({ customerId, onDone, onFail, onAlways }) {
-            this.data.customerId = customerId;
-            this.onDone = onDone;
-            this.onFail = onFail;
-            this.onAlways = onAlways;
-            this.render();
+    const app = {
+        data: {
+            link: {
+                list: [],
+                skip: 0,
+                limit: 15,
+                count: 0,
+            },
+            contractProductList: [],
+            activity: {
+                list: [],
+                skip: 0,
+                limit: 15,
+                count: 0,
+            },
+            contractList: [],
         },
-        setTag(tagName) {
-            document.querySelector(`#${this.id} input[name="tag"]`).value = tagName;
+        activities: {
+            loadActivityList(more) {
+                if (more || app.data.activity.list.length === 0) {
+                    $('#spinner').show();
+                    $.ajax({
+                        type: 'get',
+                        url: `/customers/{{data.customer.id}}/activities`,
+                        data: { skip: more ? app.data.activity.skip + app.data.activity.limit : app.data.activity.skip, limit: app.data.activity.limit },
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function (result) {
+                        const { data, limit, skip, count } = result;
+                        app.data.activity.list = [...app.data.activity.list, ...data];
+                        app.data.activity.count = count;
+                        app.data.activity.skip = skip;
+                        app.data.activity.limit = limit;
+                        app.activities.renderActivityList();
+                    }).always(function () {
+                        $('#spinner').hide();
+                    });
+                } else {
+                    app.activities.renderActivityList(); // just render again
+                }
+            },
+            renderActivityList() {
+                let html = activities.render({ data: app.data.activity.list, isMy: false }); // !!!this 'activities' comes from activities.js
+                html += app.data.activity.list.length < app.data.activity.count ? `
+                    <div class="d-flex mt-2">
+                        <button class="btn btn-dark" onclick="app.activities.loadActivityList(true)">加载更多</button>
+                    </div>
+                ` : '';
+                document.getElementById('tabContent').innerHTML = html;
+            },
         },
-        render() {
-            const modal = this;
-            const modalEL = document.createElement('div');
-            modalEL.id = modal.id;
-            modalEL.className = 'modal fade';
-            modalEL.setAttribute('aria-hidden', 'true');
-            modalEL.setAttribute('tabindex', '-1');
-            modalEL.setAttribute('data-bs-backdrop', 'static');
-            modalEL.addEventListener('hidden.bs.modal', () => {
-                modal.data = {};
-                document.body.removeChild(modalEL);
-            });
-            modalEL.addEventListener('show.bs.modal', () => {
-                // load some tags (hot)
-                $.getJSON('/tags?customerId={{data.customer.id}}').done(function (result) {
-                    const { data } = result;
-                    const parentNode = $(`#${modal.id} .tags`);
-                    for (const u of data) {
-                        parentNode.append(`<div class="tag" onclick="tagsDialog.setTag('${u.name}')">${u.name}</div>`);
-                    }
-                });
-            });
-            document.body.appendChild(modalEL);
-            modalEL.innerHTML = `
+        tags: {
+            tagsDialog: {
+                title: '标签',
+                id: 'tagsDialog',
+                data: {},
+                open({ customerId, onDone, onFail, onAlways }) {
+                    this.data.customerId = customerId;
+                    this.onDone = onDone;
+                    this.onFail = onFail;
+                    this.onAlways = onAlways;
+                    this.render();
+                },
+                setTag(tagName) {
+                    document.querySelector(`#${this.id} input[name="tag"]`).value = tagName;
+                },
+                render() {
+                    const modal = this;
+                    const modalEL = document.createElement('div');
+                    modalEL.id = modal.id;
+                    modalEL.className = 'modal fade';
+                    modalEL.setAttribute('aria-hidden', 'true');
+                    modalEL.setAttribute('tabindex', '-1');
+                    modalEL.setAttribute('data-bs-backdrop', 'static');
+                    modalEL.addEventListener('hidden.bs.modal', () => {
+                        modal.data = {};
+                        document.body.removeChild(modalEL);
+                    });
+                    modalEL.addEventListener('show.bs.modal', () => {
+                        // load some tags (hot)
+                        $.getJSON('/tags?customerId={{data.customer.id}}').done(function (result) {
+                            const { data } = result;
+                            const parentNode = $(`#${modal.id} .tags`);
+                            for (const u of data) {
+                                parentNode.append(`<div class="tag" onclick="app.tags.tagsDialog.setTag('${u.name}')">${u.name}</div>`);
+                            }
+                        });
+                    });
+                    document.body.appendChild(modalEL);
+                    modalEL.innerHTML = `
                 <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -269,44 +319,79 @@
                     </div>
                 </div>
             `;
-            document.querySelector(`#${modal.id} .btn-dark`).addEventListener('click', () => {
-                const name = document.querySelector(`#${modal.id} input[name="tag"]`).value;
-                const color = document.querySelector(`#${modal.id} input[name="tagColor"]:checked`).value;
-                $.ajax({
-                    url: `/customers/${modal.data.customerId}/tags`,
-                    type: 'post',
-                    data: { name, color }
-                }).done(function () {
-                    if (modal.onDone) modal.onDone();
-                }).fail(function (result) {
-                    if (modal.onFail) modal.onFail(result);
-                }).always(function () {
-                    $(`#${modal.id}`).modal('hide');
-                    if (modal.onAlways) modal.onAlways();
+                    document.querySelector(`#${modal.id} .btn-dark`).addEventListener('click', () => {
+                        const name = document.querySelector(`#${modal.id} input[name="tag"]`).value;
+                        const color = document.querySelector(`#${modal.id} input[name="tagColor"]:checked`).value;
+                        $.ajax({
+                            url: `/customers/${modal.data.customerId}/tags`,
+                            type: 'post',
+                            data: { name, color }
+                        }).done(function () {
+                            if (modal.onDone) modal.onDone();
+                        }).fail(function (result) {
+                            if (modal.onFail) modal.onFail(result);
+                        }).always(function () {
+                            $(`#${modal.id}`).modal('hide');
+                            if (modal.onAlways) modal.onAlways();
+                        });
+                    });
+                    $(`#${modal.id}`).modal('show');
+                },
+            },
+            newTag(customerId) {
+                app.tags.tagsDialog.open({
+                    customerId,
+                    onDone: () => { helper.toast('操作成功', 'success'); app.tags.renderTags(); },
+                    onFail: (result) => {
+                        if (result.status === 400) {
+                            helper.toast(result.responseJSON?.message || '未知错误，请刷新重试', 'warning');
+                        } else {
+                            helper.toast('操作失败，请刷新重试或者联系管理员', 'danger');
+                        }
+                    }
                 });
-            });
-            $(`#${modal.id}`).modal('show');
+            },
+            deleteTag(tagId) {
+                $.ajax({
+                    type: 'delete',
+                    url: `/customers/{{data.customer.id}}/tags/${tagId}`,
+                }).done(function () {
+                    helper.toast('操作成功', 'success');
+                    app.tags.renderTags();
+                });
+            },
+            renderTags() {
+                $.getJSON('/customers/{{data.customer.id}}/tags')
+                    .done(function (result) {
+                        const tags = document.querySelector('#tags');
+                        let tagsHTML = '';
+                        for (const tag of result.data) {
+                            tagsHTML += `
+                            <div class="tag tag-secondary" style="background-color:${tag.colorHex || ''};">
+                                ${tag.name}
+                                <button type="button" class="btn-close btn-close-white btn-close-sm delete" onclick="app.tags.deleteTag(${tag.id})"></button>
+                            </div>
+                        `;
+                        }
+                        tagsHTML += `
+                        <div class="d-flex aligne-items-center mb-2">
+                            <button class="btn btn-outline-secondary btn-mini py-0"
+                                onclick="app.tags.newTag('{{data.customer.id}}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-plus" viewBox="0 0 16 16">
+                                    <path
+                                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                        tags.innerHTML = tagsHTML;
+                    });
+            },
         },
-    };
-
-    const app = {
-        data: {
-            link: {
-                list: [],
-                skip: 0,
-                limit: 15,
-                count: 0,
-            },
-            contractProductList: [],
-            activity: {
-                list: [],
-                skip: 0,
-                limit: 15,
-                count: 0,
-            },
-            contractList: [],
+        links: {
             typeDefault: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
                     <path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
                     </svg>
                 `,
@@ -327,7 +412,177 @@
                         <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
                     </svg>
                 `,
-            }
+            },
+            loadLinkList(more) {
+                if (more || app.data.link.list.length === 0) {
+                    $('#spinner').show();
+                    $.ajax({
+                        type: 'get',
+                        url: `/customers/{{data.customer.id}}/links`,
+                        data: { skip: more ? app.data.link.skip + app.data.link.limit : app.data.link.skip, limit: app.data.link.limit },
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function (result) {
+                        const { data, skip, limit, count } = result;
+                        app.data.link.list = [...app.data.link.list, ...data];
+                        app.data.link.skip = skip;
+                        app.data.link.limit = limit;
+                        app.data.link.count = count;
+                        app.links.renderLinkList();
+                    }).always(function () {
+                        $('#spinner').hide();
+                    });
+                } else {
+                    app.links.renderLinkList();
+                }
+            },
+            renderLinkList() {
+                let html = '';
+                for (let i = 0; i < app.data.link.list.length; i++) {
+                    const item = app.data.link.list[i];
+                    html += `
+                        <div class="d-flex">
+                            <div class="d-flex flex-column me-2">
+                                <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon-sm text-center">
+                                    ${this.typeMap[item.type.name] || this.typeDefault}
+                                </div>
+                                <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
+                            </div>
+                            <div class="d-flex flex-column flex-grow-1 mb-4">
+                                <div class="p-2 border border-dark border-opacity-25 shadow-sm rounded mb-2">
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div class="d-flex flex-column">
+                                                <div class="fs-5">${item.subject}</div>
+                                                <div class="d-flex align-items-baseline">
+                                                    <div class="fs-sm text-muted">${item.user.name}</div>
+                                                    <div class="mx-1">·</div>
+                                                    <div class="fs-sm text-muted">${item.type.name}</div>
+                                                    <div class="mx-1">·</div>
+                                                    <div class="fs-sm text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="paragraph mb-1">
+                                            ${item.content}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-1 ms-1">
+                                    <button class="btn btn-sm btn-light" onclick="app.links.openLinkForm(${i})">编辑</button>
+                                    <button class="btn btn-sm btn-light" onclick="app.links.deleteLink(${i})">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += app.data.link.list.length < app.data.link.count ? `
+                    <div class="d-flex mt-2">
+                        <button class="btn btn-dark" onclick="app.links.loadLinkList(true)">加载更多</button>
+                    </div>
+                ` : '';
+                document.getElementById('tabContent').innerHTML = html;
+            },
+            deleteLink(itemIndex) {
+                const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
+                if (item) {
+                    helper.confirm('确定删除这个联系吗？', function () {
+                        $.ajax({
+                            type: 'delete',
+                            url: `/customers/{{data.customer.id}}/links/${item.id}`,
+                            statusCode: { 401: () => window.location.href = '/login', }
+                        }).done(function () {
+                            app.data.link.list = app.data.link.list.filter((_, i) => i !== itemIndex);
+                            app.data.link.count -= 1; // we delete one!
+                            app.links.renderLinkList();
+                            helper.toast('操作成功', 'success');
+                        });
+                    });
+                }
+            },
+            openLinkForm(itemIndex) {
+                $.ajax({
+                    type: 'get',
+                    url: '/links/types',
+                    statusCode: { 401: () => window.location.href = '/login', }
+                }).done(function (result) {
+                    const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
+                    const { data } = result;
+                    let optionsHTML = '';
+                    for (let i = 0; i < data.length; i++) {
+                        const option = data[i];
+                        optionsHTML += `<option ${option.id === item?.type.id ? 'selected' : ''} value="${option.id}">${option.name}</option>`;
+                    }
+                    // show modal
+                    const editorEl = document.createElement('div');
+                    editorEl.id = 'editor';
+                    editorEl.className = 'modal fade';
+                    editorEl.setAttribute('aria-hidden', 'true');
+                    editorEl.setAttribute('tabindex', '-1');
+                    editorEl.setAttribute('data-bs-backdrop', 'static');
+                    editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+                    document.body.appendChild(editorEl);
+                    editorEl.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${item ? '编辑联系' : '新建联系'}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="editorForm">
+                            <div class="modal-body">
+                                <div class="mb-3 row">
+                                    <label for="linkType" class="col-sm-2 form-label">方式</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-select" name="typeId" id="linkType" name="typeId">
+                                            ${optionsHTML}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">主题</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="subject" value="${item?.subject || ''}">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-sm-2 form-label">内容</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" name="content" rows="3">${item?.content || ''}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-dark">保存</button>
+                            </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                    document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                        const data = {};
+                        new FormData(document.getElementById('editorForm')).forEach((v, k) => {
+                            data[k] = v;
+                            if (item) item[k] = v; // update local item
+                        });
+                        if (item?.id) data.id = item.id;
+
+                        $.ajax({
+                            url: `/customers/{{data.customer.id}}/links`,
+                            type: 'post',
+                            data,
+                            statusCode: { 401: () => window.location.href = '/login', }
+                        }).done(function () {
+                            helper.toast('操作成功', 'success');
+                        }).always(function (result) {
+                            $('#editor').modal('hide');
+                            if (!item) app.data.link.list = [result.data, ...app.data.link.list]; // push new item to head
+                            app.links.renderLinkList();
+                        });
+                    });
+                    $('#editor').modal('show');
+                });
+            },
         },
         retreat(customerId) {
             helper.confirm('确定退回吗？', function () {
@@ -365,56 +620,6 @@
                 helper.toast('无法从服务器获取数据，请等会再试，或者联系管理员。', 'danger');
             });
         },
-        newTag(customerId) {
-            tagsDialog.open({
-                customerId,
-                onDone: () => { helper.toast('操作成功', 'success'); app.renderTags(); },
-                onFail: (result) => {
-                    if (result.status === 400) {
-                        helper.toast(result.responseJSON?.message || '未知错误，请刷新重试', 'warning');
-                    } else {
-                        helper.toast('操作失败，请刷新重试或者联系管理员', 'danger');
-                    }
-                }
-            });
-        },
-        deleteTag(tagId) {
-            $.ajax({
-                type: 'delete',
-                url: `/customers/{{data.customer.id}}/tags/${tagId}`,
-            }).done(function () {
-                helper.toast('操作成功', 'success');
-                app.renderTags();
-            });
-        },
-        renderTags() {
-            $.getJSON('/customers/{{data.customer.id}}/tags')
-                .done(function (result) {
-                    const tags = document.querySelector('#tags');
-                    let tagsHTML = '';
-                    for (const tag of result.data) {
-                        tagsHTML += `
-                            <div class="tag tag-secondary" style="background-color:${tag.colorHex || ''};">
-                                ${tag.name}
-                                <button type="button" class="btn-close btn-close-white btn-close-sm delete" onclick="app.deleteTag(${tag.id})"></button>
-                            </div>
-                        `;
-                    }
-                    tagsHTML += `
-                        <div class="d-flex aligne-items-center mb-2">
-                            <button class="btn btn-outline-secondary btn-mini py-0"
-                                onclick="app.newTag('{{data.customer.id}}')">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-plus" viewBox="0 0 16 16">
-                                    <path
-                                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                    tags.innerHTML = tagsHTML;
-                });
-        },
         changeStage(stageId, stageName, stageColorHex) {
             $.ajax({
                 type: 'put',
@@ -439,19 +644,19 @@
             switch (name) {
                 case 'activity': {
                     document.querySelector('#tabActivity').classList.add('active');
-                    app.loadActivityList();
+                    app.activities.loadActivityList();
                     break;
                 }
                 case 'contract': {
                     document.querySelector('#tabContract').classList.add('active');
-                    app.loadContractList();
                     document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.openContractForm()">新增</button>`;
+                    app.loadContractList();
                     break;
                 }
                 default: { // default is link
                     document.querySelector('#tabLink').classList.add('active');
-                    document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.openLinkForm()">新增</button>`;
-                    app.loadLinkList();
+                    document.querySelector('.tab-toolbar').innerHTML = `<button class="btn btn-dark btn-sm" onclick="app.links.openLinkForm()">新增</button>`;
+                    app.links.loadLinkList();
                     break;
                 }
             }
@@ -561,8 +766,8 @@
         },
         renderContractList() {
             let rows = '';
-            for (let i = 0; i < this.data.contractList.length; i++) {
-                const item = this.data.contractList[i];
+            for (let i = 0; i < app.data.contractList.length; i++) {
+                const item = app.data.contractList[i];
                 let actions = ``;
                 if (!item.isAbandoned && !item.isCompleted) {
                     actions = `
@@ -1021,201 +1226,11 @@
                 $('#editor').modal('show');
             });
         },
-        // activity
-        loadActivityList() {
-            $('#spinner').show();
-            $.ajax({
-                type: 'get',
-                url: `/customers/{{data.customer.id}}/activities`,
-                data: { skip: app.data.activity.skip, limit: app.data.activity.limit },
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function (result) {
-                const { data, limit, skip, count } = result;
-                app.data.activity.list = [...app.data.activity.list, ...data];
-                app.data.activity.skip = skip < count ? skip + limit : skip;
-                app.data.activity.limit = limit;
-                app.data.activity.count = count;
-                app.renderActivityList();
-            }).always(function () {
-                $('#spinner').hide();
-            });
-        },
-        renderActivityList() {
-            let html = activities.render({ data: this.data.activity.list, isMy: false });
-            html += app.data.activity.list.length < app.data.activity.count ? `
-                    <div class="d-flex mt-2">
-                        <button class="btn btn-dark" onclick="app.loadActivityList()">加载更多</button>
-                    </div>
-                ` : '';
-            document.getElementById('tabContent').innerHTML = html;
-        },
-        // link
-        loadLinkList() {
-            $('#spinner').show();
-            $.ajax({
-                type: 'get',
-                url: `/customers/{{data.customer.id}}/links`,
-                data: { skip: app.data.link.skip, limit: app.data.link.limit },
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function (result) {
-                const { data, skip, limit, count } = result;
-                app.data.link.list = [...app.data.link.list, ...data];
-                app.data.link.skip = skip < count ? skip + limit : skip;
-                app.data.link.limit = limit;
-                app.data.link.count = count;
-                app.renderLinkList();
-            }).always(function () {
-                $('#spinner').hide();
-            });
-        },
-        renderLinkList() {
-            let html = '';
-            for (let i = 0; i < this.data.link.list.length; i++) {
-                const item = this.data.link.list[i];
-                html += `
-                <div class="d-flex">
-                    <div class="d-flex flex-column me-2">
-                        <div class="text-bg-dark rounded-circle d-flex align-items-center justify-content-center activity-icon-sm text-center">
-                            ${this.data.typeMap[item.type.name] || this.data.typeDefault}
-                        </div>
-                        <div class="bg-secondary align-self-center my-1 opacity-25 flex-grow-1" style="width:2px;"></div>
-                    </div>
-                    <div class="d-flex flex-column flex-grow-1 mb-4">
-                        <div class="p-2 border border-dark border-opacity-25 shadow-sm rounded mb-2">
-                            <div class="d-flex flex-column">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <div class="d-flex flex-column">
-                                        <div class="fs-5">${item.subject}</div>
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="fs-sm text-muted">${item.user.name}</div>
-                                            <div class="mx-1">·</div>
-                                            <div class="fs-sm text-muted">${item.type.name}</div>
-                                            <div class="mx-1">·</div>
-                                            <div class="fs-sm text-muted">${dayjs(item.updatedAt).format("YYYY-MM-DD HH:mm:ss")}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="paragraph mb-1">
-                                    ${item.content}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-1 ms-1">
-                            <button class="btn btn-sm btn-light" onclick="app.openLinkForm(${i})">编辑</button>
-                            <button class="btn btn-sm btn-light" onclick="app.deleteLink(${i})">删除</button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }
-            html += app.data.link.list.length < app.data.link.count ? `
-                    <div class="d-flex mt-2">
-                        <button class="btn btn-dark" onclick="app.loadLinkList()">加载更多</button>
-                    </div>
-                ` : '';
-            document.getElementById('tabContent').innerHTML = html;
-        },
-        deleteLink(itemIndex) {
-            const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
-            if (item) {
-                helper.confirm('确定删除这个联系吗？', function () {
-                    $.ajax({
-                        type: 'delete',
-                        url: `/customers/{{data.customer.id}}/links/${item.id}`,
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function () {
-                        app.loadLinkList();
-                        helper.toast('操作成功', 'success');
-                    });
-                });
-            }
-        },
-        openLinkForm(itemIndex) {
-            $.ajax({
-                type: 'get',
-                url: '/links/types',
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function (result) {
-                const item = itemIndex > -1 ? app.data.link.list[itemIndex] : undefined;
-
-                const { data } = result;
-                let optionsHTML = '';
-                for (let i = 0; i < data.length; i++) {
-                    const option = data[i];
-                    optionsHTML += `<option ${option.id === item?.type.id ? 'selected' : ''} value="${option.id}">${option.name}</option>`;
-                }
-                // show modal
-                const editorEl = document.createElement('div');
-                editorEl.id = 'editor';
-                editorEl.className = 'modal fade';
-                editorEl.setAttribute('aria-hidden', 'true');
-                editorEl.setAttribute('tabindex', '-1');
-                editorEl.setAttribute('data-bs-backdrop', 'static');
-                editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
-                document.body.appendChild(editorEl);
-                editorEl.innerHTML = `
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">新建联系</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form id="editorForm">
-                            <div class="modal-body">
-                                <div class="mb-3 row">
-                                    <label for="linkType" class="col-sm-2 form-label">方式</label>
-                                    <div class="col-sm-10">
-                                        <select class="form-select" name="typeId" id="linkType" name="typeId">
-                                            ${optionsHTML}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label class="col-sm-2 form-label">主题</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" name="subject" value="${item?.subject || ''}">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <label class="col-sm-2 form-label">内容</label>
-                                    <div class="col-sm-10">
-                                        <textarea class="form-control" name="content" rows="3">${item?.content || ''}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                <button type="button" class="btn btn-dark">保存</button>
-                            </div>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                document.querySelector('#editor .btn-dark').addEventListener('click', () => {
-                    const data = {};
-                    new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
-                    if (item?.id) data.id = item.id;
-
-                    $.ajax({
-                        url: `/customers/{{data.customer.id}}/links`,
-                        type: 'post',
-                        data,
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function () {
-                        helper.toast('操作成功', 'success');
-                    }).always(function () {
-                        $('#editor').modal('hide');
-                        app.loadLinkList();
-                    });
-                });
-                $('#editor').modal('show');
-            });
-        },
     };
 
     $(document).ready(async function () {
         app.switchTab('activity');
-        app.renderTags();
+        app.tags.renderTags();
     });
 </script>
 {% endblock script %}

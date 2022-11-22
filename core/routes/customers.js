@@ -301,7 +301,20 @@ const customers = async function (fastify, opts) {
             link = await fastify.db.link.create({ data: link });
             fastify.events.emit(events.names.CUSTOMER_LINK_CREATE, { user: req.session.user, customer, link });
         }
-        return reply.code(200).send();
+        // load the link and its ref
+        link = await fastify.db.link.findUnique({
+            where: { id: link.id, },
+            include: {
+                type: true,
+                user: {
+                    select: {
+                        name: true,
+                        id: true,
+                    },
+                }
+            },
+        });
+        return reply.code(200).send({ data: link });
     });
 
     fastify.delete('/:customerId/links/:linkId', async (req, reply) => {

@@ -150,39 +150,6 @@
             },
             contractList: [],
         },
-        activities: {
-            loadActivityList(more) {
-                if (more || app.data.activity.list.length === 0) {
-                    $('#spinner').show();
-                    $.ajax({
-                        type: 'get',
-                        url: `/customers/{{data.customer.id}}/activities`,
-                        data: { skip: more ? app.data.activity.skip + app.data.activity.limit : app.data.activity.skip, limit: app.data.activity.limit },
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function (result) {
-                        const { data, limit, skip, count } = result;
-                        app.data.activity.list = [...app.data.activity.list, ...data];
-                        app.data.activity.count = count;
-                        app.data.activity.skip = skip;
-                        app.data.activity.limit = limit;
-                        app.activities.renderActivityList();
-                    }).always(function () {
-                        $('#spinner').hide();
-                    });
-                } else {
-                    app.activities.renderActivityList(); // just render again
-                }
-            },
-            renderActivityList() {
-                let html = activities.render({ data: app.data.activity.list, isMy: false }); // !!!this 'activities' comes from activities.js
-                html += app.data.activity.list.length < app.data.activity.count ? `
-                    <div class="d-flex mt-2">
-                        <button class="btn btn-dark" onclick="app.activities.loadActivityList(true)">加载更多</button>
-                    </div>
-                ` : '';
-                document.getElementById('tabContent').innerHTML = html;
-            },
-        },
         tags: {
             tagsDialog: {
                 title: '标签',
@@ -389,6 +356,39 @@
                     });
             },
         },
+        activities: {
+            loadActivityList(more) {
+                if (more) {
+                    app.data.activity.skip = app.data.activity.skip + app.data.activity.limit;
+                } else {
+                    app.data.activity.list = [];
+                    app.data.activity.skip = 0;
+                }
+                $('#spinner').show();
+                $.ajax({
+                    type: 'get',
+                    url: `/customers/{{data.customer.id}}/activities`,
+                    data: { skip: app.data.activity.skip, limit: app.data.activity.limit },
+                    statusCode: { 401: () => window.location.href = '/login', }
+                }).done(function (result) {
+                    const { data, limit, skip, count } = result;
+                    app.data.activity.list = [...app.data.activity.list, ...data];
+                    app.data.activity.count = count;
+                    app.activities.renderActivityList();
+                }).always(function () {
+                    $('#spinner').hide();
+                });
+            },
+            renderActivityList() {
+                let html = activities.render({ data: app.data.activity.list, isMy: false }); // !!!this 'activities' comes from activities.js
+                html += app.data.activity.list.length < app.data.activity.count ? `
+                    <div class="d-flex mt-2">
+                        <button class="btn btn-dark" onclick="app.activities.loadActivityList(true)">加载更多</button>
+                    </div>
+                ` : '';
+                document.getElementById('tabContent').innerHTML = html;
+            },
+        },
         links: {
             typeDefault: `
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-text-fill" viewBox="0 0 16 16">
@@ -414,26 +414,26 @@
                 `,
             },
             loadLinkList(more) {
-                if (more || app.data.link.list.length === 0) {
-                    $('#spinner').show();
-                    $.ajax({
-                        type: 'get',
-                        url: `/customers/{{data.customer.id}}/links`,
-                        data: { skip: more ? app.data.link.skip + app.data.link.limit : app.data.link.skip, limit: app.data.link.limit },
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function (result) {
-                        const { data, skip, limit, count } = result;
-                        app.data.link.list = [...app.data.link.list, ...data];
-                        app.data.link.skip = skip;
-                        app.data.link.limit = limit;
-                        app.data.link.count = count;
-                        app.links.renderLinkList();
-                    }).always(function () {
-                        $('#spinner').hide();
-                    });
+                if (more) {
+                    app.data.link.skip = app.data.link.skip + app.data.link.limit;
                 } else {
-                    app.links.renderLinkList();
+                    app.data.link.list = [];
+                    app.data.link.skip = 0;
                 }
+                $('#spinner').show();
+                $.ajax({
+                    type: 'get',
+                    url: `/customers/{{data.customer.id}}/links`,
+                    data: { skip: app.data.link.skip, limit: app.data.link.limit },
+                    statusCode: { 401: () => window.location.href = '/login', }
+                }).done(function (result) {
+                    const { data, skip, limit, count } = result;
+                    app.data.link.list = [...app.data.link.list, ...data];
+                    app.data.link.count = count;
+                    app.links.renderLinkList();
+                }).always(function () {
+                    $('#spinner').hide();
+                });
             },
             renderLinkList() {
                 let html = '';

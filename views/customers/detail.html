@@ -662,94 +662,6 @@
             }
         },
         // contract
-        openReceivableListModal(itemIndex) {
-            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
-            // show modal
-            const modalEl = document.createElement('div');
-            modalEl.id = 'modal';
-            modalEl.className = 'modal fade';
-            modalEl.setAttribute('aria-hidden', 'true');
-            modalEl.setAttribute('tabindex', '-1');
-            modalEl.setAttribute('data-bs-backdrop', 'static');
-            modalEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(modalEl));
-            document.body.appendChild(modalEl);
-            modalEl.innerHTML = `
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">回款信息</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            $('#modal').modal('show');
-            app.loadReceivableList(itemIndex);
-        },
-        loadReceivableList(itemIndex) {
-            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
-            let rows = '';
-            for (const r of item.receivables) {
-                rows += `
-                    <tr>
-                        <td><div class="">${r.paymentMethod.name}</div></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                ¥${r.amount}
-                            </div>
-                        </td>
-                        <td><div class="">${dayjs(r.date).format("YYYY-MM-DD")}</div></td>
-                        <td><div class="">${r.remark}</div></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                ${item.isCompleted || item.isAbandoned ? '' : `<a class="text-danger ms-1" href="#" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</a>`}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-            document.querySelector('#modal .modal-body').innerHTML = `
-                <div class="table-responsive">
-                    <table class="table table-bordered table-group-divider table-light">
-                        <thead>
-                            <tr>
-                                <th scope="col">方式</th>
-                                <th scope="col">金额</th>
-                                <th scope="col">日期</th>
-                                <th scope="col">备注</th>
-                                <th scope="col">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody class="fs-sm">
-                            ${rows}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-        },
-        deleteReceivable(itemIndex, itemId) {
-            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
-            if (item && itemId) {
-                helper.confirm('确定删除这条回款吗？', function () {
-                    $.ajax({
-                        type: 'delete',
-                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables/${itemId}`,
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function () {
-                        item.receivables = item.receivables.filter(v => v.id != itemId); // delete local
-                        app.renderContractList(); // rerender contract list to refresh the progress bar
-                        app.loadReceivableList(itemIndex);
-                        helper.toast('操作成功', 'success');
-                    });
-                });
-            }
-        },
         loadContractList() {
             $('#spinner').show();
             $.ajax({
@@ -869,8 +781,278 @@
                 });
             }
         },
+        openContractForm(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            const disabled = item && (item.isAbandoned || item.isCompleted);
+            // show modal
+            const editorId = 'contractEditor';
+            const editorEl = document.createElement('div');
+            editorEl.id = editorId;
+            editorEl.className = 'modal fade';
+            editorEl.setAttribute('aria-hidden', 'true');
+            editorEl.setAttribute('tabindex', '-1');
+            editorEl.setAttribute('data-bs-backdrop', 'static');
+            editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+            document.body.appendChild(editorEl);
+            editorEl.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${disabled ? '编辑' : '查看'}合同</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="editorForm" class="modal-body">
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">编号</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成" ${disabled ? 'disabled' : ''}>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">名称</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="name" value="${item?.name || ''}" ${disabled ? 'disabled' : ''}>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">金额</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" class="form-control" name="amount" min="0" value="${item?.amount || ''}"${disabled ? 'disabled' : ''}>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-2 form-label">备注</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" name="remark" rows="3" ${disabled ? 'disabled' : ''}>${item?.remark || ''}</textarea>
+                                    </div>
+                                </div>
+                                <div class="my-3 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">产品</label>
+                                        ${disabled ? '' : `
+                                            <a class="form-label fs-sm" href="#" onclick="app.openProductListModal()">增加产品</a>
+                                        `}
+                                    </div>
+                                    <div class="table-responsive"></div>
+                                </div>
+                            </form>
+                            <div class="modal-footer">
+                                ${disabled ? `
+                                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
+                                    `: `
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-dark">保存</button>
+                                    `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            if (!disabled) {
+                document.querySelector(`#${editorId} .btn-dark`).addEventListener('click', () => {
+                    const data = {};
+                    new FormData(document.querySelector(`#${editorId} #editorForm`)).forEach((v, k) => data[k] = v);
+                    if (item?.id) data.id = item.id;
+                    data.contractProductList = app.data.contractProductList;
+
+                    $.ajax({
+                        url: `/customers/{{data.customer.id}}/contracts`,
+                        type: 'post',
+                        contentType: 'application/json',
+                        headers: { accept: 'application/json' },
+                        data: JSON.stringify(data),
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        helper.toast('操作成功', 'success');
+                    }).always(function () {
+                        $(`#${editorId}`).modal('hide');
+                        app.loadContractList();
+                    });
+                });
+            }
+            $(`#${editorId}`).modal('show');
+            app.loadContractProductList(item);
+        },
+        // contact receivable
+        openReceivableForm(itemIndex) {
+            $.ajax({
+                type: 'get',
+                url: '/payment-methods',
+                statusCode: { 401: () => window.location.href = '/login', }
+            }).done(function (result) {
+                const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+                // read paymentMethods from server
+                const { data } = result;
+                let optionsHTML = '';
+                for (let i = 0; i < data.length; i++) {
+                    const option = data[i];
+                    optionsHTML += `<option value="${option.id}">${option.name}</option>`;
+                }
+                // show modal
+                const editorEl = document.createElement('div');
+                editorEl.id = 'editor';
+                editorEl.className = 'modal fade';
+                editorEl.setAttribute('aria-hidden', 'true');
+                editorEl.setAttribute('tabindex', '-1');
+                editorEl.setAttribute('data-bs-backdrop', 'static');
+                editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
+                document.body.appendChild(editorEl);
+                editorEl.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">新增回款</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="editorForm">
+                                <div class="modal-body">
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">方式</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-select" name="paymentMethodId" name="paymentMethodId">
+                                                ${optionsHTML}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">金额</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" min="0" name="amount">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label class="col-sm-2 form-label">日期</label>
+                                        <div class="col-sm-10">
+                                            <input class="form-control" placeholder="选择日期" name="date" id="datepicker" value="${dayjs(new Date(), 'yyyy-MM-dd')}">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="col-sm-2 form-label">备注</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" name="remark" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-dark">保存</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                new Litepicker({ element: document.getElementById('datepicker') });
+                document.querySelector('#editor .btn-dark').addEventListener('click', () => {
+                    const data = {};
+                    new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
+                    // if (item?.id) data.id = item.id; // 回款不能编辑，只能删除和新建
+
+                    $.ajax({
+                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables`,
+                        type: 'post',
+                        data,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        helper.toast('操作成功', 'success');
+                    }).always(function () {
+                        $('#editor').modal('hide');
+                        app.loadContractList();
+                    });
+                });
+                $('#editor').modal('show');
+            });
+        },
+        openReceivableListModal(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            // show modal
+            const modalEl = document.createElement('div');
+            modalEl.id = 'modal';
+            modalEl.className = 'modal fade';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.setAttribute('tabindex', '-1');
+            modalEl.setAttribute('data-bs-backdrop', 'static');
+            modalEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(modalEl));
+            document.body.appendChild(modalEl);
+            modalEl.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">回款信息</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#modal').modal('show');
+            app.loadReceivableList(itemIndex);
+        },
+        loadReceivableList(itemIndex) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            let rows = '';
+            for (const r of item.receivables) {
+                rows += `
+                    <tr>
+                        <td><div class="">${r.paymentMethod.name}</div></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                ¥${r.amount}
+                            </div>
+                        </td>
+                        <td><div class="">${dayjs(r.date).format("YYYY-MM-DD")}</div></td>
+                        <td><div class="">${r.remark}</div></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                ${item.isCompleted || item.isAbandoned ? '' : `<a class="text-danger ms-1" href="#" onclick="app.deleteReceivable(${itemIndex}, ${r.id})">删除</a>`}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            document.querySelector('#modal .modal-body').innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-group-divider table-light">
+                        <thead>
+                            <tr>
+                                <th scope="col">方式</th>
+                                <th scope="col">金额</th>
+                                <th scope="col">日期</th>
+                                <th scope="col">备注</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fs-sm">
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        },
+        deleteReceivable(itemIndex, itemId) {
+            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
+            if (item && itemId) {
+                helper.confirm('确定删除这条回款吗？', function () {
+                    $.ajax({
+                        type: 'delete',
+                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables/${itemId}`,
+                        statusCode: { 401: () => window.location.href = '/login', }
+                    }).done(function () {
+                        item.receivables = item.receivables.filter(v => v.id != itemId); // delete local
+                        app.renderContractList(); // rerender contract list to refresh the progress bar
+                        app.loadReceivableList(itemIndex);
+                        helper.toast('操作成功', 'success');
+                    });
+                });
+            }
+        },
         // contract product
         openProductListModal() {
+            // hide contract editor
+            $('#contractEditor').hide();
             const usedSet = new Set();
             app.data.contractProductList.forEach(item => usedSet.add(item.productId));
             let productList = []; // cache
@@ -881,7 +1063,10 @@
             modalEl.setAttribute('aria-hidden', 'true');
             modalEl.setAttribute('tabindex', '-1');
             modalEl.setAttribute('data-bs-backdrop', 'static');
-            modalEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(modalEl));
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modalEl);
+                $('#contractEditor').show(); // show contract editor again
+            });
             document.body.appendChild(modalEl);
             modalEl.innerHTML = `
                 <div class="modal-dialog modal-dialog-centered">
@@ -937,11 +1122,13 @@
                 productList = result.data || [];
                 const table = document.querySelector(`#${modalId} .table-responsive`);
                 let rows = '';
+                const initSelectedCount = productList.filter(item => usedSet.has(item.id)).length || 0;
                 for (let i = 0; i < productList.length; i++) {
                     const item = productList[i];
+                    item._checked = usedSet.has(item.id);
                     rows += `
                     <tr id="row-${item.id}">
-                        <td><input class="form-check-input m-0 align-middle" type="checkbox" ${usedSet.has(item.id) ? 'checked' : ''}></td>
+                        <td><input class="form-check-input m-0 align-middle" type="checkbox" ${item._checked ? 'checked' : ''}></td>
                         <td><div>${item.name}</div></td>
                         <td><div>${item.sku}</div></td>
                         <td><div>${item.unit}</div></td>
@@ -953,7 +1140,9 @@
                     <table class="table table-bordered table-group-divider table-light">
                         <thead>
                             <tr>
-                                <th scope="col"><input class="form-check-input m-0 align-middle" type="checkbox"></th>
+                                <th scope="col">
+                                    <input class="form-check-input m-0 align-middle" type="checkbox" ${initSelectedCount === productList.length ? 'checked' : ''}>
+                                </th>
                                 <th style="min-width:100px;">产品</th>
                                 <th style="min-width:85px;">编号</th>
                                 <th style="min-width:85px;">单位</th>
@@ -966,6 +1155,7 @@
                     </table>
                 `;
                 table.innerHTML = tableHTML;
+                $(`#${modalId} table th .form-check-input`)[0].indeterminate = initSelectedCount > 0 && initSelectedCount !== productList.length; // init
                 $(`#${modalId} table td .form-check-input`).each((i, el) => {
                     el.addEventListener('change', () => {
                         productList[i]._checked = el.checked;
@@ -986,97 +1176,6 @@
             }).always(function () {
                 $(`#${modalId} spinner`).hide();
             });
-        },
-        openContractForm(itemIndex) {
-            const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
-            const disabled = item && (item.isAbandoned || item.isCompleted);
-            // show modal
-            const editorId = 'contractEditor';
-            const editorEl = document.createElement('div');
-            editorEl.id = editorId;
-            editorEl.className = 'modal fade';
-            editorEl.setAttribute('aria-hidden', 'true');
-            editorEl.setAttribute('tabindex', '-1');
-            editorEl.setAttribute('data-bs-backdrop', 'static');
-            editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
-            document.body.appendChild(editorEl);
-            editorEl.innerHTML = `
-                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">${disabled ? '编辑' : '查看'}合同</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form id="editorForm" class="modal-body">
-                                <div class="mb-3 row">
-                                    <label class="col-sm-2 form-label">编号</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" name="number" value="${item?.number || ''}" placeHolder="不填则系统自动生成" ${disabled ? 'disabled' : ''}>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label class="col-sm-2 form-label">名称</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" name="name" value="${item?.name || ''}" ${disabled ? 'disabled' : ''}>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label class="col-sm-2 form-label">金额</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" name="amount" value="${item?.amount || ''}"${disabled ? 'disabled' : ''}>
-                                    </div>
-                                </div>
-                                <div class="mb-3 row">
-                                    <label class="col-sm-2 form-label">备注</label>
-                                    <div class="col-sm-10">
-                                        <textarea class="form-control" name="remark" rows="3" ${disabled ? 'disabled' : ''}>${item?.remark || ''}</textarea>
-                                    </div>
-                                </div>
-                                <div class="my-3 d-flex flex-column">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <label class="form-label">产品</label>
-                                        ${disabled ? '' : `
-                                            <a class="form-label fs-sm" href="#" onclick="app.openProductListModal()">增加产品</a>
-                                        `}
-                                    </div>
-                                    <div class="table-responsive"></div>
-                                </div>
-                            </form>
-                            <div class="modal-footer">
-                                ${disabled ? `
-                                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">关闭</button>
-                                    `: `
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                <button type="button" class="btn btn-dark">保存</button>
-                                    `}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            if (!disabled) {
-                document.querySelector(`#${editorId} .btn-dark`).addEventListener('click', () => {
-                    const data = {};
-                    new FormData(document.querySelector(`#${editorId} #editorForm`)).forEach((v, k) => data[k] = v);
-                    if (item?.id) data.id = item.id;
-                    data.contractProductList = app.data.contractProductList;
-
-                    $.ajax({
-                        url: `/customers/{{data.customer.id}}/contracts`,
-                        type: 'post',
-                        contentType: 'application/json',
-                        headers: { accept: 'application/json' },
-                        data: JSON.stringify(data),
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function () {
-                        helper.toast('操作成功', 'success');
-                    }).always(function () {
-                        $(`#${editorId}`).modal('hide');
-                        app.loadContractList();
-                    });
-                });
-            }
-            $(`#${editorId}`).modal('show');
-            app.loadContractProductList(item);
         },
         deleteContractProduct(index) {
             app.data.contractProductList = app.data.contractProductList.filter((_, i) => i !== index);
@@ -1136,94 +1235,6 @@
             $.getJSON(`/customers/{{data.customer.id}}/contracts/${contract.id}/products`).done(function (result) {
                 app.data.contractProductList = result.data || [];
                 app.renderContractProductList(!(contract && (contract.isAbandoned || contract.isCompleted)));
-            });
-        },
-        openReceivableForm(itemIndex) {
-            $.ajax({
-                type: 'get',
-                url: '/payment-methods',
-                statusCode: { 401: () => window.location.href = '/login', }
-            }).done(function (result) {
-                const item = itemIndex > -1 ? app.data.contractList[itemIndex] : undefined;
-                // read paymentMethods from server
-                const { data } = result;
-                let optionsHTML = '';
-                for (let i = 0; i < data.length; i++) {
-                    const option = data[i];
-                    optionsHTML += `<option value="${option.id}">${option.name}</option>`;
-                }
-                // show modal
-                const editorEl = document.createElement('div');
-                editorEl.id = 'editor';
-                editorEl.className = 'modal fade';
-                editorEl.setAttribute('aria-hidden', 'true');
-                editorEl.setAttribute('tabindex', '-1');
-                editorEl.setAttribute('data-bs-backdrop', 'static');
-                editorEl.addEventListener('hidden.bs.modal', () => document.body.removeChild(editorEl));
-                document.body.appendChild(editorEl);
-                editorEl.innerHTML = `
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">新增回款</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form id="editorForm">
-                                <div class="modal-body">
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">方式</label>
-                                        <div class="col-sm-10">
-                                            <select class="form-select" name="paymentMethodId" name="paymentMethodId">
-                                                ${optionsHTML}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">金额</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" name="amount">
-                                        </div>
-                                    </div>
-                                    <div class="mb-3 row">
-                                        <label class="col-sm-2 form-label">日期</label>
-                                        <div class="col-sm-10">
-                                            <input class="form-control" placeholder="选择日期" name="date" id="datepicker" value="${dayjs(new Date(), 'yyyy-MM-dd')}">
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <label class="col-sm-2 form-label">备注</label>
-                                        <div class="col-sm-10">
-                                            <textarea class="form-control" name="remark" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                    <button type="button" class="btn btn-dark">保存</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                new Litepicker({ element: document.getElementById('datepicker') });
-                document.querySelector('#editor .btn-dark').addEventListener('click', () => {
-                    const data = {};
-                    new FormData(document.getElementById('editorForm')).forEach((v, k) => data[k] = v);
-                    // if (item?.id) data.id = item.id; // 回款不能编辑，只能删除和新建
-
-                    $.ajax({
-                        url: `/customers/{{data.customer.id}}/contracts/${item.id}/receivables`,
-                        type: 'post',
-                        data,
-                        statusCode: { 401: () => window.location.href = '/login', }
-                    }).done(function () {
-                        helper.toast('操作成功', 'success');
-                    }).always(function () {
-                        $('#editor').modal('hide');
-                        app.loadContractList();
-                    });
-                });
-                $('#editor').modal('show');
             });
         },
     };

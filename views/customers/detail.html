@@ -1188,21 +1188,23 @@
             for (let i = 0; i < app.data.contractProductList?.length || 0; i++) {
                 const item = app.data.contractProductList[i];
                 rows += `
-                    <tr>
+                    <tr id="contractProductRow-${i}">
                         <td>
                             <div>${item.name}</div>
                             <div class="fs-sm text-muted">${item.sku}</div>
                         </td>
                         <td>
-                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short" min="0" value="${item.quantity}">` : item.quantity}</div>
+                            <div>${enableAction ? `<input type="number" name="quantity" class="form-control form-control-sm input-short" min="0" value="${item.quantity}">` : item.quantity}</div>
                             <div class="fs-sm text-muted">单位:${item.unit}</div>
                         </td>
                         <td>
-                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short" min="0" value="${item.purchase}">` : item.purchase}</div>
+                            <div>
+                                ${enableAction ? `<input type="number" name="purchase" class="form-control form-control-sm input-short" min="0" value="${item.purchase}">` : item.purchase}
+                            </div>
                             <div class="fs-sm text-muted">原价:${item.price}</div>
                         </td>
                         <td>
-                            <div>${enableAction ? `<input type="number" class="form-control form-control-sm input-short"   max="100" min="0" value="${item.discount}">` : item.discount}</div>
+                            <div>${enableAction ? `<input type="number" name="discount" class="form-control form-control-sm input-short" max="100" min="0" value="${item.discount}">` : item.discount}</div>
                         </td>
                         ${!!enableAction ? `
                             <td>
@@ -1213,7 +1215,7 @@
                 `;
             }
             table.innerHTML = `
-                <table class="table table-bordered table-group-divider table-light">
+                <table id="contractProductTable" class="table table-bordered table-group-divider table-light">
                     <thead>
                         <tr>
                             <th style="min-width:100px;">产品</th>
@@ -1228,6 +1230,18 @@
                     </tbody>
                 </table>
             `;
+            // add event
+            $('#contractProductTable tbody tr').each((i, el) => {
+                const item = app.data.contractProductList[i];
+                const onChange = () => {
+                    item.quantity = el.querySelector('input[name="quantity"]').value;
+                    item.purchase = el.querySelector('input[name="purchase"]').value;
+                    item.discount = el.querySelector('input[name="discount"]').value;
+                };
+                el.querySelector('input[name="quantity"]').addEventListener('change', onChange);
+                el.querySelector('input[name="purchase"]').addEventListener('change', onChange);
+                el.querySelector('input[name="discount"]').addEventListener('change', onChange);
+            });
         },
         loadContractProductList(contract) {
             app.data.contractProductList = []; // clear old data

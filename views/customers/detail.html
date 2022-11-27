@@ -1231,16 +1231,38 @@
                 </table>
             `;
             // add event
+            const calculateContractAmount = () => {
+                const contractAmountInput = $('#contractEditor #editorForm input[name="amount"]');
+                const amount = app.data.contractProductList.reduce((acc, cur) => acc + (cur.purchase * cur.quantity), 0);
+                contractAmountInput.val(amount);
+            };
             $('#contractProductTable tbody tr').each((i, el) => {
                 const item = app.data.contractProductList[i];
-                const onChange = () => {
-                    item.quantity = el.querySelector('input[name="quantity"]').value;
-                    item.purchase = el.querySelector('input[name="purchase"]').value;
-                    item.discount = el.querySelector('input[name="discount"]').value;
+                const onInput = (event) => {
+                    const who = event.srcElement.getAttribute('name');
+                    const value = Number(event.srcElement.value);
+                    switch (who) {
+                        case 'quantity': {
+                            item.quantity = value;
+                            calculateContractAmount();
+                            break;
+                        }
+                        case 'purchase': {
+                            item.purchase = value;
+                            calculateContractAmount();
+                            break;
+                        }
+                        case 'discount': {
+                            item.discount = Math.max(0, Math.min(100, value));
+                            item.purchase = item.price * (100 - item.discount) / 100;
+                            el.querySelector('input[name="purchase"]').value = item.purchase;
+                            calculateContractAmount();
+                            break;
+                        }
+                        default: break;
+                    }
                 };
-                el.querySelector('input[name="quantity"]').addEventListener('change', onChange);
-                el.querySelector('input[name="purchase"]').addEventListener('change', onChange);
-                el.querySelector('input[name="discount"]').addEventListener('change', onChange);
+                el.querySelectorAll('input').forEach(each => each.addEventListener('input', onInput));
             });
         },
         loadContractProductList(contract) {

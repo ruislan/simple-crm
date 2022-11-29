@@ -1,8 +1,6 @@
 {% extends 'layouts/default.html' %}
 {% set title = 'Simple CRM' %}
 {% block style %}
-<link rel="stylesheet" type="text/css" href="https://unpkg.com/funnel-graph-js@1.3.9/dist/css/main.min.css">
-<link rel="stylesheet" type="text/css" href="https://unpkg.com/funnel-graph-js@1.3.9/dist/css/theme.min.css">
 {% endblock style %}
 {% block container %}
 <div class="container-xl">
@@ -106,8 +104,8 @@
 {% endblock container %}
 {% block script %}
 <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
-<script src="https://gw.alipayobjects.com/os/lib/antv/g2/4.2.7/dist/g2.min.js"></script>
-<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.11.1/dist/data-set.js"></script>
+<script src="https://unpkg.com/@antv/g2"></script>
+<script src="https://unpkg.com/@antv/data-set"></script>
 <script src="public/js/activities.js"></script>
 <script>
     const app = {

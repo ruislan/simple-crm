@@ -1,6 +1,21 @@
 import dayjs from "dayjs";
+import constants from '../lib/constants.js';
 
 const statistic = async function (fastify, opts) {
+    fastify.get('/products/rank/top', async (req, reply) => {
+        let { skip, limit } = req.query;
+        skip = Number(skip) || constants.DEFAULT_PAGE_SKIP;
+        limit = Number(limit) || constants.DEFAULT_PAGE_SIZE;
+        // agg product money from contracts which have done
+        const data = await fastify.db.product.findMany({
+            orderBy: {
+                totalSales: 'desc'
+            },
+            skip,
+            take: limit
+        });
+        return reply.code(200).send({ data });
+    });
     fastify.get('/contracts/last7days', async (req, reply) => {
         // 取前7天数据，然后做聚合
         const now = new Date();

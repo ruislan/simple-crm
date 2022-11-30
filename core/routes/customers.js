@@ -264,6 +264,9 @@ const customers = async function (fastify, opts) {
         // admin or owner can do this
         if (!customer || !contract || (!req.session.user.isAdmin && req.session.user.id !== customer.userId)) return reply.code(403).send();
         await fastify.db.contract.update({ data: { isCompleted: true }, where: { id: contract.id } });
+        // add product's total sales, maybe this could be put into the event?
+        const contractProducts = await fastify.db.contractProduct.findMany({ where: { contractId: contract.id } });
+        for (const item of contractProducts) await fastify.db.product.update({ where: { id: item.productId }, data: { totalSales: { increment: item.purchase * item.quantity } } });
         fastify.events.emit(events.names.CUSTOMER_CONTRACT_COMPLETE, { user: req.session.user, customer, contract });
         return reply.code(200).send();
     });

@@ -32,10 +32,10 @@
                     </div>
                     <div class="statistic rounded mb-1 mb-lg-0">
                         <div class="d-flex justify-content-between align-items-baseline">
-                            <div class="h4 text-success">回款金额（产品数量）</div>
+                            <div class="h4 text-success">产品数量</div>
                             <div class="h6"></div>
                         </div>
-                        <div class="fw-bold fs-2">¥{{data.count.receivable}}</div>
+                        <div class="fw-bold fs-2">{{data.count.product}}</div>
                     </div>
                 </div>
             </div>
@@ -92,6 +92,12 @@
             </div>
             <div class="d-flex flex-column mb-5">
                 <div class="mb-2 d-flex justify-content-between align-items-baseline">
+                    <div class="h4 mb-0">畅销产品</div>
+                </div>
+                <div id="productRank" class="mt-2"></div>
+            </div>
+            <div class="d-flex flex-column mb-5">
+                <div class="mb-2 d-flex justify-content-between align-items-baseline">
                     <div class="h4 mb-0">我的客户</div>
                     <div class="fs-sm text-muted cursor-pointer" onclick="window.location.href='/customers/my'">更多</div>
                 </div>
@@ -117,6 +123,36 @@
             }).done(function (result) {
                 const { data } = result;
                 document.getElementById('activities').innerHTML = activities.render({ isMy: true, data });
+            });
+        },
+        async renderProductRank() {
+            $.ajax({
+                type: 'get',
+                url: '/statistic/products/rank/top',
+                data: { limit: 3 }
+            }).done(function (result) {
+                const { data } = result;
+                let row = '';
+                for (let i = 0; i < data.length; i++) {
+                    const p = data[i];
+                    row += `
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex flex-column">
+                                    <div>${p.name}</div>
+                                    <div class="text-muted">总销售：¥${p.totalSales}</div>
+                                </div>
+                                <div class="badge text-bg-dark">${i + 1}</div>
+                            </div>
+                        </li>
+                    `;
+                }
+                let html = `
+                    <ul class="list-group">
+                        ${row}
+                    </ul>
+                `;
+                document.getElementById('productRank').innerHTML = html;
             });
         },
         async renderReceivableBar() {
@@ -285,6 +321,7 @@
         app.renderContractsChart();
         app.renderReceivableBar();
         app.renderFunnel();
+        app.renderProductRank();
     });
 </script>
 {% endblock script %}

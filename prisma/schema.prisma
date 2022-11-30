@@ -131,7 +131,6 @@ model Contract {
   amount      Decimal // 金额
   remark      String // 备注
   userId      Int?     @map("user_id") // 负责人
-  isDraft     Boolean  @default(false) @map("is_draft") // 是否是草稿
   isCompleted Boolean  @default(false) @map("is_completed") // 是否完成
   isAbandoned Boolean  @default(false) @map("is_abandoned") // 是否废弃
   createdAt   DateTime @default(now()) @map("created_at")
@@ -175,6 +174,7 @@ model Product {
   description String?
   price       Decimal  @default(0) // 标准价格
   available   Boolean  @default(true) // 是否有售（上架，下架）
+  totalSales  Decimal  @default(0) @map("total_sales") // 销售总计
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 }

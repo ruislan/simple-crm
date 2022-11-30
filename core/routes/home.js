@@ -9,9 +9,8 @@ const home = async function (fastify, opts) {
         const user = await fastify.db.user.count();
         const contract = await fastify.db.contract.count();
         const customer = await fastify.db.customer.count();
-        const receivable = (await fastify.db.receivable.aggregate({ _sum: { amount: true } }))._sum.amount;
-
-        return reply.view('index.html', { data: { count: { unLink, linking, sold, user, contract, customer, receivable } } });
+        const product = await fastify.db.product.count();
+        return reply.view('index.html', { data: { count: { unLink, linking, sold, user, contract, customer, product } } });
     });
     fastify.get('/login', async (_, reply) => reply.view('login.html'));
     fastify.get('/not-found', async (_, reply) => reply.view('not-found.html'));

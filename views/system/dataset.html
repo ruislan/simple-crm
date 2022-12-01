@@ -52,9 +52,6 @@
                 </div>
             </div>
         </div>
-        <div id="alert-info" class="alert alert-info" role="alert" style="display: none;">
-            <span id="alert-info-message"></span>
-        </div>
         <div class="col-md-12 mt-2 invisible" id="process">
             <div class="d-flex">
                 <div class="d-flex flex-column border border-dark rounded p-3 w-100">
@@ -100,15 +97,6 @@
             interval: undefined,
             regions: {},
         },
-        async setInfo(message) {
-            if (!message || message === '') {
-                $('#alert-info').hide();
-                $('#alert-info-message').text('');
-            } else {
-                $('#alert-info').show();
-                $('#alert-info-message').text(message);
-            }
-        },
         setLoading(isLoading) {
             if (isLoading) {
                 let seconds = 0;
@@ -151,17 +139,16 @@
             }).change();
         },
         onClickCollect(event) {
-            app.setInfo('');
             const sources = [];
             if ($('#sourceGaode').prop('checked')) sources.push('gaode');
             if ($('#sourceBaidu').prop('checked')) sources.push('baidu');
             if (sources.length === 0) {
-                app.setInfo('不能查询，至少选择一个查询源，例如：高德');
+                helper.toast('不能查询，至少选择一个查询源', 'warning');
                 return;
             }
             const keyword = $('#keyword').val() || '';
             if (keyword === '') {
-                app.setInfo('不能查询，至少输入一个关键词，例如：冻品');
+                helper.toast('不能查询，至少输入一个关键词', 'warning');
                 return;
             }
             app.setLoading(true);

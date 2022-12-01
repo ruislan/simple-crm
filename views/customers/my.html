@@ -6,7 +6,7 @@
     <div class="col-lg-2">
         <nav class="side-menu">
             <div class="side-menu-label d-flex align-items-center">客户</div>
-            <ul class="side-menu-list">
+            <ul class="side-menu-list mb-3">
                 <li><a href="/customers">未分配的</a></li>
                 <li><a class="active">我负责的</a></li>
             </ul>
@@ -15,7 +15,7 @@
     <div class="col-lg-10">
         <div class="h4 mb-4">客户 - 我负责的</div>
         <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div id="searcher" class="d-flex align-items-center flex-wrap">
+            <div id="searcher" class="d-flex align-items-center flex-wrap my-1">
                 <div class="pb-2 pb-lg-0 pe-1"><select id="province" class="form-select" aria-label="省/直辖市"></select>
                 </div>
                 <div class="pb-2 pb-lg-0 pe-1"><select id="city" class="form-select" aria-label="市"></select></div>
@@ -39,8 +39,8 @@
                 <div class="pb-2 pb-lg-0 pe-1"><button type="button" id="searchBtn" class="btn btn-dark"
                         onclick="app.search()">搜索</button></div>
             </div>
-            <div class="d-flex align-items-center flex-wrap">
-                <div class="d-flex align-items-center flex-wrap ms-3">
+            <div class="d-flex align-items-center flex-wrap my-1">
+                <div class="d-flex align-items-center flex-wrap">
                     <button id="toolbarHide"
                         class="btn btn-dark btn-action d-flex justify-content-center align-items-center"
                         onclick="app.hide()" data-toggle="tooltip" title="批量屏蔽">

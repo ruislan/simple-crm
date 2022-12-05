@@ -12,7 +12,7 @@
                 <li><a href="/system/products">产品</a></li>
             </ul>
             <div class="side-menu-label d-flex align-items-center">客户</div>
-            <ul class="side-menu-list">
+            <ul class="side-menu-list mb-3">
                 <li><a href="/system/link-types">联系类别</a></li>
                 <li><a href="/system/stages">客户阶段</a></li>
                 <li><a href="/system/tags">客户标签</a></li>
@@ -24,16 +24,16 @@
         <div class="h4 mb-4">系统 - 用户</div>
         <div class="d-flex flex-column">
             <div class="d-flex flex-column">
-                <div class="d-flex align-items-center justify-content-between">
-                    <form id="searchForm" method="get" class="d-flex align-items-center">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <form id="searchForm" method="get" class="d-flex align-items-center my-1">
                         <div><input id="queryName" class="form-control" type="search" name="name"
                                 value="{{ query.name }}" placeholder="名称" /></div>
                         <div class="ms-1"><button id="queryBtn" class="btn btn-dark" type="submit">搜索</button></div>
                     </form>
-                    <div class="d-flex align-items-center">
-                        <div class="ms-3 d-flex align-items-center flex-wrap">
+                    <div class="d-flex align-items-center my-1">
+                        <div class="d-flex align-items-center flex-wrap">
                             <button id="toolbarNew"
-                                class="btn btn-dark btn-action ms-1 d-flex justify-content-center align-items-center"
+                                class="btn btn-dark btn-action d-flex justify-content-center align-items-center"
                                 onclick="app.new()" data-toggle="tooltip" title="新增客户">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                     class="bi bi-plus-lg" viewBox="0 0 16 16">
@@ -75,47 +75,50 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column mt-3">
-                    <table class="table table-bordered table-group-divider table-light">
-                        <thead>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">名称</th>
-                                <th scope="col">邮箱</th>
-                                <th scope="col">电话</th>
-                                <th scope="col">锁定</th>
-                                <th scope="col">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr id="user-{{user.id}}">
-                                <th scope="row">{{user.id}}</th>
-                                <td>{{user.name}}</td>
-                                <td>{{user.email}}</td>
-                                <td>{{user.phone}}</td>
-                                <td><span class="badge {{'bg-danger' if user.isLocked else 'bg-success'}}">{{'已锁定' if
-                                        user.isLocked else '未锁定'}}</span></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <button type="button" class="btn btn-sm btn-dark"
-                                            onclick="window.open('/activities?userId={{user.id}}', 'blank')">动态</button>
-                                        <button type="button" class="btn btn-sm btn-dark ms-1"
-                                            onclick="app.edit('{{user.id}}')">编辑</button>
-                                        {% if user.id !== 1 %}
-                                        {% if user.isLocked %}
-                                        <button type="button" class="btn btn-sm btn-danger ms-1"
-                                            onclick="app.unlock('{{user.id}}')">解锁</button>
-                                        {% else %}
-                                        <button type="button" class="btn btn-sm btn-danger ms-1"
-                                            onclick="app.lock('{{user.id}}')">锁定</button>
-                                        {% endif %}
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-group-divider table-light">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">名称</th>
+                                    <th scope="col">邮箱</th>
+                                    <th scope="col">电话</th>
+                                    <th scope="col">锁定</th>
+                                    <th scope="col" style="min-width: 200px;width: 200px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr id="user-{{user.id}}">
+                                    <th scope="row">{{user.id}}</th>
+                                    <td>{{user.name}}</td>
+                                    <td>{{user.email}}</td>
+                                    <td>{{user.phone}}</td>
+                                    <td><span class="badge {{'bg-danger' if user.isLocked else 'bg-success'}}">{{'已锁定'
+                                            if
+                                            user.isLocked else '未锁定'}}</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <button type="button" class="btn btn-sm btn-dark"
+                                                onclick="window.open('/activities?userId={{user.id}}', 'blank')">动态</button>
+                                            <button type="button" class="btn btn-sm btn-dark ms-1"
+                                                onclick="app.edit('{{user.id}}')">编辑</button>
+                                            {% if user.id !== 1 %}
+                                            {% if user.isLocked %}
+                                            <button type="button" class="btn btn-sm btn-danger ms-1"
+                                                onclick="app.unlock('{{user.id}}')">解锁</button>
+                                            {% else %}
+                                            <button type="button" class="btn btn-sm btn-danger ms-1"
+                                                onclick="app.lock('{{user.id}}')">锁定</button>
+                                            {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

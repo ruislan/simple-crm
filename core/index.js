@@ -42,9 +42,7 @@ const scService = async function (fastify, opts) {
     await fastify.register(fastifySession, {
         secret: process.env.SESSION_SECRET,
         expires: Number(process.env.SESSION_EXPIRES_IN) || 1800000,
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-        },
+        cookie: { secure: false }, // set secure true if u want to use https
     });
     await fastify.register(fastifyMultipart, {
         limits: {

@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "start:dev": "NODE_ENV=dev node server.js",
-    "start:prod": "NODE_ENV=prod node server.js"
+    "start:production": "NODE_ENV=production node server.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

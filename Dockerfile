@@ -12,4 +12,4 @@ RUN yarn prisma db push
 RUN yarn prisma db seed
 
 EXPOSE 5600
-ENTRYPOINT ["node", "server.js"]
+ENTRYPOINT ["yarn", "start:production"]

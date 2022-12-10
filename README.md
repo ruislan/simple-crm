@@ -111,6 +111,7 @@ Pass: 123123
 
 ## Docker
 
-docker build --pull --rm -f "Dockerfile" -t simple-crm:latest "server"
-
+```bash
+docker build --pull --rm -f "Dockerfile" -t simple-crm:latest .
 docker run --rm -d -p 5600:5600/tcp simple-crm:latest
+```

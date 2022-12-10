@@ -1,0 +1,12 @@
+.fleet
+.idea
+.vscode
+node_modules
+docs
+.git
+*.db
+temp
+uploads
+NOTE.md
+build
+.gitignore

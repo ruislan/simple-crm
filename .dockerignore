@@ -4,9 +4,9 @@
 node_modules
 docs
 .git
-*.db
+prisma/*.db
 temp
-uploads
+public/uploads
 NOTE.md
 build
 .gitignore

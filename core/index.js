@@ -19,6 +19,7 @@ import tags from './routes/tags.js';
 import products from './routes/products.js';
 import activities from './routes/activities.js';
 import statistic from './routes/statistic.js';
+import schedule from './lib/schedule.js';
 
 const scService = async function (fastify, opts) {
     await fastify.register(fastifyView, {
@@ -90,6 +91,9 @@ const scService = async function (fastify, opts) {
         const isJsonResponse = req.isJsonResponse();
         isJsonResponse ? reply.status(404).send() : reply.redirect('/not-found');
     });
+
+    // init schedule
+    schedule.processExpiredActivities({ fastify, expiredDay: 180 }); // 最近180天
 };
 
 export default scService;

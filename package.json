@@ -23,13 +23,14 @@
     "@fastify/static": "^6.5.1",
     "@fastify/view": "^7.3.0",
     "@fastify/websocket": "^7.1.1",
-    "@prisma/client": "^4.7.1",
+    "@prisma/client": "^4.8.0",
     "bcrypt": "^5.0.1",
     "chalk": "^5.0.1",
     "dayjs": "^1.11.5",
     "dotenv": "^16.0.2",
     "fastify": "^4.10.2",
     "html-minifier": "^4.0.0",
+    "node-cron": "^3.0.2",
     "node-fetch": "^3.2.3",
     "nunjucks": "^3.2.3",
     "pino-pretty": "^9.1.0"
@@ -40,6 +41,6 @@
     "gulp-clean-css": "^4.3.0",
     "gulp-uglify": "^3.0.2",
     "gulp-vinyl-zip": "^2.5.0",
-    "prisma": "^4.7.1"
+    "prisma": "^4.8.0"
   }
 }

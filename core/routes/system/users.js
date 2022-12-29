@@ -10,7 +10,7 @@ const users = async function (fastify, opts) {
     });
     fastify.put('/:id/unlock', async (req, reply) => {
         const id = Number(req.params.id || 0);
-        await fastify.db.user.update({ where: { id }, data: { isLocked: false } });
+        const unblockUser = await fastify.db.user.update({ where: { id }, data: { isLocked: false } });
         fastify.events.emit(events.names.USER_UNBLOCK, { user: req.session.user, unblockUser });
         return reply.code(200).send();
     });

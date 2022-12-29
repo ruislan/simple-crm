@@ -204,7 +204,7 @@ const events = {
     async handleUserUnBlock(data) {
         const { user, unblockUser } = data;
         const activity = {
-            action: events.names.USER_BLOCK,
+            action: events.names.USER_UNBLOCK,
             userId: user.id,
             targetId: unblockUser.id,
             extra: JSON.stringify({ user: { id: user.id, name: user.name }, unblockUser: { id: unblockUser.id, name: unblockUser.name } }),

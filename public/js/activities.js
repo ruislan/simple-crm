@@ -34,6 +34,24 @@ const activities = {
                         <div class="mt-1 fs-sm text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
                     `;
                     break;
+                case 'user.block':
+                    one = isMy ? `
+                        <div class="paragraph">你锁定了用户  <span class="fw-semibold">${extra.blockUser?.name || '未知'}</span></div>
+                        <div class="mt-1 fs-sm text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `: `
+                        <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 锁定了用户  <span class="fw-semibold">${extra.blockUser?.name || '未知'}</span></div>
+                        <div class="mt-1 fs-sm text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
+                case 'user.unblock':
+                    one = isMy ? `
+                        <div class="paragraph">你解锁了用户  <span class="fw-semibold">${extra.unblockUser?.name || '未知'}</span></div>
+                        <div class="mt-1 fs-sm text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `: `
+                        <div class="paragraph"><span class="fw-semibold">${extra.user?.name || '未知'}</span> 解锁了用户  <span class="fw-semibold">${extra.unblockUser?.name || '未知'}</span></div>
+                        <div class="mt-1 fs-sm text-muted">${dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                    `;
+                    break;
                 case 'customer.create':
                     one = isMy ? `
                         <div class="paragraph">你创建了客户  <span class="fw-semibold">${extra.customer?.name || '未知'}</span></div>

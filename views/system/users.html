@@ -250,7 +250,7 @@
                     document.querySelectorAll(`#user-${userId} td`)[3].innerHTML = '<span class="badge bg-danger">已锁定</span>';
                     document.querySelectorAll(`#user-${userId} td`)[4].innerHTML = `
                         <div class="d-flex align-items-center">
-                            <button type="button" class="btn btn-sm btn-dark" onclick="window.open('/activities?userId=${user.id}', 'blank')">动态</button>
+                            <button type="button" class="btn btn-sm btn-dark" onclick="window.open('/activities?userId=${userId}', 'blank')">动态</button>
                             <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit('${userId}')">编辑</button>
                             <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.unlock('${userId}')">解锁</button>
                         </div>
@@ -268,7 +268,7 @@
                     document.querySelectorAll(`#user-${userId} td`)[3].innerHTML = '<span class="badge bg-success">未锁定</span>';
                     document.querySelectorAll(`#user-${userId} td`)[4].innerHTML = `
                             <div class="d-flex align-items-center">
-                                <button type="button" class="btn btn-sm btn-dark" onclick="window.open('/activities?userId=${user.id}', 'blank')">动态</button>
+                                <button type="button" class="btn btn-sm btn-dark" onclick="window.open('/activities?userId=${userId}', 'blank')">动态</button>
                                 <button type="button" class="btn btn-sm btn-dark ms-1" onclick="app.edit('${userId}')">编辑</button>
                                 <button type="button" class="btn btn-sm btn-danger ms-1" onclick="app.lock('${userId}')">锁定</button>
                             </div>

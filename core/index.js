@@ -83,7 +83,7 @@ const scService = async function (fastify, opts) {
     await fastify.register(tags, { prefix: '/tags' });
     await fastify.register(activities, { prefix: '/activities' });
     await fastify.register(statistic, { prefix: '/statistic' });
-    await fastify.register(products, { prefix: "/products" });
+    await fastify.register(products, { prefix: '/products' });
     await fastify.register(system, { prefix: '/system' });
 
     // init error handler

@@ -28,7 +28,7 @@
     "chalk": "^5.0.1",
     "dayjs": "^1.11.5",
     "dotenv": "^16.0.2",
-    "fastify": "^4.10.2",
+    "fastify": "^4.11.0",
     "html-minifier": "^4.0.0",
     "node-cron": "^3.0.2",
     "node-fetch": "^3.2.3",

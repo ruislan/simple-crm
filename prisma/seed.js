@@ -240,6 +240,25 @@ const receivables = [
     }
 ];
 
+const products = [
+    {
+        id: 1,
+        name: '产品1',
+        unit: '吨',
+        sku: '001',
+        description: '小心轻放',
+        price: 1000,
+    },
+    {
+        id: 2,
+        name: '产品2',
+        unit: '吨',
+        sku: '002',
+        description: '小心火源',
+        price: 2000,
+    }
+];
+
 async function main() {
     for (const u of users) {
         const user = await db.user.upsert({ create: u, update: u, where: { id: u.id } });
@@ -280,6 +299,10 @@ async function main() {
     for (const r of receivables) {
         await db.receivable.upsert({ create: r, update: r, where: { id: r.id } });
         console.log(`Created or Update receivable with id: ${r.id}`);
+    }
+    for (const p of products) {
+        await db.product.upsert({ create: p, update: p, where: { id: p.id } });
+        console.log(`Created or Update product with id: ${p.id}`);
     }
     console.log(`Seeding finished.`);
 }

@@ -34,6 +34,15 @@ const main = async function () {
         console.log(server.printRoutes({ commonPrefix: false }));
     });
 
+    // add shutdown hook
+    const shutdownHook = async () => {
+        await server.close();
+        server.log.info('server is closed.');
+    };
+    process.on('SIGINT', shutdownHook);
+    process.on('SIGQUIT', shutdownHook);
+    process.on('SIGTERM', shutdownHook);
+
     server.listen({ port: process.env.SERVER_PORT || 5600, host: '0.0.0.0' })
         .then((address) => console.log(`server listening on ${address}`))
         .catch(err => {

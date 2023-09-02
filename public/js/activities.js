@@ -2,8 +2,8 @@ const activities = {
     render({ isMy, data }) {
         let html = '';
         data = data || {};
-        for (let i = 0; i < data.length; i++) {
-            const item = data[i];
+        for (const element of data) {
+            const item = element;
             const extra = JSON.parse(item.extra || '{}');
             let one = '';
             switch (item.action) {

@@ -109,8 +109,6 @@ User: user1
 Pass: 123123
 ```
 
-不想这么麻烦？我搭建了一个[演示地址](https://sc.ruislan.com)，每日会重置数据。
-
 ## Docker
 
 ```bash
